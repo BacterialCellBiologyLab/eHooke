@@ -23,12 +23,11 @@ class SegmentsManager(object):
     usage of the watershed algorithm to define each individual region of the
     mask"""
 
-    def __init__(self, image_manager):
+    def __init__(self):
         self.features = None
         self.labels = None
         self.phase_with_features = None
         self.fluor_with_features = None
-        self.image_manager = image_manager
 
     def clear_all(self):
         """Resets the class instance to the initial state"""
@@ -79,13 +78,13 @@ class SegmentsManager(object):
 
         return result
 
-    def compute_features(self, params):
+    def compute_features(self, params, image_manager):
         """Method used to compute the features of an image using the mask.
         requires a mask and an instance of the imageprocessingparams
         if the selected algorithm used is Distance Peak, used the method compute_distance_peaks
         to compute the features"""
 
-        mask = self.image_manager.mask
+        mask = image_manager.mask
         features = np.zeros(mask.shape)
 
         if params.peak_min_distance_from_edge < 1:
@@ -101,43 +100,42 @@ class SegmentsManager(object):
 
         self.features = features
 
-    def overlay_phase_with_features(self):
+    def overlay_base_with_features(self, image_manager):
         """Method used to produce an image with an overlay of the features on
         the phase image requires a phase image, the features and the clip
         values to overlay the images returns a image matrix which can be saved
         using the save_image method from EHooke or directly using the imsave
         from skimage.io"""
 
-        x1, y1, x2, y2 = self.image_manager.clip
-        clipped_phase = np.copy(
-            self.image_manager.base_image[x1:x2, y1:y2])
+        x1, y1, x2, y2 = image_manager.clip
+        clipped_phase = np.copy(image_manager.base_image[x1:x2, y1:y2])
 
         places = self.features > 0.5
         clipped_phase[places] = 1
         self.phase_with_features = clipped_phase
 
-    def overlay_fluor_with_features(self):
+    def overlay_fluor_with_features(self, image_manager):
         """Method used to produce an image with an overlay of the features on
         the phase image requires a phase image, the features and the clip
         values to overlay the imagesreturns a image matrix which can be saved
         using the save_image method from EHooke or directly using the imsave
         from skimage.io"""
 
-        clipped_fluor = np.copy(self.image_manager.fluor_image)
+        clipped_fluor = np.copy(image_manager.fluor_image)
 
         places = self.features > 0.5
         clipped_fluor[places] = 1
         self.fluor_with_features = clipped_fluor
 
-    def compute_labels(self, params):
+    def compute_labels(self, params, image_manager):
         """Computes the labels for each region based on the previous computed
         features. Requires the mask, th base mask, the features and an
         instance of the imageprocessingparams"""
 
         markers = self.features
-        base_mask = self.image_manager.base_mask
-        mask = self.image_manager.mask
-        inverted_mask = 1 - self.image_manager.mask
+        base_mask = image_manager.base_mask
+        mask = image_manager.mask
+        inverted_mask = 1 - image_manager.mask
 
         if params.outline_use_base_mask:
             tmpmask = np.ones(mask.shape)
@@ -155,11 +153,11 @@ class SegmentsManager(object):
 
         self.labels = labels
 
-    def compute_segments(self, params):
+    def compute_segments(self, params, image_manager):
         """Calls the different methods of the module in the right order.
         Can be used as the interface of this module in the main module of the
         software"""
-        self.compute_features(params)
-        self.overlay_phase_with_features()
-        self.overlay_fluor_with_features()
-        self.compute_labels(params)
+        self.compute_features(params, image_manager)
+        self.overlay_base_with_features(image_manager)
+        self.overlay_fluor_with_features(image_manager)
+        self.compute_labels(params, image_manager)

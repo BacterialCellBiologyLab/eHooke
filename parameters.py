@@ -122,9 +122,6 @@ class RegionParameters(object):
     Feature, labels and cell computation"""
 
     def __init__(self):
-
-        self.axial_step = 5
-
         # distance peak parameters
         self.peak_min_distance = 5
         self.peak_min_height = 5
@@ -140,7 +137,6 @@ class RegionParameters(object):
         configuration file. The section parameters specifies the
         configuration file section"""
 
-        self.axial_step = parser.get(section, "axial step")
         self.peak_min_distance = parser.get(section,
                                             "peak min distance")
         self.peak_min_height = parser.get(section, "peak min height")
@@ -157,7 +153,6 @@ class RegionParameters(object):
         if section not in parser.sections():
             parser.add_section(section)
 
-        parser.set(section, "axial step", self.axial_step)
         parser.set(section, "peak min distance", self.peak_min_distance)
         parser.set(section, "peak min height", self.peak_min_height)
         parser.set(section, "peak min distance from edge",
@@ -170,6 +165,9 @@ class CellParameters(object):
     """Class containing the parameters needed for the process of the cells"""
 
     def __init__(self):
+
+
+        self.axial_step = 5
 
         self.find_septum = True
         self.septum_algorithms = ["Box", "Isodata", "Narrowest"]
@@ -198,6 +196,7 @@ class CellParameters(object):
         configuration file. The section parameters specifies the configuration
         file section"""
 
+        self.axial_step = parser.get(section, "axial step")
         self.find_septum = parser.get(section, "find septum")
         self.cell_filters = parser.get(section, "cell filters")
         self.cell_force_merge_below = parser.get(section,
@@ -217,6 +216,7 @@ class CellParameters(object):
         if section not in parser.sections():
             parser.add_section(section)
 
+        parser.set(section, "axial step", self.axial_step)
         parser.set(section, "find septum", self.find_septum)
         parser.set(section, "cell filters", self.cell_filters)
         parser.set(section, "cell force merge below",

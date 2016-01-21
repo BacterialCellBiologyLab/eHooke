@@ -7,6 +7,7 @@ import tkFileDialog
 from parameters import ParametersManager
 from images import ImageManager
 from segments import SegmentsManager
+from cells import CellManager
 
 class EHooke(object):
     """Main class of the software.
@@ -62,19 +63,28 @@ class EHooke(object):
         Requires the prior loading of both the phase and fluor images and
         the computation of the mask"""
 
-        self.segments_manager = SegmentsManager(self.image_manager)
+        self.segments_manager = SegmentsManager()
         self.segments_manager.compute_segments(self.parameters.
-                                               imageprocessingparams)
+                                               imageprocessingparams,
+                                               self.image_manager)
 
         print "Segments Computation Finished"
 
     def compute_cells(self):
-        pass
+        self.cell_manager = CellManager(self.parameters)
+        self.cell_manager.compute_cells(self.parameters.cellprocessingparams,
+                                        self.image_manager,
+                                        self.segments_manager)
+
+        print "Cells Computation Finished"
 
     def merge_cells(self):
         pass
 
     def split_cells(self):
+        pass
+
+    def process_cells(self):
         pass
 
     def filter_cells(self):
