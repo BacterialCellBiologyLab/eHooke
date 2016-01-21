@@ -43,18 +43,22 @@ class Cell(object):
         self.local_baseline = 0
         self.image = None
 
-        self.stats = OrderedDict([("Area", 0), ("Perimeter", 0),
-                                  ("Length", 0), ("Width", 0),
+        self.stats = OrderedDict([("Area", 0),
+                                  ("Perimeter", 0),
+                                  ("Length", 0),
+                                  ("Width", 0),
                                   ("Eccentricity", 0),
-                                  ("Irregularity", 0)])
-        self.fluor_stats = OrderedDict([("Baseline", 0), ("Cell Median", 0),
-                                        ("Membrane Median", 0),
-                                        ("Septum Median", 0),
-                                        ("Cytoplasm Median", 0),
-                                        ("Fluor Ratio", 0),
-                                        ("Fluor Ratio 75%", 0),
-                                        ("Fluor Ratio 25%", 0),
-                                        ("Fluor Ratio 10%", 0)])
+                                  ("Irregularity", 0),
+                                  ("Neighbours", 0),
+                                  ("Baseline", 0),
+                                  ("Cell Median", 0),
+                                  ("Membrane Median", 0),
+                                  ("Septum Median", 0),
+                                  ("Cytoplasm Median", 0),
+                                  ("Fluor Ratio", 0),
+                                  ("Fluor Ratio 75%", 0),
+                                  ("Fluor Ratio 25%", 0),
+                                  ("Fluor Ratio 10%", 0)])
 
         self.selection_state = 1
 
@@ -183,6 +187,7 @@ class CellManager(object):
 
         for key in cells.keys():
             cells[key].stats["Perimeter"] = len(cells[key].outline)
+            cells[key].stats["Neighbours"] = len(cells[key].neighbours)
 
         self.cells = cells
 

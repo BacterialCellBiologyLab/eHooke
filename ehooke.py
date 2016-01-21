@@ -8,6 +8,7 @@ from parameters import ParametersManager
 from images import ImageManager
 from segments import SegmentsManager
 from cells import CellManager
+from reports import ReportManager
 
 class EHooke(object):
     """Main class of the software.
@@ -19,7 +20,7 @@ class EHooke(object):
         self.image_manager = ImageManager()
         self.segments_manager = None
         self.cell_manager = None
-        self.reports_manager = None
+        self.report_manager = None
         self.base_path = None
         self.fluor_path = None
 
@@ -90,8 +91,19 @@ class EHooke(object):
     def filter_cells(self):
         pass
 
-    def generate_reports(self):
-        pass
+    def generate_reports(self, filename=None, label=None):
+        """Generates the report files by calling the generate_report method from Reports"""
+
+        if filename is None:
+            filename = tkFileDialog.askdirectory()
+        if label is None:
+            label = self.fluor_path.split("/")
+            label = label[len(label)-1].split(".")[0]
+
+        self.report_manager = ReportManager(self.parameters)
+        self.report_manager.generate_report(filename, label,
+                                             self.cell_manager,
+                                             self.parameters)
 
     def plot_data(self):
         pass
