@@ -92,7 +92,8 @@ class EHooke(object):
         pass
 
     def generate_reports(self, filename=None, label=None):
-        """Generates the report files by calling the generate_report method from Reports"""
+        """Generates the report files by calling the generate_report method
+        from Reports"""
 
         if filename is None:
             filename = tkFileDialog.askdirectory()
