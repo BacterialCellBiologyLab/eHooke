@@ -168,7 +168,7 @@ class CellParameters(object):
         self.axial_step = 5
 
         self.find_septum = True
-        self.septum_algorithms = ["Box", "Isodata", "Narrowest"]
+        self.septum_algorithms = ["Box", "Isodata"]
         self.septum_algorithm = "Isodata"
 
         # cell filtering criteria

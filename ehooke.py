@@ -106,7 +106,10 @@ class EHooke(object):
     def process_cells(self):
         """Process the list of computed cells to identify the different regions
         of each cell and computes the stats related to the fluorescence"""
-        pass
+        self.cell_manager.process_cells(self.parameters.cellprocessingparams,
+                                        self.image_manager)
+
+        print "Processing Cells Finished"
 
     def filter_cells(self):
         """Filters the cell based on the filters defined in the
@@ -114,6 +117,8 @@ class EHooke(object):
         cell_manager instance"""
         self.cell_manager.filter_cells(self.parameters.cellprocessingparams,
                                        self.image_manager)
+
+        print "Finished Filtering Cells"
 
     def generate_reports(self, filename=None, label=None):
         """Generates the report files by calling the generate_report method
@@ -128,3 +133,5 @@ class EHooke(object):
         self.report_manager = ReportManager(self.parameters)
         self.report_manager.generate_report(filename, label, self.cell_manager,
                                             self.parameters)
+
+        print "Reports Generated"

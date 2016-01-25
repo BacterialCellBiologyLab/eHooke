@@ -117,7 +117,7 @@ class ReportManager:
 
                     for stat in self.keys:
                         lbl, digits = stat
-                        lin = lin + '</td><td>' + ("{0:."+str(digits)+"f}").format(str(cell.stats[lbl]))
+                        lin = lin + '</td><td>' + ("{0:."+str(digits)+"f}").format(cell.stats[lbl])
 
                     lin += '</td></tr>\n'
                     selects.append(lin)
@@ -195,5 +195,5 @@ class ReportManager:
 
         self.csv_report(filename, cell_manager)
         self.html_report(filename, cell_manager)
-        cell_manager.fluor_with_cells_outlined.save_image(filename+"selected_cells")
+        imsave(filename+"selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename+"params")
