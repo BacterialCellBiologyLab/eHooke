@@ -61,6 +61,8 @@ class Cell(object):
         self.selection_state = 1
 
     def clean_cell(self):
+        """Resets the cell to an empty instance.
+        Can be used to mark the cell to discard"""
         self.label = 0
         self.merged_with = 0
         self.box = None
@@ -212,6 +214,109 @@ class Cell(object):
         self.stats["Irregularity"] = \
             (len(self.outline)/(self.stats["Area"]**0.5))
 
+    def fluor_box(self, fluor):
+        """ returns box of flurescence from fluor image """
+
+        x0, y0, x1, y1 = self.box
+
+        return fluor[x0:x1+1, y0:y1+1]
+
+    def measure_fluor(self, fluorbox, roi, fraction=1.0):
+        """returns the median and std of  fluorescence in roi
+        fluorbox has the same dimensions as the roi mask
+        """
+        if roi is not None:
+            bright = fluorbox*roi
+            bright = bright[roi > 0.5]
+            # check if not enough points
+
+            if (len(bright)*fraction) < 1.0:
+                return 0.0, 0.0
+
+            if fraction < 1:
+                sortvals = np.sort(bright, axis=None)[::-1]
+                sortvals = sortvals[np.nonzero(sortvals)]
+                sortvals = sortvals[:int(len(sortvals)*fraction)]
+                return np.median(sortvals), np.std(sortvals)
+
+            else:
+                return np.median(bright), np.std(bright)
+        else:
+            return 0, 0
+
+    def measure_fluor_interval(self, fluorbox, roi, fraction=[0.0, 1.0]):
+        bright = fluorbox*roi
+        bright = bright[roi > 0.5]
+
+        sortvals = np.sort(bright, axis=None)[::-1]
+        sortvals = sortvals[np.nonzero(sortvals)]
+        sortvals = \
+        sortvals[int(len(sortvals)*fraction[0]):int(len(sortvals)*fraction[1])]
+        return np.median(sortvals), np.std(sortvals)
+
+    def measure_max_fluor(self, fluorbox, roi, fraction=1.0):
+        """ returns the max of  fluorescence in roi
+        fluorbox has the same dimensions as the roi mask
+        """
+
+        bright = fluorbox*roi
+        bright = bright[roi > 0.5]
+        # check if not enough points
+
+        if (len(bright)*fraction) < 1.0:
+            return 0
+
+        if fraction < 1:
+            sortvals = np.sort(bright, axis=None)[::-1]
+            sortvals = sortvals[np.nonzero(sortvals)]
+            sortvals = sortvals[:int(len(sortvals)*fraction)]
+            return np.amax(sortvals)
+
+        else:
+            return np.amax(bright)
+
+    def compute_regions(self):
+        """Computes each different region of the cell (whole cell, membrane,
+        septum, cytoplasm) and creates their respectives masks."""
+        pass
+
+    def compute_fluor_stats(self):
+        """Computes the cell stats related to the fluorescence"""
+        pass
+
+    def set_image(self, images, background):
+        """ creates a strip with the cell in different images
+            images is a list of rgb images
+            background is a grayscale image to use for the masks
+        """
+
+        x0, y0, x1, y1 = self.box
+        img = color.gray2rgb(np.zeros((x1-x0+1, (len(images)+4)*(y1-y0+1))))
+        bx0 = 0
+        bx1 = x1-x0+1
+        by0 = 0
+        by1 = y1-y0+1
+
+        for im in images:
+            img[bx0:bx1, by0:by1] = im[x0:x1+1, y0:y1+1]
+            by0 = by0 + y1-y0+1
+            by1 = by1 + y1-y0+1
+
+        perim = self.perim_mask
+        axial = self.sept_mask
+        cyto = self.cyto_mask
+        img[bx0:bx1, by0:by1] = color.gray2rgb(background[x0:x1+1, y0:y1+1]*self.cell_mask)
+        by0 = by0 + y1-y0+1
+        by1 = by1 + y1-y0+1
+        img[bx0:bx1, by0:by1] = color.gray2rgb(background[x0:x1+1, y0:y1+1]*perim)
+        by0 = by0 + y1-y0+1
+        by1 = by1 + y1-y0+1
+        img[bx0:bx1, by0:by1] = color.gray2rgb(background[x0:x1+1, y0:y1+1]*axial)
+        by0 = by0 + y1-y0+1
+        by1 = by1 + y1-y0+1
+        img[bx0:bx1, by0:by1] = color.gray2rgb(background[x0:x1+1, y0:y1+1]*cyto)
+        self.image = img_as_int(img)
+
 class CellManager(object):
     """Main class of the module. Should be used to interact with the rest of
     the modules."""
@@ -225,6 +330,15 @@ class CellManager(object):
 
         self.base_w_cells = None
         self.fluor_w_cells = None
+
+    def clean_empty_cells(self):
+        """Removes empty cell objects from the cells dict"""
+        newcells = {}
+        for k in self.cells.keys():
+            if self.cells[k].stats["Area"] > 0:
+                newcells[k] = self.cells[k]
+
+        self.cells = newcells
 
     def cell_regions_from_labels(self, labels):
         """creates a list of N cells assuming self.labels has consecutive
@@ -302,7 +416,6 @@ class CellManager(object):
             if self.cells[k].stats["Area"] > 0:
                 self.cells[k].compute_axes(rotations, maskshape)
 
-
     def compute_cells(self, params, image_manager, segments_manager):
         """Creates a cell list that is stored on self.cells as a dict, where
         each cell id is a key of the dict.
@@ -316,30 +429,123 @@ class CellManager(object):
 
         self.compute_box_axes(rotations, image_manager.mask.shape)
 
-        #TODO: handle auto cell merging
+        for k in self.cells.keys():
+            c = self.cells[k]
+            if len(c.neighbours) > 0:
+
+                bestneigh = max(c.neighbours.iterkeys(),
+                                key=(lambda key: c.neighbours[key]))
+                bestinterface = c.neighbours[bestneigh]
+                cn = self.cells[str(int(bestneigh))]
+
+                if cp.check_merge(c, cn, rotations, bestinterface,
+                                  image_manager.mask, params):
+                    self.merge_cells(c.label, cn.label)
+
+        if len(self.merged_cells) > 0:
+            self.compute_merged_cells(params, image_manager, segments_manager)
+
+        else:
+            for k in self.cells.keys():
+                cp.assign_cell_color(self.cells[k], self.cells,
+                                     self.cell_colors)
+
+            self.overlay_cells(image_manager)
+
+    def compute_merged_cells(self, params, image_manager, segments_manager):
+        """Computes a new list of cells taking into account the cells that
+        were merged"""
+        self.clean_empty_cells()
+        labels = np.zeros(segments_manager.labels.shape)
+
+        for k in self.cells.keys():
+            c = self.cells[k]
+            labels = cp.paint_cell(c, labels, c.label)
+
+        self.cell_regions_from_labels(labels)
+
+        rotations = cp.rotation_matrices(params.axial_step)
+        self.compute_box_axes(rotations, image_manager.mask.shape)
+
+        for pair in self.merged_cells:
+            self.cells[str(int(pair[1]))].merged_with = pair[0]
 
         for k in self.cells.keys():
             cp.assign_cell_color(self.cells[k], self.cells, self.cell_colors)
 
         self.overlay_cells(image_manager)
 
-    def merge_cells(self, c1, c2, image_manager):
-        pass
+    def merge_cells(self, label_c1, label_c2):
+        """merges two cells.
+        Should be followed by the execution of the compute merged cells
+        method."""
+        pair = (int(label_c1), int(label_c2))
+        self.merged_cells.append(pair)
 
-    def split_cells(self, c1, image_manager):
-        pass
+        # temporary add to neighbour
+        self.cells[str(pair[1])].stats["Area"] = self.cells[str(pair[1])].stats["Area"] + self.cells[str(pair[0])].stats["Area"]
+        self.cells[str(pair[1])].lines.extend(self.cells[str(pair[0])].lines)
 
-    def compute_cell_regions(self, params, image_manager):
-        pass
+        # mark for discard
+        self.cells[str(pair[0])].clean_cell()
 
-    def compute_cell_fluor_stats(self, params, image_manager):
-        pass
+    def split_cells(self, label_c1, params, image_manager, segments_manager):
+        """Splits a previously merged cell.
+        Works by removing the cells from the cells to merge list and
+        recomputing the cells"""
+        new_merged_list = []
+
+        for pair in self.merged_cells:
+            if int(label_c1) != pair[0] and int(label_c1) != pair[1]:
+                new_merged_list.append(pair)
+
+        self.merged_cells = new_merged_list
+
+        self.cell_regions_from_labels(segments_manager.labels)
+        rotations = cp.rotation_matrices(params.axial_step)
+
+        self.compute_box_axes(rotations, image_manager.mask.shape)
+
+        for pair in self.merged_cells:
+            # temporary add to neighbour
+            self.cells[str(pair[1])].stats["Area"] = self.cells[str(pair[1])].stats["Area"] +self.cells[str(pair[0])].stats["Area"]
+            self.cells[str(pair[1])].lines.extend(self.cells[str(pair[0])].lines)
+
+            # mark for discard
+            self.cells[str(pair[0])].clean_cell()
+
+        self.compute_merged_cells(params, image_manager, segments_manager)
+
+    def mark_cell_as_noise(self, label_c1, image_manager, is_noise=True):
+        """Used to change the selection_state of a cell to 0 (noise)
+        or to revert that change if the optional param "is_noise" is marked as
+        false."""
+        if is_noise:
+            self.cells[str(label_c1)].selection_state = 0
+        else:
+            self.cells[str(label_c1)].selection_state = 1
+
+        self.overlay_cells(image_manager)
 
     def process_cells(self, params, image_manager):
-        """Calls the compute_cell_regions and compute_cell_fluor_stats
-        methods."""
-        self.compute_cell_regions(params, image_manager)
-        self.compute_cell_fluor_stats(params, image_manager)
+        """Method used to compute the individual regions of each cell and the
+        computation of the stats related to the fluorescence"""
+        for k in self.cells.keys():
+            if self.cells[k].selection_state != 0:
+                self.cells[k].compute_regions(params, image_manager)
+                self.cells[k].compute_fluor_stats(params, image_manager)
+                self.cells[k].set_image()
 
-    def filter_cells(self):
-        pass
+        self.overlay_cells(image_manager)
+
+    def filter_cells(self, params, image_manager):
+        """Gets the list of filters on the parameters [("Stat", min, max)].
+        Compares each cell to the filter and only select the ones that pass the filter"""
+        for k in self.cells.keys():
+            if self.cells[k].selection_state != 0:
+                if cp.blocked_by_filter(self.cells[k], params.cell_filters):
+                    self.cells[k].selection_state = -1
+                else:
+                    self.cells[k].selection_state = 1
+
+        self.overlay_cells(image_manager)

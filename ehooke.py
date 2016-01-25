@@ -72,6 +72,9 @@ class EHooke(object):
         print "Segments Computation Finished"
 
     def compute_cells(self):
+        """Creates an instance of the CellManager class and uses the
+        compute_cells_method to create a list of cells based on the labels
+        computed by the SegmentsManager instance."""
         self.cell_manager = CellManager(self.parameters)
         self.cell_manager.compute_cells(self.parameters.cellprocessingparams,
                                         self.image_manager,
@@ -79,17 +82,38 @@ class EHooke(object):
 
         print "Cells Computation Finished"
 
-    def merge_cells(self):
-        pass
+    def merge_cells(self, label_c1, label_c2):
+        """Merges two cells using the merge_cells method from the cell_manager
+        instance and the compute_merged_cells to create a new list of cells,
+        containing a cell corresponding to the merge of the previous two."""
+        self.cell_manager.merge_cells(label_c1, label_c2)
+        self.cell_manager.compute_merged_cells(
+            self.parameters.cellprocessingparams, self.image_manager,
+            self.segments_manager)
 
-    def split_cells(self):
-        pass
+        print "Merge Finished"
+
+    def split_cells(self, label_c1):
+        """Splits a previously merged cell, requires the label of cell to be
+        splitted. Calls the split_cells method from the cell_manager instance"""
+        self.cell_manager.split_cells(label_c1,
+                                      self.parameters.cellprocessingparams,
+                                      self.image_manager,
+                                      self.segments_manager)
+
+        print "Split Finished"
 
     def process_cells(self):
+        """Process the list of computed cells to identify the different regions
+        of each cell and computes the stats related to the fluorescence"""
         pass
 
     def filter_cells(self):
-        pass
+        """Filters the cell based on the filters defined in the
+        params.cellprocessingparams. Calls the filter_cells method from the
+        cell_manager instance"""
+        self.cell_manager.filter_cells(self.parameters.cellprocessingparams,
+                                       self.image_manager)
 
     def generate_reports(self, filename=None, label=None):
         """Generates the report files by calling the generate_report method
@@ -102,9 +126,5 @@ class EHooke(object):
             label = label[len(label)-1].split(".")[0]
 
         self.report_manager = ReportManager(self.parameters)
-        self.report_manager.generate_report(filename, label,
-                                             self.cell_manager,
-                                             self.parameters)
-
-    def plot_data(self):
-        pass
+        self.report_manager.generate_report(filename, label, self.cell_manager,
+                                            self.parameters)

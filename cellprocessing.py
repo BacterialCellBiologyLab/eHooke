@@ -117,3 +117,73 @@ def assign_cell_color(cell, cells, cell_colors):
 
         if cell.color_i >= len(cell_colors):
             cell.color_i = 0
+
+def update_neighbours(cells, oldlabel, newlabel):
+    """ updates the neighbour list when merging cells """
+    oc = cells[str(oldlabel)]
+    nc = cells[str(newlabel)]
+
+    for nei in oc.neighbours.iterkeys():
+
+        tc = cells[str(int(nei))]
+        inter = tc.neighbours[oldlabel]
+        del tc.neighbours[oldlabel]
+
+        if int(nei) != newlabel:
+
+            if newlabel in tc.neighbours:
+                tc.neighbours[newlabel] = tc.neighbours[newlabel]+inter
+                nc.neighbours[tc.label] = nc.neighbours[tc.label]+inter
+
+            else:
+                tc.neighbours[newlabel] = inter
+                nc.neighbours[tc.label] = inter
+
+def check_merge(cell1, cell2, rotations, interface, mask, params):
+
+    if cell1.stats["Area"] <= 0 or cell2.stats["Area"] <= 0:  # check if both cells exist
+        return False
+
+    # check if any cell is small enough for automatic merge
+    if cell1.stats["Area"] < params.cell_force_merge_below or \
+                    cell2.stats["Area"] < params.cell_force_merge_below:
+        return True
+
+    # check if dividing cells
+    if params.merge_dividing_cells and \
+                    interface >= params.merge_min_interface:
+        tmp = cells.Cell(0)
+        tmp.outline.extend(cell1.outline)
+        tmp.outline.extend(cell2.outline)
+        tmp.compute_axes(rotations, mask.shape)
+        tmpshort = axis_length(tmp.short)
+        maxshort = max(axis_length(cell1.short), axis_length(cell2.short))
+
+        if tmpshort <= maxshort*params.merge_length_tolerance:
+            return True
+
+        else:
+            return False
+
+    else:
+        return False
+
+def paint_cell(cell, image, newval):
+    """ paints the lines of the cell into the image """
+
+    for li in cell.lines:
+        y, x0, x1 = li
+        image[x0:x1+1, y] = newval
+
+    return image
+
+def blocked_by_filter(cell, list_of_filters):
+    """ returns true if cell is blocked by any filter
+        [("stat", min, max), ("stat2", min, max)]
+    """
+    for filt in list_of_filters:
+        val = cell.stats[filt[0]]
+        if (val < filt[1]) or (val > filt[2]):
+            return True
+
+    return False

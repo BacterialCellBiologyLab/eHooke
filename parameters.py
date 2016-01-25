@@ -165,8 +165,6 @@ class CellParameters(object):
     """Class containing the parameters needed for the process of the cells"""
 
     def __init__(self):
-
-
         self.axial_step = 5
 
         self.find_septum = True
