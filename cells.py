@@ -4,11 +4,9 @@ Contains a class Cell that works as the template for each cell object
 and a CellManager class that controls the different steps of the cell
 processing."""
 
-from math import atan2, degrees, pi
 from collections import OrderedDict
 import numpy as np
 import matplotlib as plt
-import cellprocessing as cp
 from scipy.optimize import curve_fit
 from skimage.io import imsave
 from skimage.draw import line
@@ -17,6 +15,8 @@ from skimage.filters import threshold_isodata
 from skimage.segmentation import mark_boundaries
 from skimage.util import img_as_float, img_as_int
 from skimage import morphology, color, exposure
+import cellprocessing as cp
+
 
 class Cell(object):
     """Template for each cell object."""
@@ -261,6 +261,8 @@ class Cell(object):
             print "Not a a valid algorithm"
 
     def compute_sept_isodata(self, mask, thick):
+        """Method used to create the cell sept_mask using the threshold_isodata
+        to separate the cytoplasm from the septum"""
         cell_mask = mask
         fluor_box = self.fluor
         perim_mask = self.compute_perim_mask(cell_mask, thick)
@@ -282,7 +284,9 @@ class Cell(object):
         return img_as_float(label_matrix == interest_label)
 
     def compute_sept_box(self, mask, thick):
-
+        """Method used to create a mask of the septum based on creating a box
+        around the cell and then defining the septum as being the dilated short
+        axis of the box."""
         x0, y0, x1, y1 = self.box
         lx0, ly0 = self.short_axis[0]
         lx1, ly1 = self.short_axis[1]
@@ -298,6 +302,7 @@ class Cell(object):
         return linmask
 
     def get_outline_points(self, data):
+        """Method used to obtain the outline pixels of the septum"""
         outline = []
         for x in range(0, len(data)):
             for y in range(0, len(data[x])):
@@ -325,6 +330,9 @@ class Cell(object):
         return outline
 
     def compute_sept_box_fix(self, outline, maskshape):
+        """Method used to create a box aroung the septum, so that the short
+        axis of this box can be used to choose the pixels of the membrane
+        mask that need to be removed"""
         points = np.asarray(outline)  # in two columns, x, y
         bm = self.box_margin
         w, h = maskshape
@@ -336,6 +344,8 @@ class Cell(object):
         return box
 
     def remove_sept_from_membrane(self, maskshape):
+        """Method used to remove the pixels of the septum that were still in
+        the membrane"""
 
         # get outline points of septum mask
         septum_outline = []
