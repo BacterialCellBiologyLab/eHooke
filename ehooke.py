@@ -103,6 +103,11 @@ class EHooke(object):
 
         print "Split Finished"
 
+    def define_as_noise(self, label_c1, noise=True):
+        """Method used to change the state of a cell to noise or to undo it"""
+        self.cell_manager.mark_cell_as_noise(label_c1, self.image_manager,
+                                             noise)
+
     def process_cells(self):
         """Process the list of computed cells to identify the different regions
         of each cell and computes the stats related to the fluorescence"""
@@ -110,6 +115,22 @@ class EHooke(object):
                                         self.image_manager)
 
         print "Processing Cells Finished"
+
+    def select_all_cells(self):
+        """Method used to mark all the cells as selected"""
+        for k in self.cell_manager.cells.keys():
+            if self.cell_manager.cells[k].selection_state != 0:
+                self.cell_manager.cells[k].selection_state = 1
+
+        self.cell_manager.overlay_cells(self.image_manager)
+
+    def reject_all_cells(self):
+        """Method used to mark all the cells as rejected"""
+        for k in self.cell_manager.cells.keys():
+            if self.cell_manager.cells[k].selection_state != 0:
+                self.cell_manager.cells[k].selection_state = -1
+
+        self.cell_manager.overlay_cells(self.image_manager)
 
     def filter_cells(self):
         """Filters the cell based on the filters defined in the

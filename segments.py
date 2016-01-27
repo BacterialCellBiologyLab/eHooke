@@ -1,7 +1,7 @@
 ﻿"""Module responsible for the identification of single regions inside the
 mask, which should correspond to the cell regions.
 The regions are then labeled using the watershed algorithm. Requires an
-ImageManager object containg the loaded images (phase + fluor) and the mask.
+ImageManager object containg the loaded images (base + fluor) and the mask.
 Contains a single class, Segments, which stores the data from the processing
 of the mask: features
 and labels, which will later be used to define the different cell regions
@@ -26,15 +26,15 @@ class SegmentsManager(object):
     def __init__(self):
         self.features = None
         self.labels = None
-        self.phase_with_features = None
-        self.fluor_with_features = None
+        self.base_w_features = None
+        self.fluor_w_features = None
 
     def clear_all(self):
         """Resets the class instance to the initial state"""
         self.features = None
         self.labels = None
-        self.phase_with_features = None
-        self.fluor_with_features = None
+        self.base_w_features = None
+        self.fluor_w_features = None
 
     @staticmethod
     def compute_distance_peaks(mask, params):
@@ -100,23 +100,23 @@ class SegmentsManager(object):
 
         self.features = features
 
-    def overlay_base_with_features(self, image_manager):
+    def overlay_base_w_features(self, image_manager):
         """Method used to produce an image with an overlay of the features on
-        the phase image requires a phase image, the features and the clip
+        the base image requires a base image, the features and the clip
         values to overlay the images returns a image matrix which can be saved
         using the save_image method from EHooke or directly using the imsave
         from skimage.io"""
 
         x1, y1, x2, y2 = image_manager.clip
-        clipped_phase = np.copy(image_manager.base_image[x1:x2, y1:y2])
+        clipped_base = np.copy(image_manager.base_image[x1:x2, y1:y2])
 
         places = self.features > 0.5
-        clipped_phase[places] = 1
-        self.phase_with_features = clipped_phase
+        clipped_base[places] = 1
+        self.base_w_features = clipped_base
 
-    def overlay_fluor_with_features(self, image_manager):
+    def overlay_fluor_w_features(self, image_manager):
         """Method used to produce an image with an overlay of the features on
-        the phase image requires a phase image, the features and the clip
+        the base image requires a base image, the features and the clip
         values to overlay the imagesreturns a image matrix which can be saved
         using the save_image method from EHooke or directly using the imsave
         from skimage.io"""
@@ -125,7 +125,7 @@ class SegmentsManager(object):
 
         places = self.features > 0.5
         clipped_fluor[places] = 1
-        self.fluor_with_features = clipped_fluor
+        self.fluor_w_features = clipped_fluor
 
     def compute_labels(self, params, image_manager):
         """Computes the labels for each region based on the previous computed
@@ -158,6 +158,6 @@ class SegmentsManager(object):
         Can be used as the interface of this module in the main module of the
         software"""
         self.compute_features(params, image_manager)
-        self.overlay_base_with_features(image_manager)
-        self.overlay_fluor_with_features(image_manager)
+        self.overlay_base_w_features(image_manager)
+        self.overlay_fluor_w_features(image_manager)
         self.compute_labels(params, image_manager)

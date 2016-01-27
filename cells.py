@@ -22,7 +22,8 @@ class Cell(object):
     """Template for each cell object."""
     def __init__(self, cell_id):
         self.label = cell_id
-        self.merged_with = 0
+        self.merged_with = "No"
+        self.marked_as_noise = "No"
         self.box = None
         self.box_margin = 5
         self.lines = []
@@ -63,7 +64,8 @@ class Cell(object):
         """Resets the cell to an empty instance.
         Can be used to mark the cell to discard"""
         self.label = 0
-        self.merged_with = 0
+        self.merged_with = "No"
+        self.marked_as_noise = "No"
         self.box = None
         self.box_margin = 5
         self.lines = []
@@ -515,6 +517,7 @@ class Cell(object):
                                   self.sept_mask) > 0
 
         else:
+            self.septum_mask = None
             self.perim_mask=self.compute_perim_mask(self.cell_mask,
                                                     params.inner_mask_thickness)
             self.cyto_mask = (self.cell_mask - self.perim_mask) > 0
@@ -550,6 +553,7 @@ class Cell(object):
         """returns the median and std of  fluorescence in roi
         fluorbox has the same dimensions as the roi mask
         """
+        fluorbox = fluorbox
         if roi is not None:
             bright = fluorbox*roi
             bright = bright[roi > 0.5]
@@ -597,6 +601,17 @@ class Cell(object):
 
             self.stats["Fluor Ratio 10%"] = (self.measure_fluor(fluorbox, self.sept_mask, 0.10)-self.stats["Baseline"])/(self.measure_fluor(fluorbox, self.perim_mask)-self.stats["Baseline"])
 
+        else:
+            self.stats["Septum Median"] = 0
+
+            self.stats["Fluor Ratio"] = 0
+
+            self.stats["Fluor Ratio 75%"] = 0
+
+            self.stats["Fluor Ratio 25%"] = 0
+
+            self.stats["Fluor Ratio 10%"] = 0
+
     def set_image(self, params, images, background):
         """ creates a strip with the cell in different images
             images is a list of rgb images
@@ -638,6 +653,7 @@ class CellManager(object):
     def __init__(self, params):
         self.cells = {}
         self.merged_cells = []
+        self.merged_labels = None
 
         spmap = plt.cm.get_cmap("hsv", params.cellprocessingparams.cell_colors)
         self.cell_colors = spmap(np.arange(
@@ -757,6 +773,8 @@ class CellManager(object):
                                   image_manager.mask, params):
                     self.merge_cells(c.label, cn.label)
 
+        self.merged_labels = segments_manager.labels
+
         if len(self.merged_cells) > 0:
             self.compute_merged_cells(params, image_manager, segments_manager)
 
@@ -777,18 +795,23 @@ class CellManager(object):
             c = self.cells[k]
             labels = cp.paint_cell(c, labels, c.label)
 
+        self.merged_labels = labels
+
         self.cell_regions_from_labels(labels)
 
         rotations = cp.rotation_matrices(params.axial_step)
         self.compute_box_axes(rotations, image_manager.mask.shape)
 
-        for pair in self.merged_cells:
-            self.cells[str(int(pair[1]))].merged_with = pair[0]
-
         for k in self.cells.keys():
             cp.assign_cell_color(self.cells[k], self.cells, self.cell_colors)
 
         self.overlay_cells(image_manager)
+
+        for pair in self.merged_cells:
+            try:
+                self.cells[str(int(pair[1]))].merged_with = "Yes"
+            except KeyError:
+                print "Cell was already merged"
 
     def merge_cells(self, label_c1, label_c2):
         """merges two cells.
@@ -837,8 +860,10 @@ class CellManager(object):
         false."""
         if is_noise:
             self.cells[str(label_c1)].selection_state = 0
+            self.cells[str(label_c1)].marked_as_noise = "Yes"
         else:
             self.cells[str(label_c1)].selection_state = 1
+            self.cells[str(label_c1)].marked_as_noise = "No"
 
         self.overlay_cells(image_manager)
 
