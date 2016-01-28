@@ -103,7 +103,7 @@ class EHooke(object):
 
         print "Split Finished"
 
-    def define_as_noise(self, label_c1, noise=True):
+    def define_as_noise(self, label_c1, noise):
         """Method used to change the state of a cell to noise or to undo it"""
         self.cell_manager.mark_cell_as_noise(label_c1, self.image_manager,
                                              noise)

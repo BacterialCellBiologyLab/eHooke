@@ -515,9 +515,8 @@ class Cell(object):
                                    self.sept_mask) > 0
                 self.cyto_mask = (self.cell_mask - self.perim_mask -
                                   self.sept_mask) > 0
-
         else:
-            self.septum_mask = None
+            self.sept_mask = None
             self.perim_mask=self.compute_perim_mask(self.cell_mask,
                                                     params.inner_mask_thickness)
             self.cyto_mask = (self.cell_mask - self.perim_mask) > 0
@@ -854,7 +853,7 @@ class CellManager(object):
 
         self.compute_merged_cells(params, image_manager, segments_manager)
 
-    def mark_cell_as_noise(self, label_c1, image_manager, is_noise=True):
+    def mark_cell_as_noise(self, label_c1, image_manager, is_noise):
         """Used to change the selection_state of a cell to 0 (noise)
         or to revert that change if the optional param "is_noise" is marked as
         false."""
@@ -871,17 +870,15 @@ class CellManager(object):
         """Method used to compute the individual regions of each cell and the
         computation of the stats related to the fluorescence"""
         for k in self.cells.keys():
-            if self.cells[k].selection_state != 0:
-                self.cells[k].compute_regions(params, image_manager)
-                self.cells[k].compute_fluor_stats(params, image_manager)
+            self.cells[k].compute_regions(params, image_manager)
+            self.cells[k].compute_fluor_stats(params, image_manager)
 
         self.overlay_cells(image_manager)
 
         fluorgray = exposure.rescale_intensity(color.rgb2gray(img_as_float(
                                                     image_manager.fluor_image)))
         for k in self.cells.keys():
-            if self.cells[k].selection_state != 0:
-                self.cells[k].set_image(params, [self.fluor_w_cells], fluorgray)
+            self.cells[k].set_image(params, [self.fluor_w_cells], fluorgray)
 
     def filter_cells(self, params, image_manager):
         """Gets the list of filters on the parameters [("Stat", min, max)].

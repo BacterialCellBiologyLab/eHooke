@@ -51,7 +51,7 @@ class ReportManager:
                 elif cell.selection_state == 0:
                     lin = str(int(cell.label))
 
-                    for stat in cell.stats:
+                    for stat in self.keys:
                         lin = lin + ";" + str(cell.stats[stat[0]])
                     noise.append(lin+"\n")
 
@@ -133,7 +133,7 @@ class ReportManager:
 
                     for stat in self.keys:
                         lbl, digits = stat
-                        lin = lin + '</td><td>' + ("{0:."+str(digits)+"f}").format(str(cell.stats[lbl]))
+                        lin = lin + '</td><td>' + ("{0:."+str(digits)+"f}").format(cell.stats[lbl])
 
                     lin += '</td></tr>\n'
                     rejects.append(lin)
@@ -149,7 +149,7 @@ class ReportManager:
 
                     for stat in self.keys:
                         lbl, digits = stat
-                        lin = lin + '</td><td>' + ("{0:."+str(digits)+"f}").format(str(cell.stats[lbl]))
+                        lin = lin + '</td><td>' + ("{0:."+str(digits)+"f}").format(cell.stats[lbl])
 
                     lin += '</td></tr>\n'
                     noise.append(lin)

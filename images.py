@@ -15,7 +15,7 @@ from skimage.io import imsave, imread
 from skimage.util import img_as_float, img_as_uint
 from skimage.filters import threshold_isodata, threshold_adaptive
 from skimage import exposure, color, morphology
-
+from scipy import ndimage
 
 class ImageManager(object):
     """Main class of the module. This class is responsible for the loading of

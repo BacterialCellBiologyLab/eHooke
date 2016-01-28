@@ -73,7 +73,7 @@ class MaskParameters(object):
             # matrix for removing white and black spots, if empty no removal
         self.mask_dilation = 0  # mask dilation iterations
 
-        self.auto_align = True
+        self.auto_align = False
 
         self.x_align = 0
         self.y_align = 0
