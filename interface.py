@@ -1186,7 +1186,7 @@ class Interface(object):
         self.membrane_thickness_radio2 = \
             tk.Radiobutton(self.membrane_thickness_radio_frame, text="SIM",
                            variable=self.membrane_thickness_value,
-                           value=6)
+                           value=7)
         self.membrane_thickness_radio2.pack(side="left")
 
 

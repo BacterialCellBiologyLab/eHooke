@@ -486,6 +486,16 @@ class Cell(object):
                 linmask = morphology.binary_dilation(linmask, np.ones((bin_factor, bin_factor))).astype(float)
         return img_as_float(linmask)
 
+    def recursive_compute_sept(self, cell_mask, inner_mask_thickness,
+                               algorithm):
+        try:
+            self.sept_mask = self.compute_sept_mask(cell_mask,
+                                                    inner_mask_thickness,
+                                                    algorithm)
+        except IndexError:
+            self.recursive_compute_sept(cell_mask, inner_mask_thickness-1,
+                                        algorithm)
+
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
         septum, cytoplasm) and creates their respectives masks."""
@@ -494,9 +504,10 @@ class Cell(object):
         self.cell_mask = self.compute_cell_mask()
 
         if params.find_septum:
-            self.sept_mask = self.compute_sept_mask(self.cell_mask,
-                                                    params.inner_mask_thickness,
-                                                    params.septum_algorithm)
+            self.recursive_compute_sept(self.cell_mask,
+                                        params.inner_mask_thickness,
+                                        params.septum_algorithm)
+
             if params.septum_algorithm == "Isodata":
                 self.perim_mask=self.compute_perim_mask(self.cell_mask,
                                                         params.inner_mask_thickness)
