@@ -14,7 +14,8 @@ class Interface(object):
 
     def __init__(self):
         self.ehooke = EHooke()
-        self.default_params = self.ehooke.parameters
+        default_params = self.ehooke.parameters
+        self.default_params = default_params
         self.images = {}
         self.current_image = None
 
@@ -76,8 +77,6 @@ class Interface(object):
         self.ehooke.parameters.load_parameters()
         self.default_params = self.ehooke.parameters
         self.load_default_params_imgloader()
-        self.load_default_params_segments()
-        self.load_default_params_cell_computation()
 
     def save_parameters(self):
         """Saves the current parameters in a .cfg file"""
@@ -85,7 +84,9 @@ class Interface(object):
 
     def load_default_params_imgloader(self):
         """Loads the default params for the image loading"""
+        self.mask_algorithm_value.set(self.default_params.imageloaderparams.mask_algorithm)
         self.border_value.set(self.default_params.imageloaderparams.border)
+        self.auto_align_value.set(self.default_params.imageloaderparams.auto_align)
         self.x_align_value.set(self.default_params.imageloaderparams.x_align)
         self.y_align_value.set(self.default_params.imageloaderparams.y_align)
         self.fluor_as_base_value.set(
@@ -97,7 +98,7 @@ class Interface(object):
         self.mask_fillholes_value.set(
             self.default_params.imageloaderparams.mask_fill_holes)
         self.mask_closing_value.set(
-            self.default_params.imageloaderparams.mask_closing.shape[0])
+            self.default_params.imageloaderparams.mask_closing)
         self.mask_dilation_value.set(
             self.default_params.imageloaderparams.mask_dilation)
 
@@ -172,9 +173,8 @@ class Interface(object):
             self.mask_offset_value.get()
         self.ehooke.parameters.imageloaderparams.mask_fill_holes = \
             self.mask_fillholes_value.get()
-        tmp_closing = self.mask_closing_value.get()
         self.ehooke.parameters.imageloaderparams.mask_closing = \
-            np.ones((tmp_closing, tmp_closing))
+            self.mask_closing_value.get()
         self.ehooke.parameters.imageloaderparams.mask_dilation = \
             self.mask_dilation_value.get()
         self.ehooke.compute_mask()
@@ -323,7 +323,7 @@ class Interface(object):
         self.mask_closing_value = tk.DoubleVar()
         self.mask_closing_entry = tk.Entry(self.mask_closing_frame, textvariable=self.mask_closing_value, width=4)
         self.mask_closing_entry.pack(side="left")
-        self.mask_closing_value.set(self.ehooke.parameters.imageloaderparams.mask_closing[0, 0])
+        self.mask_closing_value.set(self.ehooke.parameters.imageloaderparams.mask_closing)
 
         self.mask_dilation_frame = tk.Frame(self.parameters_panel)
         self.mask_dilation_frame.pack(side="top", fill="x")
@@ -1110,6 +1110,7 @@ class Interface(object):
         self.canvas.show()
 
         self.cid = self.canvas.mpl_connect('button_release_event', self.on_press)
+        self.event_connected = True
 
         for w in self.top_frame.winfo_children():
             w.destroy()
@@ -1172,11 +1173,22 @@ class Interface(object):
         self.membrane_thickness_frame = tk.Frame(self.parameters_panel)
         self.membrane_thickness_frame.pack(side="top", fill="x")
         self.membrane_thickness_label = tk.Label(self.membrane_thickness_frame, text="Membrane Thickness: ")
-        self.membrane_thickness_label.pack(side="left")
+        self.membrane_thickness_label.pack(side="top")
         self.membrane_thickness_value = tk.IntVar()
-        self.membrane_thickness_entry = tk.Entry(self.membrane_thickness_frame, textvariable=self.membrane_thickness_value, width=4)
-        self.membrane_thickness_entry.pack(side="left")
-        self.membrane_thickness_value.set(self.ehooke.parameters.cellprocessingparams.inner_mask_thickness)
+        self.membrane_thickness_value.set(4)
+        self.membrane_thickness_radio_frame =  \
+            tk.Frame(self.membrane_thickness_frame)
+        self.membrane_thickness_radio_frame.pack(side="top")
+        self.membrane_thickness_radio1 = \
+            tk.Radiobutton(self.membrane_thickness_radio_frame, text="Normal",
+             variable=self.membrane_thickness_value, value=4)
+        self.membrane_thickness_radio1.pack(side="left")
+        self.membrane_thickness_radio2 = \
+            tk.Radiobutton(self.membrane_thickness_radio_frame, text="SIM",
+                           variable=self.membrane_thickness_value,
+                           value=6)
+        self.membrane_thickness_radio2.pack(side="left")
+
 
         self.filters_label = tk.Label(self.parameters_panel, text="Cell Filters: ")
         self.filters_label.pack(side="top")
@@ -1485,6 +1497,8 @@ class Interface(object):
 
     def new_analysis(self):
         """Restarts ehooke to conduct a new analysis"""
+        if self.event_connected:
+            self.canvas.mpl_disconnect(self.cid)
         self.ehooke = EHooke()
         self.default_params = self.ehooke.parameters
         self.images = {}

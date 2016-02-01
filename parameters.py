@@ -69,7 +69,7 @@ class MaskParameters(object):
         self.mask_fill_holes = False
             # fill holes in enclosed regions,
             # useful if cells are not uniform dark blobs
-        self.mask_closing = np.ones((5, 5))
+        self.mask_closing = 1
             # matrix for removing white and black spots, if empty no removal
         self.mask_dilation = 0  # mask dilation iterations
 
@@ -205,7 +205,7 @@ class CellParameters(object):
         self.merge_min_interface = parser.get(section, "merge min interface")
         self.inner_mask_thickness = parser.get(section, "inner mask thickness")
         self.baseline_margin = parser.get(section, "baseline margin")
-        self.cell_colors = parser.get(section, "cell colors")
+        self.cell_colors = int(parser.get(section, "cell colors"))
 
     def save_to_parser(self, parser, section):
         """Saves mask parameters to a ConfigParser object of the configuration

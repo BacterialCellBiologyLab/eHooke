@@ -118,14 +118,15 @@ class ImageManager(object):
         self.compute_base_mask(params)
 
         mask = np.copy(self.base_mask)
+        closing_matrix = np.ones((params.mask_closing, params.mask_closing))
 
-        if len(params.mask_closing) > 0:
+        if params.mask_closing > 0:
             # removes small dark spots and then small white spots
             mask = img_as_float(morphology.closing(
-                mask, params.mask_closing))
+                mask, closing_matrix))
             mask = 1 - \
                 img_as_float(morphology.closing(
-                    1 - mask, params.mask_closing))
+                    1 - mask, closing_matrix))
 
         if params.mask_fill_holes:
             # mask is inverted
