@@ -133,7 +133,7 @@ class ImageManager(object):
             mask = 1- img_as_float(ndimage.binary_fill_holes(1.0-mask))
 
         for f in range(params.mask_dilation):
-            mask = morphology.erosion(mask, np.ones(3, 3))
+            mask = morphology.erosion(mask, np.ones((3, 3)))
 
         self.mask = mask
 
