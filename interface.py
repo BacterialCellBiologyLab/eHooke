@@ -1310,12 +1310,12 @@ class Interface(object):
         self.select_all_button = tk.Button(self.parameters_panel, text="Select All Cells",
                                            command=self.select_all_cells)
         self.select_all_button.pack(side="top", fill="x")
-	self.select_all_button.config(state="disabled")
+        self.select_all_button.config(state="disabled")
 
         self.unselect_all_button = tk.Button(self.parameters_panel, text="Reject All Cells",
                                              command=self.reject_all_cells)
         self.unselect_all_button.pack(side="top", fill="x")
-	self.unselect_all_button.config(state="disabled")
+        self.unselect_all_button.config(state="disabled")
 
         self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
                                                        command=self.load_default_params_cell_computation)
