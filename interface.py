@@ -113,6 +113,7 @@ class Interface(object):
     def load_default_params_cell_computation(self):
         """Loads the default params for the cell computation"""
         self.find_septum_checkbox_value.set(self.default_params.cellprocessingparams.find_septum)
+        self.look_for_septum_in_base_checkbox_value.set(self.default_params.celcellprocessingparams.look_for_septum_in_base)
         self.axial_step_value.set(self.default_params.imageprocessingparams.axial_step)
         self.force_merge_below_value.set(self.default_params.cellprocessingparams.cell_force_merge_below)
         self.merge_dividing_value.set(self.default_params.cellprocessingparams.merge_dividing_cells)
@@ -1026,6 +1027,7 @@ class Interface(object):
         """Method used to process the individual regions of each cell
         aswell as their fluor stats"""
         self.ehooke.parameters.cellprocessingparams.find_septum = self.find_septum_checkbox_value.get()
+        self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = self.look_for_septum_in_base_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.septum_algorithm = self.septum_algorithm_value.get()
         self.ehooke.parameters.cellprocessingparams.inner_mask_thickness = self.membrane_thickness_value.get()
         self.status.set("Processing cells...")
@@ -1039,8 +1041,8 @@ class Interface(object):
 
         self.filter_cells_button.config(state="active")
         self.generate_report_button.config(state="active")
-	self.select_all_button.config(state="active")
-	self.unselect_all_button.config(state="active")
+        self.select_all_button.config(state="active")
+        self.unselect_all_button.config(state="active")
         self.status.set("Cell Processing Finished")
 
     def select_all_cells(self):
@@ -1159,6 +1161,16 @@ class Interface(object):
                                                   onvalue=True, offvalue=False)
         self.find_septum_checkbox_value.set(False)
         self.find_septum_checkbox.pack(side="left")
+
+        self.look_for_septum_in_base_frame = tk.Frame(self.parameters_panel)
+        self.look_for_septum_in_base_frame.pack(side="top", fill="x")
+        self.look_for_septum_in_base_label = tk.Label(self.look_for_septum_in_base_frame, text="Look for Septum in Base: ")
+        self.look_for_septum_in_base_label.pack(side="left")
+        self.look_for_septum_in_base_checkbox_value = tk.BooleanVar()
+        self.look_for_septum_in_base_checkbox = tk.Checkbutton(self.look_for_septum_in_base_frame, variable=self.look_for_septum_in_base_checkbox_value,
+                                                  onvalue=True, offvalue=False)
+        self.look_for_septum_in_base_checkbox_value.set(False)
+        self.look_for_septum_in_base_checkbox.pack(side="left")
 
         self.septum_algorithm_frame = tk.Frame(self.parameters_panel)
         self.septum_algorithm_frame.pack(side="top", fill="x")

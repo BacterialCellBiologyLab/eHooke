@@ -168,6 +168,7 @@ class CellParameters(object):
         self.axial_step = 5
 
         self.find_septum = True
+        self.look_for_septum_in_base = False
         self.septum_algorithms = ["Box", "Isodata"]
         self.septum_algorithm = "Isodata"
 
@@ -196,6 +197,8 @@ class CellParameters(object):
 
         self.axial_step = parser.get(section, "axial step")
         self.find_septum = parser.get(section, "find septum")
+        self.look_for_septum_in_base = parser.get(section,
+                                                  "look for septum in base")
         self.cell_filters = parser.get(section, "cell filters")
         self.cell_force_merge_below = parser.get(section,
                                                  "cell force merge below")
@@ -216,6 +219,8 @@ class CellParameters(object):
 
         parser.set(section, "axial step", self.axial_step)
         parser.set(section, "find septum", self.find_septum)
+        parser.set(section, "look for septum in base",
+                   self.look_for_septum_in_base)
         parser.set(section, "cell filters", self.cell_filters)
         parser.set(section, "cell force merge below",
                    self.cell_force_merge_below)

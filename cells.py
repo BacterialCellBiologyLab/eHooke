@@ -248,13 +248,13 @@ class Cell(object):
 
         return perim
 
-    def compute_sept_mask(self, mask, thick, algorithm):
+    def compute_sept_mask(self, mask, thick, septum_base, algorithm):
         """ returns mask for axis.
         needs cell mask
         """
 
         if algorithm == "Isodata":
-            return self.compute_sept_isodata(mask, thick)
+            return self.compute_sept_isodata(mask, thick, septum_base)
 
         elif algorithm == "Box":
             return self.compute_sept_box(mask, thick)
@@ -262,11 +262,14 @@ class Cell(object):
         else:
             print "Not a a valid algorithm"
 
-    def compute_sept_isodata(self, mask, thick):
+    def compute_sept_isodata(self, mask, thick, septum_base):
         """Method used to create the cell sept_mask using the threshold_isodata
         to separate the cytoplasm from the septum"""
         cell_mask = mask
-        fluor_box = self.fluor
+        if septum_base:
+            fluor_box = 1-self.base_box
+        else:
+            fluor_box = self.fluor
         perim_mask = self.compute_perim_mask(cell_mask, thick)
         inner_mask = cell_mask - perim_mask
         inner_fluor = (inner_mask > 0) * fluor_box
@@ -487,18 +490,23 @@ class Cell(object):
         return img_as_float(linmask)
 
     def recursive_compute_sept(self, cell_mask, inner_mask_thickness,
-                               algorithm):
+                               septum_base, algorithm):
         try:
             self.sept_mask = self.compute_sept_mask(cell_mask,
                                                     inner_mask_thickness,
+                                                    septum_base,
                                                     algorithm)
         except IndexError:
             self.recursive_compute_sept(cell_mask, inner_mask_thickness-1,
+                                        septum_base,
                                         algorithm)
 
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
         septum, cytoplasm) and creates their respectives masks."""
+        if params.look_for_septum_in_base:
+            x0, y0, x1, y1 = image_manager.clip
+            self.base_box = self.fluor_box(image_manager.base_image[x0:x1, y0:y1])
         self.fluor = self.fluor_box(image_manager.fluor_image)
 
         self.cell_mask = self.compute_cell_mask()
@@ -506,6 +514,7 @@ class Cell(object):
         if params.find_septum:
             self.recursive_compute_sept(self.cell_mask,
                                         params.inner_mask_thickness,
+                                        params.look_for_septum_in_base,
                                         params.septum_algorithm)
 
             if params.septum_algorithm == "Isodata":
