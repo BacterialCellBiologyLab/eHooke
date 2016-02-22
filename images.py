@@ -128,12 +128,12 @@ class ImageManager(object):
                 img_as_float(morphology.closing(
                     1 - mask, closing_matrix))
 
+        for f in range(params.mask_dilation):
+            mask = morphology.erosion(mask, np.ones((3, 3)))
+
         if params.mask_fill_holes:
             # mask is inverted
             mask = 1- img_as_float(ndimage.binary_fill_holes(1.0-mask))
-
-        for f in range(params.mask_dilation):
-            mask = morphology.erosion(mask, np.ones((3, 3)))
 
         self.mask = mask
 
