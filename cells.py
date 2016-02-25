@@ -666,6 +666,12 @@ class Cell(object):
                                                               y0:y1+1]*axial)
         self.image = img_as_int(img)
 
+    def get_cell_image(self, fluor_image):
+        x0, y0, x1, y1 = self.box
+        img = fluor_image[x1:x0-1, y1:y0-1] * self.cell_mask
+
+        return img
+
 class CellManager(object):
     """Main class of the module. Should be used to interact with the rest of
     the modules."""

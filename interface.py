@@ -9,6 +9,11 @@ import numpy as np
 from ehooke import EHooke
 import cellprocessing
 
+from skimage.color import gray2rgb
+from skimage.segmentation import mark_boundaries
+from skimage.exposure import rescale_intensity
+from skimage.util import img_as_int
+
 class Interface(object):
     """Main class of the module. Used to create the GUI"""
 
@@ -113,7 +118,7 @@ class Interface(object):
     def load_default_params_cell_computation(self):
         """Loads the default params for the cell computation"""
         self.find_septum_checkbox_value.set(self.default_params.cellprocessingparams.find_septum)
-        self.look_for_septum_in_base_checkbox_value.set(self.default_params.celcellprocessingparams.look_for_septum_in_base)
+        self.look_for_septum_in_base_checkbox_value.set(self.default_params.cellprocessingparams.look_for_septum_in_base)
         self.axial_step_value.set(self.default_params.imageprocessingparams.axial_step)
         self.force_merge_below_value.set(self.default_params.cellprocessingparams.cell_force_merge_below)
         self.merge_dividing_value.set(self.default_params.cellprocessingparams.merge_dividing_cells)
@@ -417,10 +422,12 @@ class Interface(object):
         self.ehooke.compute_segments()
         self.images["Base_features"] = self.ehooke.segments_manager.base_w_features
         self.images["Fluor_features"] = self.ehooke.segments_manager.fluor_w_features
-        self.show_image("Base_features")
+        self.images["Labels"] = mark_boundaries(self.ehooke.image_manager.fluor_image, img_as_int(rescale_intensity(self.ehooke.segments_manager.labels)), color=(0.6, 0.6, 1))
+        self.show_image("Labels")
         self.next_button.config(state="active")
         self.base_features_button.config(state="active")
         self.fluor_features_button.config(state="active")
+        self.labels_button.config(state="active")
         self.status.set("Computation of the features finished. Proceed to the next step")
 
     def set_segmentscomputation(self):
@@ -539,6 +546,13 @@ class Interface(object):
                                                width=self.image_buttons_width)
         self.base_features_button.pack(side="top", fill="x")
         self.base_features_button.config(state="disabled")
+
+        self.labels_button = tk.Button(self.images_frame,
+                                       text="Watershed Labels",
+                                       command=lambda: self.show_image("Labels"),
+                                       width=self.image_buttons_width)
+        self.labels_button.pack(side="top", fill="x")
+        self.labels_button.config(state="disabled")
 
     def show_cell_info_cellcomputation(self, x, y):
         """Shows the stats of each cell on the side panel"""
