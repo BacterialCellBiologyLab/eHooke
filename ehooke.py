@@ -9,6 +9,7 @@ from images import ImageManager
 from segments import SegmentsManager
 from cells import CellManager
 from reports import ReportManager
+from linescan import LineScanManager
 
 class EHooke(object):
     """Main class of the software.
@@ -20,6 +21,7 @@ class EHooke(object):
         self.image_manager = ImageManager()
         self.segments_manager = None
         self.cell_manager = None
+        self.linescan_manager = None
         self.report_manager = None
         self.base_path = None
         self.fluor_path = None
@@ -113,8 +115,15 @@ class EHooke(object):
         of each cell and computes the stats related to the fluorescence"""
         self.cell_manager.process_cells(self.parameters.cellprocessingparams,
                                         self.image_manager)
+        self.linescan_manager = LineScanManager()
 
         print "Processing Cells Finished"
+
+    def add_line_linescan(self, point_1, point_2, point_3):
+        self.linescan_manager.add_line(point_1, point_2, point_3)
+
+    def remove_line_linescan(self, line_id):
+        self.linescan_manager.remove_line(line_id)
 
     def select_all_cells(self):
         """Method used to mark all the cells as selected"""
@@ -151,8 +160,11 @@ class EHooke(object):
             label = self.fluor_path.split("/")
             label = label[len(label)-1].split(".")[0]
 
+        self.linescan_manager.measure_fluorescence(self.image_manager.fluor_image)
+
         self.report_manager = ReportManager(self.parameters)
-        self.report_manager.generate_report(filename, label, self.cell_manager,
+        self.report_manager.generate_report(filename, label, self.image_manager.fluor_image,
+                                            self.cell_manager, self.linescan_manager,
                                             self.parameters)
 
         print "Reports Generated"

@@ -175,7 +175,11 @@ class ReportManager:
 
         open(filename+'html_report.html', 'w').writelines(report)
 
-    def generate_report(self, path, label, cell_manager, params):
+    def linescan_report(self, filename, image_manager, linescan_manager):
+        if len(linescan_manager.lines.keys()) > 0:
+            pass
+
+    def generate_report(self, path, label, image_manager, cell_manager, linescan_manager, params):
         if label is None:
             filename = path+"/Report/"
             if not os.path.exists(filename+"_images"):
@@ -195,5 +199,6 @@ class ReportManager:
 
         self.csv_report(filename, cell_manager)
         self.html_report(filename, cell_manager)
+        self.linescan_report(filename, image_manager, linescan_manager)
         imsave(filename+"selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename+"params")
