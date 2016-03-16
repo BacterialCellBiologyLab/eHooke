@@ -1,5 +1,7 @@
 import numpy as np
 from skimage.draw import line
+from skimage.color import gray2rgb
+from skimage.util import img_as_float
 
 class FluorLine(object):
     """Class used as a template for each line of the linescan.
@@ -9,11 +11,24 @@ class FluorLine(object):
 
     def __init__(self, point_1, point_2, point_3):
         self.line_bg_mem = line(point_1[0], point_1[1], point_2[0], point_2[1])
-        self.line_cyt_sept = line(point_2[0], point_2[1], point_3[0], point_3[1])
+        self.line_cyt_sept = line(point_2[0], point_2[1], point_3[0],
+                                  point_3[1])
         self.background = None
         self.membrane = None
         self.septum = None
         self.fr = None
+
+        self.image = None
+
+        x_points = []
+        x_points.extend(self.line_bg_mem[0])
+        x_points.extend(self.line_cyt_sept[0])
+
+        y_points = []
+        y_points.extend(self.line_bg_mem[1])
+        y_points.extend(self.line_cyt_sept[1])
+
+        self.box = min(x_points)-10, min(y_points)-10, max(x_points)+10, max(y_points)+10
 
     def measure_fluor(self, fluor_image):
         x_line_bg_mem = self.line_bg_mem[0]
@@ -39,6 +54,18 @@ class FluorLine(object):
         self.septum = np.max(septum_fluorescence) - self.background
         self.fr = self.septum / self.membrane
 
+        print "Background: ", self.background
+        print "Membrane: ", self.membrane
+        print "Septum: ", self.septum
+        print "FR: ", self.fr
+
+    def compute_image(self, fluor_image):
+
+        self.image = fluor_image[self.box[0]:self.box[2],
+                                 self.box[1]:self.box[3]]
+
+
+
 class LineScanManager(object):
     """Class used to perform a manual linescan analysis on a selection of cells.
     Contains the methods to draw those lines, measure the fluorescence and store
@@ -46,6 +73,8 @@ class LineScanManager(object):
 
     def __init__(self):
         self.lines = {}
+        self.fluor_w_lines = None
+        self.line_ids = []
 
     def add_line(self, point_1, point_2, point_3):
         """Creates a line object based on the coordinates of two points,
@@ -60,17 +89,19 @@ class LineScanManager(object):
 
         self.lines[str(last_id+1)] = FluorLine(point_1, point_2, point_3)
 
-        return last_id+1
+        self.line_ids.append(str(last_id+1))
 
-    def remove_line(self, line_id):
+    def remove_line(self):
         """Removes the select line from the dict"""
         new_dict = {}
 
-        for key in self.lines.keys():
-            if key != str(line_id):
-                new_dict[key] = self.lines[key]
+        if len(self.line_ids) > 0:
+            for key in self.lines.keys():
+                if key != self.line_ids[len(self.line_ids)-1]:
+                    new_dict[key] = self.lines[key]
 
-        self.lines = new_dict
+            self.lines = new_dict
+            self.line_ids = self.line_ids[0:len(self.line_ids)-1]
 
     def measure_fluorescence(self, fluor_image):
         """Method used to measure the fluorescence ratios over the defined
@@ -79,16 +110,21 @@ class LineScanManager(object):
         for key in self.lines.keys():
             self.lines[key].measure_fluor(fluor_image)
 
+        self.overlay_lines_on_image(fluor_image)
+        for key in self.lines.keys():
+            self.lines[key].compute_image(self.fluor_w_lines)
+
     def overlay_lines_on_image(self, fluor_img):
-        color = (245, 113, 18)
+        color = (245.0/255, 113.0/255, 18.0/255)
 
-        img = fluor_img
+        img = img_as_float(gray2rgb(fluor_img))
 
-        for ln in self.lines.keys():
+        for key in self.lines.keys():
+            ln = self.lines[key]
             for i in range(len(ln.line_bg_mem[0])):
                 img[ln.line_bg_mem[0][i], ln.line_bg_mem[1][i]] = color
 
             for i in range(len(ln.line_cyt_sept[0])):
                 img[ln.line_cyt_sept[0][i], ln.line_cyt_sept[1][i]] = color
 
-        return fluor_img
+        self.fluor_w_lines = img

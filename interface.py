@@ -1176,6 +1176,7 @@ class Interface(object):
 
         self.images[
             "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Fluor_with_lines"] = self.ehooke.image_manager.fluor_image
 
         self.show_image(self.current_image)
 
@@ -1183,6 +1184,8 @@ class Interface(object):
         self.generate_report_button.config(state="active")
         self.select_all_button.config(state="active")
         self.unselect_all_button.config(state="active")
+        self.add_line_button.config(state="active")
+        self.remove_line_button.config(state="active")
         self.status.set("Cell Processing Finished")
 
     def select_all_cells(self):
@@ -1248,6 +1251,39 @@ class Interface(object):
     def generate_report(self):
         """Method used to save a report with the cell stats"""
         self.ehooke.generate_reports()
+
+    def draw_line(self, event):
+        if event.button == 3:
+            if len(self.points) < 2:
+                self.points.append((int(event.ydata), int(event.xdata)))
+            else:
+                self.points.append((int(event.ydata), int(event.xdata)))
+
+                self.canvas.mpl_disconnect(self.cid)
+                self.cid = self.canvas.mpl_connect('button_release_event', self.on_press)
+                self.ehooke.linescan_manager.add_line(self.points[0],
+                                                      self.points[1],
+                                                      self.points[2])
+
+                self.ehooke.linescan_manager.overlay_lines_on_image(self.ehooke.image_manager.fluor_image)
+                self.images["Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
+                self.show_image("Fluor_with_lines")
+
+    def add_line_linescan(self):
+        #add line code
+
+        self.points = []
+        self.canvas.mpl_disconnect(self.cid)
+        self.cid = self.canvas.mpl_connect('button_release_event', self.draw_line)
+
+    def remove_line_linescan(self):
+        #remove line code
+
+        self.ehooke.linescan_manager.remove_line()
+
+        self.ehooke.linescan_manager.overlay_lines_on_image(self.ehooke.image_manager.fluor_image)
+        self.images["Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
+        self.show_image("Fluor_with_lines")
 
     def set_cellprocessing(self):
         """Method used to change the interface to the Cell Processing
@@ -1473,6 +1509,9 @@ class Interface(object):
         self.neighboursfilter_min_value.set(0)
         self.neighboursfilter_max_value.set(10)
 
+        self.selection_label = tk.Label(self.parameters_panel, text="Cell Selection:")
+        self.selection_label.pack(side="top")
+
         self.select_all_button = tk.Button(self.parameters_panel, text="Select All Cells",
                                            command=self.select_all_cells)
         self.select_all_button.pack(side="top", fill="x")
@@ -1482,6 +1521,22 @@ class Interface(object):
                                              command=self.reject_all_cells)
         self.unselect_all_button.pack(side="top", fill="x")
         self.unselect_all_button.config(state="disabled")
+
+        self.linescan_label = tk.Label(self.parameters_panel, text="Linescan:")
+        self.linescan_label.pack(side="top")
+
+        self.add_line_button = tk.Button(self.parameters_panel, text="Add Line",
+                                         command=self.add_line_linescan)
+        self.add_line_button.pack(side="top", fill="x")
+        self.add_line_button.config(state="disabled")
+
+        self.remove_line_button = tk.Button(self.parameters_panel, text="Undo Last Line",
+                                         command=self.remove_line_linescan)
+        self.remove_line_button.pack(side="top", fill="x")
+        self.remove_line_button.config(state="disabled")
+
+        self.parameters_label = tk.Label(self.parameters_panel, text="Parameters Loading:")
+        self.parameters_label.pack(side="top")
 
         self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
                                                        command=self.load_default_params_cell_computation)
@@ -1704,6 +1759,10 @@ class Interface(object):
                                                 width=self.image_buttons_width)
         self.fluor_cells_out_button.pack(side="top", fill="x")
         self.fluor_cells_out_button.config(state="active")
+
+        self.fluor_lines_button = tk.Button(self.images_frame, text="Fluor with Lines", command=lambda: self.show_image("Fluor_with_lines"), width=self.image_buttons_width)
+        self.fluor_lines_button.pack(side="top", fill="x")
+        self.fluor_lines_button.config(state="active")
 
     def new_analysis(self):
         """Restarts ehooke to conduct a new analysis"""

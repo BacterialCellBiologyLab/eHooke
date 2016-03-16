@@ -175,11 +175,38 @@ class ReportManager:
 
         open(filename+'html_report.html', 'w').writelines(report)
 
-    def linescan_report(self, filename, image_manager, linescan_manager):
+    def linescan_report(self, filename, linescan_manager):
         if len(linescan_manager.lines.keys()) > 0:
-            pass
+            HTML_HEADER = """<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+                            "http://www.w3.org/TR/html4/strict.dtd">
+                        <html lang="en">
+                          <head>
+                            <meta http-equiv="content-type" content="text/html; charset=utf-8">
+                            <title>title</title>
+                            <link rel="stylesheet" type="text/css" href="style.css">
+                            <script type="text/javascript" src="script.js"></script>
+                          </head>
+                          <body>\n"""
 
-    def generate_report(self, path, label, image_manager, cell_manager, linescan_manager, params):
+            report = [HTML_HEADER]
+            table = '<table cellpadding="10" cellspacing="10">\n<th>Line ID</th><th>Images</th><th>Background</th><th>Membrane</th><th>Septum</th><th>Fluorescence Ratio</th>'
+
+            for key in sorted(linescan_manager.lines.keys()):
+                lin = linescan_manager.lines[key]
+                img = linescan_manager.lines[key].image
+                w, h, dummy = img.shape
+                if w > h:
+                    img = np.rot90(img)
+                imsave(filename+"/_linescan_images"+os.sep+key+'.png', img)
+                row = '<tr style="text-align:center"><td>'+key+'</td><td><img src="./'+'_linescan_images/' + key+'.png" alt="pic" width="200"/></td>' + "<td>"+str(lin.background)+"</td>" + "<td>"+str(lin.membrane)+"</td>" + "<td>"+str(lin.septum)+"</td>" + "<td>"+str(lin.fr)+"</td></tr>"
+                table += row
+
+            report += table
+            report += "</table></body></html>"
+
+            open(filename+'/linescan_report.html', 'w').writelines(report)
+
+    def generate_report(self, path, label, cell_manager, linescan_manager, params):
         if label is None:
             filename = path+"/Report/"
             if not os.path.exists(filename+"_images"):
@@ -188,6 +215,8 @@ class ReportManager:
                 os.makedirs(filename+"/_rejected_images")
             if not os.path.exists(filename+"_noise_images"):
                 os.makedirs(filename+"/_noise_images")
+            if not os.path.exists(filename+"_linescan_images"):
+                os.makedirs(filename+"/_linescan_images")
         else:
             filename = path+"/Report_"+label+"/"
             if not os.path.exists(filename+"_images"):
@@ -196,9 +225,11 @@ class ReportManager:
                 os.makedirs(filename+"/_rejected_images")
             if not os.path.exists(filename+"_noise_images"):
                 os.makedirs(filename+"/_noise_images")
+            if not os.path.exists(filename+"_linescan_images"):
+                os.makedirs(filename+"/_linescan_images")
 
         self.csv_report(filename, cell_manager)
         self.html_report(filename, cell_manager)
-        self.linescan_report(filename, image_manager, linescan_manager)
+        self.linescan_report(filename, linescan_manager)
         imsave(filename+"selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename+"params")

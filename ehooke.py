@@ -160,10 +160,11 @@ class EHooke(object):
             label = self.fluor_path.split("/")
             label = label[len(label)-1].split(".")[0]
 
-        self.linescan_manager.measure_fluorescence(self.image_manager.fluor_image)
+        if len(self.linescan_manager.lines.keys()) > 0:
+            self.linescan_manager.measure_fluorescence(self.image_manager.fluor_image)
 
         self.report_manager = ReportManager(self.parameters)
-        self.report_manager.generate_report(filename, label, self.image_manager.fluor_image,
+        self.report_manager.generate_report(filename, label,
                                             self.cell_manager, self.linescan_manager,
                                             self.parameters)
 
