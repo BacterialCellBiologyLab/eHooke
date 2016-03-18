@@ -2,6 +2,7 @@ import numpy as np
 from skimage.draw import line
 from skimage.color import gray2rgb
 from skimage.util import img_as_float
+from skimage.exposure import rescale_intensity
 
 class FluorLine(object):
     """Class used as a template for each line of the linescan.
@@ -117,7 +118,7 @@ class LineScanManager(object):
     def overlay_lines_on_image(self, fluor_img):
         color = (245.0/255, 113.0/255, 18.0/255)
 
-        img = img_as_float(gray2rgb(fluor_img))
+        img = img_as_float(gray2rgb(rescale_intensity(fluor_img)))
 
         for key in self.lines.keys():
             ln = self.lines[key]
