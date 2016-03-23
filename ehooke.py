@@ -16,7 +16,7 @@ class EHooke(object):
     Starts with an instance of the Parameters and Image class.
     Contains the methods needed to perform the analysis"""
 
-    def __init__(self):
+    def __init__(self, cellimages=True):
         self.parameters = ParametersManager()
         self.image_manager = ImageManager()
         self.segments_manager = None
@@ -25,6 +25,7 @@ class EHooke(object):
         self.report_manager = None
         self.base_path = None
         self.fluor_path = None
+        self.get_cell_images = cellimages
 
     def load_base_image(self, filename=None):
         """Calls the load_base_image method from the ImageManager
@@ -167,5 +168,9 @@ class EHooke(object):
         self.report_manager.generate_report(filename, label,
                                             self.cell_manager, self.linescan_manager,
                                             self.parameters)
+        if self.get_cell_images:
+            self.report_manager.get_cell_images(filename, label,
+                                                self.image_manager,
+                                                self.cell_manager)
 
         print "Reports Generated"
