@@ -83,7 +83,7 @@ class MaskParameters(object):
         configuration file. The section parameters specifies the configuration
         file section"""
 
-        self.border = parser.get(section, "border")
+        self.border = int(parser.get(section, "border"))
         self.invert_base = parser.get(section, "invert base")
         self.mask_algorithm = parser.get(section, "mask algorithm")
         self.mask_blocksize = parser.get(section, "mask blocksize")
@@ -195,7 +195,7 @@ class CellParameters(object):
         configuration file. The section parameters specifies the configuration
         file section"""
 
-        self.axial_step = parser.get(section, "axial step")
+        self.axial_step = int(parser.get(section, "axial step"))
         self.find_septum = parser.get(section, "find septum")
         self.look_for_septum_in_base = parser.get(section,
                                                   "look for septum in base")
@@ -207,7 +207,7 @@ class CellParameters(object):
                                                  "merge length tolerance")
         self.merge_min_interface = parser.get(section, "merge min interface")
         self.inner_mask_thickness = parser.get(section, "inner mask thickness")
-        self.baseline_margin = parser.get(section, "baseline margin")
+        self.baseline_margin = int(parser.get(section, "baseline margin"))
         self.cell_colors = int(parser.get(section, "cell colors"))
 
     def save_to_parser(self, parser, section):
