@@ -7,7 +7,6 @@ processing."""
 from collections import OrderedDict
 import numpy as np
 import matplotlib as plt
-from scipy.optimize import curve_fit
 from skimage.io import imsave
 from skimage.draw import line
 from skimage.measure import label
