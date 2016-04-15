@@ -584,7 +584,7 @@ class Cell(object):
 
         inverted_mask_box = 1 - mask_box
 
-        while count < 10:
+        while count < 5:
             inverted_mask_box = morphology.binary_dilation(inverted_mask_box)
             count += 1
 

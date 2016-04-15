@@ -20,8 +20,8 @@ class Interface(object):
 
     def __init__(self):
         self.ehooke = EHooke()
-        default_params = self.ehooke.parameters
-        self.default_params = default_params
+        self.default_params = self.ehooke.parameters
+
         self.images = {}
         self.current_image = None
 
@@ -76,7 +76,7 @@ class Interface(object):
 
     def remove_coord(self, x, y):
         """"Hack" to remove the mpl coordinates"""
-        pass
+        return ""
 
     def load_parameters(self):
         """Loads a .cfg with the parameters and sets them as the default
