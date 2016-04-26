@@ -470,8 +470,7 @@ class Interface(object):
             "Base_features"] = self.ehooke.segments_manager.base_w_features
         self.images[
             "Fluor_features"] = self.ehooke.segments_manager.fluor_w_features
-        self.images["Labels"] = mark_boundaries(self.ehooke.image_manager.fluor_image, img_as_int(
-            rescale_intensity(self.ehooke.segments_manager.labels)), color=(1, 0, 0))
+        self.images["Labels"] = mark_boundaries(rescale_intensity(self.ehooke.image_manager.fluor_image), (self.ehooke.segments_manager.labels > 0), color=(1, 0, 0))
         self.show_image("Labels")
         self.next_button.config(state="active")
         self.base_features_button.config(state="active")
