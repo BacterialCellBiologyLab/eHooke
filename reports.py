@@ -234,18 +234,28 @@ class ReportManager:
         imsave(filename+"selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename+"params")
 
-    def get_cell_images(self, path, label, image_manager, cell_manager):
+    def get_cell_images(self, path, label, image_manager, cell_manager, params):
         if label is None:
             filename = path+"/Report/"
-            if not os.path.exists(filename+"cell_images"):
-                os.makedirs(filename+"/cell_images")
+            if not os.path.exists(filename+"cell_data"):
+                os.makedirs(filename+"/cell_data")
         else:
             filename = path+"/Report_"+label+"/"
-            if not os.path.exists(filename+"cell_images"):
-                os.makedirs(filename+"/cell_images")
+            if not os.path.exists(filename+"cell_data"):
+                os.makedirs(filename+"/cell_data")
+        x_align, y_align = params.imageloaderparams.x_align, params.imageloaderparams.y_align
+
+        lin = "cell_id;x0;y0;x1;y1;\n"
 
         for key in cell_manager.cells.keys():
             cell_id = str(int(cell_manager.cells[key].label))
             x0, y0, x1, y1 = cell_manager.cells[key].box
-            imsave(filename+"/cell_images"+os.sep+cell_id+".png",
-                   image_manager.fluor_image[x0:x1, y0:y1])
+            lin += cell_id+";"+str(x0+x_align) + ";" + str(y0+y_align) + ";" + str(x1+x_align) + ";" + str(y1+y_align) + ";\n"
+            imsave(filename+"/cell_data"+os.sep+cell_id+"_cellmask.png",
+                   cell_manager.cells[key].cell_mask)
+            imsave(filename+"/cell_data"+os.sep+cell_id+"_perimmask.png",
+                   cell_manager.cells[key].perim_mask)
+            imsave(filename+"/cell_data"+os.sep+cell_id+"_septmask.png",
+                   cell_manager.cells[key].sept_mask)
+
+        open(filename + "box_data.csv", 'w').writelines(lin)

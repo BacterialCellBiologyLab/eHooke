@@ -16,7 +16,7 @@ class EHooke(object):
     Starts with an instance of the Parameters and Image class.
     Contains the methods needed to perform the analysis"""
 
-    def __init__(self, cellimages=False):
+    def __init__(self, cell_data=False):
         self.parameters = ParametersManager()
         self.image_manager = ImageManager()
         self.segments_manager = None
@@ -25,7 +25,7 @@ class EHooke(object):
         self.report_manager = None
         self.base_path = None
         self.fluor_path = None
-        self.get_cell_images = cellimages
+        self.get_cell_images = cell_data
 
     def load_base_image(self, filename=None):
         """Calls the load_base_image method from the ImageManager
@@ -142,6 +142,20 @@ class EHooke(object):
 
         self.cell_manager.overlay_cells(self.image_manager)
 
+    def select_from_file(self, filename=None):
+        if filename is None:
+            filename = tkFileDialog.askopenfilename()
+        o_file = open(filename)
+        data = o_file.readlines()
+        o_file.close()
+
+        data = data[0].split(";")[:len(data[0].split(";"))-1]
+
+        for key in data:
+            self.cell_manager.cells[key].selection_state = 1
+
+        self.cell_manager.overlay_cells(self.image_manager)
+
     def filter_cells(self):
         """Filters the cell based on the filters defined in the
         params.cellprocessingparams. Calls the filter_cells method from the
@@ -171,6 +185,7 @@ class EHooke(object):
         if self.get_cell_images:
             self.report_manager.get_cell_images(filename, label,
                                                 self.image_manager,
-                                                self.cell_manager)
+                                                self.cell_manager,
+                                                self.parameters)
 
         print "Reports Generated"
