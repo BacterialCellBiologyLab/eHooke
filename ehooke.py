@@ -62,6 +62,15 @@ class EHooke(object):
 
         print "Fluor Image Loaded"
 
+    def load_option_image(self, filename=None):
+        """Calls the load_optional_image method from the ImageManager
+        Can be called without a filename or by passing on as an arg"""
+
+        if filename is None:
+            filename = tkFileDialog.askopenfilename()
+
+        self.image_manager.load_option_image(filename)
+
     def compute_segments(self):
         """Calls the compute_segments method from Segments.
         Requires the prior loading of both the phase and fluor images and

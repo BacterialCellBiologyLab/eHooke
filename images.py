@@ -30,8 +30,11 @@ class ImageManager(object):
         self.base_mask = None
         self.mask = None
         self.fluor_image = None
+        self.optional_image = None
         self.base_w_mask = None
         self.fluor_w_mask = None
+        self.optional_w_mask = None
+        self.align_values = (0, 0)
 
     def clear_all(self):
         """Sets the class back to the __init__ state"""
@@ -41,8 +44,11 @@ class ImageManager(object):
         self.base_mask = None
         self.mask = None
         self.fluor_image = None
+        self.optional_image = None
         self.base_w_mask = None
         self.fluor_w_mask = None
+        self.optional_w_mask = None
+        self.align_values = (0, 0)
 
     def set_clip(self, margin):
         """ Defines the clipping size based on the base image dimensions
@@ -174,10 +180,33 @@ class ImageManager(object):
         else:
             best = (params.x_align, params.y_align)
 
+        self.align_values = best
+
         dx, dy = best
         self.fluor_image = fluor_image[x0+dx:x1+dx, y0+dy:y1+dy]
 
         self.overlay_mask_fluor_image()
+
+    def load_option_image(self, filename):
+        """Loads an option image that can be used to look for the septum
+        and to help classify the cell cycle phases. No fluorescence is measured
+        on this image"""
+
+        optional_image = imread(filename)
+
+        if len(optional_image.shape) > 2:
+            optional_image = color.rgb2gray(optional_image)
+
+        optional_image = img_as_float(optional_image)
+
+        x0, y0, x1, y1 = self.clip
+        dx, dy = self.align_values
+
+        self.optional_image = optional_image[x0+dx:x1+dx, y0+dy:y1+dy]
+
+        # self.overlay_mask_optional_image()
+
+
 
     def overlay_mask_base_image(self):
         """ Creates a new image with an overlay of the mask
@@ -201,6 +230,15 @@ class ImageManager(object):
         self.fluor_w_mask = mark_boundaries(fluor_image, img_as_uint(self.mask),
                                             color=(1, 0, 1),
                                             outline_color=None)
+
+    def overlay_mask_optional_image(self):
+        """Creates a new image with an overlay of the mask over the fluor image"""
+
+        optional_image = color.rgb2gray(self.optional_image)
+        optional_image = exposure.rescale_intensity(optional_image)
+        optional_image = img_as_float(optional_image)
+
+        self.optional_w_mask = mark_boundaries(optional_image, img_as_uint(self.mask), color=(1, 0, 1), outline_color=None)
 
     def save_image(self, image_to_save, filename=None):
         """Saves the choosen image as a .png file.

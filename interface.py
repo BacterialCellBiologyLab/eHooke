@@ -227,9 +227,17 @@ class Interface(object):
         self.next_button.config(state="active")
         self.fluor_button.config(state="active")
         self.fluor_with_mask_button.config(state="active")
+        self.load_optional_button.config(state="active")
         self.status.set("Fluorescence Image Loaded. Proceed to the next step")
         self.main_window.wm_title("eHooke - Base:" + str(self.ehooke.base_path) +
                                   " - Fluorescence: " + str(self.ehooke.fluor_path))
+
+    def load_optional(self):
+        self.ehooke.load_option_image()
+        self.images["Optional"] = self.ehooke.image_manager.optional_image
+        self.show_image("Optional")
+        self.optional_button.config(state="active")
+        self.status.set("Optional Image Loaded. Proceed to the next step")
 
     def set_imageloader(self):
         """Method used to change the interface to the Image Loader Step"""
@@ -270,6 +278,12 @@ class Interface(object):
                                                   command=self.load_fluor)
         self.load_fluorescence_button.pack(side="left")
         self.load_fluorescence_button.config(state="disabled")
+
+        self.load_optional_button = tk.Button(self.top_frame,
+                                            text="Load Optional",
+                                            command=self.load_optional)
+        self.load_optional_button.pack(side="left")
+        self.load_optional_button.config(state="disabled")
 
         self.load_params_button = tk.Button(self.parameters_panel,
                                             text="Load Parameters",
@@ -453,6 +467,12 @@ class Interface(object):
         self.fluor_with_mask_button.pack(side="top", fill="x")
         self.fluor_with_mask_button.config(state="disabled")
 
+        self.optional_button = tk.Button(self.images_frame, text="Optional",
+                                         command=lambda: self.show_image("Optional"),
+                                         width=self.image_buttons_width)
+        self.optional_button.pack(side="top", fill="x")
+        self.optional_button.config(state="disabled")
+
         self.status = tk.StringVar()
         self.status.set("Load Base Image")
         self.status_bar = tk.Label(
@@ -595,6 +615,15 @@ class Interface(object):
                                                     "Fluor_mask"),
                                                 width=self.image_buttons_width)
         self.fluor_with_mask_button.pack(side="top", fill="x")
+
+        self.optional_button = tk.Button(self.images_frame, text="Optional",
+                                         command=lambda: self.show_image("Optional"),
+                                         width=self.image_buttons_width)
+        self.optional_button.pack(side="top", fill="x")
+        if self.ehooke.image_manager.optional_image is None:
+            self.optional_button.config(state="disabled")
+        else:
+            self.optional_button.config(state="active")
 
         self.fluor_features_button = tk.Button(self.images_frame, text="Fluor with Features",
                                                command=lambda: self.show_image(
@@ -1079,6 +1108,15 @@ class Interface(object):
                                                 width=self.image_buttons_width)
         self.fluor_cells_out_button.pack(side="top", fill="x")
         self.fluor_cells_out_button.config(state="disabled")
+
+        self.optional_button = tk.Button(self.images_frame, text="Optional",
+                                         command=lambda: self.show_image("Optional"),
+                                         width=self.image_buttons_width)
+        self.optional_button.pack(side="top", fill="x")
+        if self.ehooke.image_manager.optional_image is None:
+            self.optional_button.config(state="disabled")
+        else:
+            self.optional_button.config(state="active")
 
     def set_cellcomputation_from_cellprocessing(self):
         """Method to go back to cell computation"""
@@ -1778,6 +1816,15 @@ class Interface(object):
                                                 width=self.image_buttons_width)
         self.fluor_cells_out_button.pack(side="top", fill="x")
         self.fluor_cells_out_button.config(state="active")
+
+        self.optional_button = tk.Button(self.images_frame, text="Optional",
+                                         command=lambda: self.show_image("Optional"),
+                                         width=self.image_buttons_width)
+        self.optional_button.pack(side="top", fill="x")
+        if self.ehooke.image_manager.optional_image is None:
+            self.optional_button.config(state="disabled")
+        else:
+            self.optional_button.config(state="active")
 
         self.fluor_lines_button = tk.Button(self.images_frame, text="Fluor with Lines", command=lambda: self.show_image("Fluor_with_lines"), width=self.image_buttons_width)
         self.fluor_lines_button.pack(side="top", fill="x")
