@@ -280,8 +280,8 @@ class Interface(object):
         self.load_fluorescence_button.config(state="disabled")
 
         self.load_optional_button = tk.Button(self.top_frame,
-                                            text="Load Optional",
-                                            command=self.load_optional)
+                                              text="Load Optional",
+                                              command=self.load_optional)
         self.load_optional_button.pack(side="left")
         self.load_optional_button.config(state="disabled")
 
@@ -468,7 +468,8 @@ class Interface(object):
         self.fluor_with_mask_button.config(state="disabled")
 
         self.optional_button = tk.Button(self.images_frame, text="Optional",
-                                         command=lambda: self.show_image("Optional"),
+                                         command=lambda: self.show_image(
+                                             "Optional"),
                                          width=self.image_buttons_width)
         self.optional_button.pack(side="top", fill="x")
         self.optional_button.config(state="disabled")
@@ -491,7 +492,8 @@ class Interface(object):
             "Base_features"] = self.ehooke.segments_manager.base_w_features
         self.images[
             "Fluor_features"] = self.ehooke.segments_manager.fluor_w_features
-        self.images["Labels"] = mark_boundaries(rescale_intensity(self.ehooke.image_manager.fluor_image), (self.ehooke.segments_manager.labels > 0), color=(1, 0, 0))
+        self.images["Labels"] = mark_boundaries(rescale_intensity(
+            self.ehooke.image_manager.fluor_image), (self.ehooke.segments_manager.labels > 0), color=(1, 0, 0))
         self.show_image("Labels")
         self.next_button.config(state="active")
         self.base_features_button.config(state="active")
@@ -617,7 +619,8 @@ class Interface(object):
         self.fluor_with_mask_button.pack(side="top", fill="x")
 
         self.optional_button = tk.Button(self.images_frame, text="Optional",
-                                         command=lambda: self.show_image("Optional"),
+                                         command=lambda: self.show_image(
+                                             "Optional"),
                                          width=self.image_buttons_width)
         self.optional_button.pack(side="top", fill="x")
         if self.ehooke.image_manager.optional_image is None:
@@ -1110,7 +1113,8 @@ class Interface(object):
         self.fluor_cells_out_button.config(state="disabled")
 
         self.optional_button = tk.Button(self.images_frame, text="Optional",
-                                         command=lambda: self.show_image("Optional"),
+                                         command=lambda: self.show_image(
+                                             "Optional"),
                                          width=self.image_buttons_width)
         self.optional_button.pack(side="top", fill="x")
         if self.ehooke.image_manager.optional_image is None:
@@ -1313,29 +1317,35 @@ class Interface(object):
                 self.points.append((int(event.ydata), int(event.xdata)))
 
                 self.canvas.mpl_disconnect(self.cid)
-                self.cid = self.canvas.mpl_connect('button_release_event', self.on_press)
+                self.cid = self.canvas.mpl_connect(
+                    'button_release_event', self.on_press)
                 self.ehooke.linescan_manager.add_line(self.points[0],
                                                       self.points[1],
                                                       self.points[2])
 
-                self.ehooke.linescan_manager.overlay_lines_on_image(self.ehooke.image_manager.fluor_image)
-                self.images["Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
+                self.ehooke.linescan_manager.overlay_lines_on_image(
+                    self.ehooke.image_manager.fluor_image)
+                self.images[
+                    "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
                 self.show_image("Fluor_with_lines")
 
     def add_line_linescan(self):
-        #add line code
+        # add line code
 
         self.points = []
         self.canvas.mpl_disconnect(self.cid)
-        self.cid = self.canvas.mpl_connect('button_release_event', self.draw_line)
+        self.cid = self.canvas.mpl_connect(
+            'button_release_event', self.draw_line)
 
     def remove_line_linescan(self):
-        #remove line code
+        # remove line code
 
         self.ehooke.linescan_manager.remove_line()
 
-        self.ehooke.linescan_manager.overlay_lines_on_image(self.ehooke.image_manager.fluor_image)
-        self.images["Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
+        self.ehooke.linescan_manager.overlay_lines_on_image(
+            self.ehooke.image_manager.fluor_image)
+        self.images[
+            "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
         self.show_image("Fluor_with_lines")
 
     def set_cellprocessing(self):
@@ -1562,7 +1572,8 @@ class Interface(object):
         self.neighboursfilter_min_value.set(0)
         self.neighboursfilter_max_value.set(10)
 
-        self.selection_label = tk.Label(self.parameters_panel, text="Cell Selection:")
+        self.selection_label = tk.Label(
+            self.parameters_panel, text="Cell Selection:")
         self.selection_label.pack(side="top")
 
         self.select_all_button = tk.Button(self.parameters_panel, text="Select All Cells",
@@ -1575,7 +1586,8 @@ class Interface(object):
         self.unselect_all_button.pack(side="top", fill="x")
         self.unselect_all_button.config(state="disabled")
 
-        self.select_from_file_button = tk.Button(self.parameters_panel, text="Select From File", command=self.select_from_file)
+        self.select_from_file_button = tk.Button(
+            self.parameters_panel, text="Select From File", command=self.select_from_file)
         self.select_from_file_button.pack(side="top", fill="x")
         self.select_from_file_button.config(state="disabled")
 
@@ -1588,11 +1600,12 @@ class Interface(object):
         self.add_line_button.config(state="disabled")
 
         self.remove_line_button = tk.Button(self.parameters_panel, text="Undo Last Line",
-                                         command=self.remove_line_linescan)
+                                            command=self.remove_line_linescan)
         self.remove_line_button.pack(side="top", fill="x")
         self.remove_line_button.config(state="disabled")
 
-        self.parameters_label = tk.Label(self.parameters_panel, text="Parameters Loading:")
+        self.parameters_label = tk.Label(
+            self.parameters_panel, text="Parameters Loading:")
         self.parameters_label.pack(side="top")
 
         self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
@@ -1818,7 +1831,8 @@ class Interface(object):
         self.fluor_cells_out_button.config(state="active")
 
         self.optional_button = tk.Button(self.images_frame, text="Optional",
-                                         command=lambda: self.show_image("Optional"),
+                                         command=lambda: self.show_image(
+                                             "Optional"),
                                          width=self.image_buttons_width)
         self.optional_button.pack(side="top", fill="x")
         if self.ehooke.image_manager.optional_image is None:
@@ -1826,7 +1840,8 @@ class Interface(object):
         else:
             self.optional_button.config(state="active")
 
-        self.fluor_lines_button = tk.Button(self.images_frame, text="Fluor with Lines", command=lambda: self.show_image("Fluor_with_lines"), width=self.image_buttons_width)
+        self.fluor_lines_button = tk.Button(self.images_frame, text="Fluor with Lines", command=lambda: self.show_image(
+            "Fluor_with_lines"), width=self.image_buttons_width)
         self.fluor_lines_button.pack(side="top", fill="x")
         self.fluor_lines_button.config(state="active")
 

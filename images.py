@@ -17,6 +17,7 @@ from skimage.filters import threshold_isodata, threshold_adaptive
 from skimage import exposure, color, morphology
 from scipy import ndimage
 
+
 class ImageManager(object):
     """Main class of the module. This class is responsible for the loading of
     the base image and the fluor image aswell as the computation of the masks.
@@ -63,8 +64,8 @@ class ImageManager(object):
             border = margin
 
         x_length, y_length = self.base_image.shape
-        self.clip = (border, border, x_length-border,
-                     y_length-border)
+        self.clip = (border, border, x_length - border,
+                     y_length - border)
 
     def load_base_image(self, filename, params):
         """This method is responsible for the loading of the base image and
@@ -75,7 +76,7 @@ class ImageManager(object):
 
         image = img_as_float(imread(filename))
 
-        #note: changed order, rescale_intensity was called
+        # note: changed order, rescale_intensity was called
         # before the rgb2gray, test to see which one is better
         image = color.rgb2gray(image)
         image = exposure.rescale_intensity(image)
@@ -111,7 +112,7 @@ class ImageManager(object):
         else:
             print "Not a valid mask algorithm"
 
-        self.base_mask = 1- base_mask
+        self.base_mask = 1 - base_mask
 
     def compute_mask(self, params):
         """Creates the mask for the base image.
@@ -139,7 +140,7 @@ class ImageManager(object):
 
         if params.mask_fill_holes:
             # mask is inverted
-            mask = 1- img_as_float(ndimage.binary_fill_holes(1.0-mask))
+            mask = 1 - img_as_float(ndimage.binary_fill_holes(1.0 - mask))
 
         self.mask = mask
 
@@ -170,8 +171,8 @@ class ImageManager(object):
             for dx in range(-width, width):
                 for dy in range(-width, width):
                     tot = -np.sum(np.multiply(inverted_mask,
-                                              fluor_image[x0+dx:x1+dx,
-                                                          y0+dy:y1+dy]))
+                                              fluor_image[x0 + dx:x1 + dx,
+                                                          y0 + dy:y1 + dy]))
 
                     if tot < minscore:
                         minscore = tot
@@ -183,7 +184,7 @@ class ImageManager(object):
         self.align_values = best
 
         dx, dy = best
-        self.fluor_image = fluor_image[x0+dx:x1+dx, y0+dy:y1+dy]
+        self.fluor_image = fluor_image[x0 + dx:x1 + dx, y0 + dy:y1 + dy]
 
         self.overlay_mask_fluor_image()
 
@@ -202,11 +203,7 @@ class ImageManager(object):
         x0, y0, x1, y1 = self.clip
         dx, dy = self.align_values
 
-        self.optional_image = optional_image[x0+dx:x1+dx, y0+dy:y1+dy]
-
-        # self.overlay_mask_optional_image()
-
-
+        self.optional_image = optional_image[x0 + dx:x1 + dx, y0 + dy:y1 + dy]
 
     def overlay_mask_base_image(self):
         """ Creates a new image with an overlay of the mask
@@ -238,7 +235,8 @@ class ImageManager(object):
         optional_image = exposure.rescale_intensity(optional_image)
         optional_image = img_as_float(optional_image)
 
-        self.optional_w_mask = mark_boundaries(optional_image, img_as_uint(self.mask), color=(1, 0, 1), outline_color=None)
+        self.optional_w_mask = mark_boundaries(optional_image, img_as_uint(
+            self.mask), color=(1, 0, 1), outline_color=None)
 
     def save_image(self, image_to_save, filename=None):
         """Saves the choosen image as a .png file.

@@ -17,12 +17,14 @@ def rotation_matrices(step):
     ang = 0
 
     while ang < 180:
-        sa = np.sin(ang/180.0*np.pi)
-        ca = np.cos(ang/180.0*np.pi)
-        result.append(np.matrix([[ca, -sa], [sa, ca]]).T)  # note .T, for column points
+        sa = np.sin(ang / 180.0 * np.pi)
+        ca = np.cos(ang / 180.0 * np.pi)
+        # note .T, for column points
+        result.append(np.matrix([[ca, -sa], [sa, ca]]).T)
         ang = ang + step
 
     return result
+
 
 def bounded_value(minval, maxval, currval):
     """ returns the value or the extremes if outside
@@ -37,11 +39,13 @@ def bounded_value(minval, maxval, currval):
     else:
         return currval
 
+
 def bounded_point(x0, x1, y0, y1, p):
     tx, ty = p
     tx = bounded_value(x0, x1, tx)
     ty = bounded_value(y0, y1, ty)
     return tx, ty
+
 
 def bound_rectangle(points):
     """ returns a tuple (x0,y0,x1,y1,width) of the bounding rectangle
@@ -50,8 +54,9 @@ def bound_rectangle(points):
 
     x0, y0 = np.amin(points, axis=0)
     x1, y1 = np.amax(points, axis=0)
-    a = np.min([(x1-x0), (y1-y0)])
+    a = np.min([(x1 - x0), (y1 - y0)])
     return x0, y0, x1, y1, a
+
 
 def stats_format(params):
     """Returns the list of cell stats to be displayed on the report,
@@ -78,6 +83,7 @@ def stats_format(params):
 
     return result
 
+
 def overlay_cells(cells, image, colors):
     "Overlay the edges of each individual cell in the provided image"
 
@@ -96,12 +102,14 @@ def overlay_cells(cells, image, colors):
                 try:
                     x0, y0, x1, y1 = c.box
                     tmp[x0:x1, y0:y1] = mark_boundaries(tmp[x0:x1, y0:y1],
-                                                        img_as_int(c.sept_mask),
+                                                        img_as_int(
+                                                            c.sept_mask),
                                                         color=col)
                 except IndexError:
                     c.selection_state = -1
 
     return tmp
+
 
 def assign_cell_color(cell, cells, cell_colors):
     """ assigns an index to cell.color that is different from the neighbours """
@@ -113,13 +121,15 @@ def assign_cell_color(cell, cells, cell_colors):
         if col not in neighcols:
             neighcols.append(col)
 
-    cell.color_i = cell.stats["Area"] % len(cell_colors)  # each cell has a preferred color
+    cell.color_i = cell.stats["Area"] % len(
+        cell_colors)  # each cell has a preferred color
 
     while len(neighcols) < len(cell_colors) and (cell.color_i in neighcols):
         cell.color_i += 1
 
         if cell.color_i >= len(cell_colors):
             cell.color_i = 0
+
 
 def update_neighbours(cells, oldlabel, newlabel):
     """ updates the neighbour list when merging cells """
@@ -135,12 +145,13 @@ def update_neighbours(cells, oldlabel, newlabel):
         if int(nei) != newlabel:
 
             if newlabel in tc.neighbours:
-                tc.neighbours[newlabel] = tc.neighbours[newlabel]+inter
-                nc.neighbours[tc.label] = nc.neighbours[tc.label]+inter
+                tc.neighbours[newlabel] = tc.neighbours[newlabel] + inter
+                nc.neighbours[tc.label] = nc.neighbours[tc.label] + inter
 
             else:
                 tc.neighbours[newlabel] = inter
                 nc.neighbours[tc.label] = inter
+
 
 def check_merge(cell1, cell2, rotations, interface, mask, params):
 
@@ -149,12 +160,12 @@ def check_merge(cell1, cell2, rotations, interface, mask, params):
 
     # check if any cell is small enough for automatic merge
     if cell1.stats["Area"] < params.cell_force_merge_below or \
-                    cell2.stats["Area"] < params.cell_force_merge_below:
+            cell2.stats["Area"] < params.cell_force_merge_below:
         return True
 
     # check if dividing cells
     if params.merge_dividing_cells and \
-                    interface >= params.merge_min_interface:
+            interface >= params.merge_min_interface:
         tmp = cells.Cell(0)
         tmp.outline.extend(cell1.outline)
         tmp.outline.extend(cell2.outline)
@@ -162,7 +173,7 @@ def check_merge(cell1, cell2, rotations, interface, mask, params):
         tmpshort = axis_length(tmp.short)
         maxshort = max(axis_length(cell1.short), axis_length(cell2.short))
 
-        if tmpshort <= maxshort*params.merge_length_tolerance:
+        if tmpshort <= maxshort * params.merge_length_tolerance:
             return True
 
         else:
@@ -171,14 +182,16 @@ def check_merge(cell1, cell2, rotations, interface, mask, params):
     else:
         return False
 
+
 def paint_cell(cell, image, newval):
     """ paints the lines of the cell into the image """
 
     for li in cell.lines:
         y, x0, x1 = li
-        image[x0:x1+1, y] = newval
+        image[x0:x1 + 1, y] = newval
 
     return image
+
 
 def blocked_by_filter(cell, list_of_filters):
     """ returns true if cell is blocked by any filter

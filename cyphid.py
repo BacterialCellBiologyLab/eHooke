@@ -58,13 +58,13 @@ class Cyphid:
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1)
         self.ax.axis("off")
         plt.autoscale(False)
-        
+
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.middle_frame)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(fill="both")
-        
+
         self.ax.format_coord = self.show_nothing
-        
+
         self.canvas.show()
 
         self.phase1_button = tk.Button(
@@ -82,12 +82,13 @@ class Cyphid:
         self.discard_button = tk.Button(
             self.bottom_frame, text="Discard Cell", command=lambda: self.choose_phase("Discard"))
         self.discard_button.pack(side="left")
-        
+
         self.luminance = tk.StringVar()
         self.luminance.set("0")
-        self.luminance_label = tk.Label(self.bottom_frame, textvariable=self.luminance)
+        self.luminance_label = tk.Label(
+            self.bottom_frame, textvariable=self.luminance)
         self.luminance_label.pack(side="right")
-   
+
     def key(self, event):
         if event.char == "1":
             self.choose_phase(1)
@@ -108,11 +109,11 @@ class Cyphid:
         self.discarded_count = 0
 
     def show_nothing(self, x, y):
-        
+
         return ""
 
     def show_luminance(self, x, y):
-        
+
         return "Luminance: " + str(rgb2gray(self.current_image)[int(y), int(x)])
 
     def choose_report_directory(self):
@@ -141,7 +142,7 @@ class Cyphid:
             self.report_path + "/_images/" + self.images_list[image])
         self.current_image = self.current_image[
             :, len(self.current_image[0]) / 5:len(self.current_image[0]) * 2 / 5:]
-        
+
         self.ax.imshow(self.current_image)
         self.ax.format_coord = self.show_luminance
         self.canvas.show()
@@ -151,19 +152,22 @@ class Cyphid:
             self.phase1_count += 1
             imsave(self.path + "/1_" +
                    self.images_list[self.current_image_index], self.current_image)
-            self.phase1_ids += self.images_list[self.current_image_index].split(".")[0] + ";"
-            
+            self.phase1_ids += self.images_list[self.current_image_index].split(".")[
+                0] + ";"
+
         elif phase == 2:
             self.phase2_count += 1
             imsave(self.path + "/2_" +
                    self.images_list[self.current_image_index], self.current_image)
-            self.phase2_ids += self.images_list[self.current_image_index].split(".")[0] + ";"
-             
+            self.phase2_ids += self.images_list[self.current_image_index].split(".")[
+                0] + ";"
+
         elif phase == 3:
             self.phase3_count += 1
             imsave(self.path + "/3_" +
                    self.images_list[self.current_image_index], self.current_image)
-            self.phase3_ids += self.images_list[self.current_image_index].split(".")[0] + ";"
+            self.phase3_ids += self.images_list[self.current_image_index].split(".")[
+                0] + ";"
 
         else:
             self.discarded_count += 1
@@ -183,17 +187,21 @@ class Cyphid:
                 ("Discarded", "Phase 1", "Phase 2", "Phase 3"))
             self.ax.bar(x, [self.discarded_count, self.phase1_count,
                             self.phase2_count, self.phase3_count], width)
-            self.ax.set_title("Phase 1: " + str(self.phase1_count) + " - " + "Phase 2: " + str(self.phase2_count) + " - " + "Phase 3: " + str(self.phase3_count))
-            #self.canvas.draw()
+            self.ax.set_title("Phase 1: " + str(self.phase1_count) + " - " + "Phase 2: " + str(
+                self.phase2_count) + " - " + "Phase 3: " + str(self.phase3_count))
+            # self.canvas.draw()
             self.canvas.show()
 
             report = ["Discarded Cells:;" + str(self.discarded_count) + "\n", "Phase 1 Cells:;" + str(self.phase1_count) + "\n",
                       "Phase 2 Cells:;" + str(self.phase2_count) + "\n", "Phase 3 Cells:;" + str(self.phase3_count) + "\n"]
             open(self.report_path + "/cyphID_report.csv", 'w').writelines(report)
-            
-            open(self.report_path + "/phase1_cells.txt", "w").writelines(self.phase1_ids)
-            open(self.report_path + "/phase2_cells.txt", "w").writelines(self.phase2_ids)
-            open(self.report_path + "/phase3_cells.txt", "w").writelines(self.phase3_ids)
+
+            open(self.report_path + "/phase1_cells.txt",
+                 "w").writelines(self.phase1_ids)
+            open(self.report_path + "/phase2_cells.txt",
+                 "w").writelines(self.phase2_ids)
+            open(self.report_path + "/phase3_cells.txt",
+                 "w").writelines(self.phase3_ids)
 
         else:
             self.current_image_index += 1

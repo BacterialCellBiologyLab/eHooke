@@ -46,6 +46,7 @@ class ParametersManager(object):
         parser.write(cfgfile)
         cfgfile.close()
 
+
 class MaskParameters(object):
     """Class containing the parameters needed for the image loading and mask
     creation process"""
@@ -55,8 +56,8 @@ class MaskParameters(object):
         # phase image parameters
         self.border = 10  # phase file, including path
         self.invert_base = False
-            # if true, phase will be inverted.
-            # Useful when using fluorescence or light on dark background
+        # if true, phase will be inverted.
+        # Useful when using fluorescence or light on dark background
 
         self.mask_algorithms = ['Local Average', 'Isodata']
         self.mask_algorithm = 'Isodata'
@@ -67,10 +68,10 @@ class MaskParameters(object):
 
         # used as mask creation parameters
         self.mask_fill_holes = False
-            # fill holes in enclosed regions,
-            # useful if cells are not uniform dark blobs
+        # fill holes in enclosed regions,
+        # useful if cells are not uniform dark blobs
         self.mask_closing = 1
-            # matrix for removing white and black spots, if empty no removal
+        # matrix for removing white and black spots, if empty no removal
         self.mask_dilation = 0  # mask dilation iterations
 
         self.auto_align = False
@@ -130,7 +131,7 @@ class RegionParameters(object):
 
         # feature labelling parameters
         self.outline_use_base_mask = False
-            # assign fixed height to all in base mask
+        # assign fixed height to all in base mask
 
     def load_from_parser(self, parser, section):
         """Loads frame parameters from a ConfigParser object of the
@@ -160,6 +161,7 @@ class RegionParameters(object):
         parser.set(section, "max peaks", self.max_peaks)
         parser.set(section, "outline use base mask",
                    self.outline_use_base_mask)
+
 
 class CellParameters(object):
     """Class containing the parameters needed for the process of the cells"""

@@ -11,6 +11,7 @@ from cells import CellManager
 from reports import ReportManager
 from linescan import LineScanManager
 
+
 class EHooke(object):
     """Main class of the software.
     Starts with an instance of the Parameters and Image class.
@@ -158,7 +159,7 @@ class EHooke(object):
         data = o_file.readlines()
         o_file.close()
 
-        data = data[0].split(";")[:len(data[0].split(";"))-1]
+        data = data[0].split(";")[:len(data[0].split(";")) - 1]
 
         for key in data:
             self.cell_manager.cells[key].selection_state = 1
@@ -182,10 +183,11 @@ class EHooke(object):
             filename = tkFileDialog.askdirectory()
         if label is None:
             label = self.fluor_path.split("/")
-            label = label[len(label)-1].split(".")[0]
+            label = label[len(label) - 1].split(".")[0]
 
         if len(self.linescan_manager.lines.keys()) > 0:
-            self.linescan_manager.measure_fluorescence(self.image_manager.fluor_image)
+            self.linescan_manager.measure_fluorescence(
+                self.image_manager.fluor_image)
 
         self.report_manager = ReportManager(self.parameters)
         self.report_manager.generate_report(filename, label,
