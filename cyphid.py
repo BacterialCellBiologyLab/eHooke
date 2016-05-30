@@ -11,6 +11,9 @@ from skimage import exposure
 from skimage.color import rgb2gray
 
 
+#TODO: rewrite the code to have a proper structure
+
+
 class Cyphid:
 
     def __init__(self):
