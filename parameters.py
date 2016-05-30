@@ -4,7 +4,6 @@ to the parameters of each step of the analysis"""
 
 import ConfigParser as cp
 import tkFileDialog
-import numpy as np
 
 
 class ParametersManager(object):

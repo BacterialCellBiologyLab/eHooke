@@ -120,7 +120,8 @@ class ImageManager(object):
         and the clip area, which should be already defined
         by the load_base_image method.
         Creates the mask by improving the base mask created by the
-        compute_base_mask method. Applies the mask closing, dilation and fill holes parameters.
+        compute_base_mask method. Applies the mask closing, dilation and
+        fill holes parameters.
         """
         self.compute_base_mask(params)
 
@@ -229,7 +230,8 @@ class ImageManager(object):
                                             outline_color=None)
 
     def overlay_mask_optional_image(self):
-        """Creates a new image with an overlay of the mask over the fluor image"""
+        """Creates a new image with an overlay of the mask over the fluor
+        image"""
 
         optional_image = color.rgb2gray(self.optional_image)
         optional_image = exposure.rescale_intensity(optional_image)

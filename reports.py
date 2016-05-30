@@ -1,6 +1,6 @@
 ﻿"""Module used to create the report of the cell identification"""
 from skimage.io import imsave
-from skimage.util import img_as_int, img_as_float
+from skimage.util import img_as_float
 import cellprocessing as cp
 import numpy as np
 import os
@@ -66,7 +66,8 @@ class ReportManager:
             open(filename + "csv_noise.csv", "w").writelines(noise)
 
     def html_report(self, filename, cell_manager):
-        """generates an html report with the all the cell stats from the selected cells"""
+        """generates an html report with the all the cell stats from the
+        selected cells"""
 
         cells = cell_manager.cells
 

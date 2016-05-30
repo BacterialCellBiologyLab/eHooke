@@ -108,7 +108,8 @@ class EHooke(object):
 
     def split_cells(self, label_c1):
         """Splits a previously merged cell, requires the label of cell to be
-        splitted. Calls the split_cells method from the cell_manager instance"""
+        splitted.
+        Calls the split_cells method from the cell_manager instance"""
         self.cell_manager.split_cells(label_c1,
                                       self.parameters.cellprocessingparams,
                                       self.image_manager,
@@ -191,7 +192,8 @@ class EHooke(object):
 
         self.report_manager = ReportManager(self.parameters)
         self.report_manager.generate_report(filename, label,
-                                            self.cell_manager, self.linescan_manager,
+                                            self.cell_manager,
+                                            self.linescan_manager,
                                             self.parameters)
         if self.get_cell_images:
             self.report_manager.get_cell_images(filename, label,

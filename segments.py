@@ -81,8 +81,8 @@ class SegmentsManager(object):
     def compute_features(self, params, image_manager):
         """Method used to compute the features of an image using the mask.
         requires a mask and an instance of the imageprocessingparams
-        if the selected algorithm used is Distance Peak, used the method compute_distance_peaks
-        to compute the features"""
+        if the selected algorithm used is Distance Peak, used the method
+        compute_distance_peaks to compute the features"""
 
         mask = image_manager.mask
         features = np.zeros(mask.shape)

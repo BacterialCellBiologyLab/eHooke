@@ -2,18 +2,13 @@
 
 import tkMessageBox
 import Tkinter as tk
-import tkFileDialog
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
 from ehooke import EHooke
-import cellprocessing
-
-from skimage.color import gray2rgb
 from skimage.segmentation import mark_boundaries
 from skimage.exposure import rescale_intensity
-from skimage.util import img_as_int
 
 
 class Interface(object):

@@ -73,8 +73,8 @@ class FluorLine(object):
 
 class LineScanManager(object):
     """Class used to perform a manual linescan analysis on a selection of cells.
-    Contains the methods to draw those lines, measure the fluorescence and store
-    the results."""
+    Contains the methods to draw those lines, measure the fluorescence and
+    store the results."""
 
     def __init__(self):
         self.lines = {}
