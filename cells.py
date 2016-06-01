@@ -7,6 +7,7 @@ processing."""
 from collections import OrderedDict
 import numpy as np
 import matplotlib as plt
+from copy import deepcopy
 from skimage.io import imsave
 from skimage.draw import line
 from skimage.measure import label
@@ -23,6 +24,7 @@ class Cell(object):
     def __init__(self, cell_id):
         self.label = cell_id
         self.merged_with = "No"
+        self.merged_list = []
         self.marked_as_noise = "No"
         self.box = None
         self.box_margin = 5
@@ -65,6 +67,7 @@ class Cell(object):
         Can be used to mark the cell to discard"""
         self.label = 0
         self.merged_with = "No"
+        self.merged_list = []
         self.marked_as_noise = "No"
         self.box = None
         self.box_margin = 5
@@ -710,6 +713,28 @@ class Cell(object):
 
         return img
 
+    def recompute_outline(self, labels):
+        ids = self.merged_list
+        ids.append(self.label)
+        print ids
+        new_outline = []
+
+        for px in self.outline:
+            y, x = px
+            neigh_pixels = labels[y-1:y+2, x-1:x+2].flatten()
+
+            outline_check = False
+
+            for val in neigh_pixels:
+                if val in ids:
+                    pass
+                else:
+                    outline_check = True
+            if outline_check:
+                new_outline.append(px)
+
+        self.outline = new_outline
+
 
 class CellManager(object):
     """Main class of the module. Should be used to interact with the rest of
@@ -717,6 +742,7 @@ class CellManager(object):
 
     def __init__(self, params):
         self.cells = {}
+        self.original_cells = {}
         self.merged_cells = []
         self.merged_labels = None
 
@@ -804,6 +830,13 @@ class CellManager(object):
     def overlay_cells(self, image_manager):
         """Calls the methods used to create an overlay of the cells
         over the base and fluor images"""
+        labels = np.zeros(image_manager.fluor_image.shape)
+
+        for k in self.cells.keys():
+            c = self.cells[k]
+            labels = cp.paint_cell(c, labels, c.label)
+
+        self.merged_labels = labels
         self.overlay_cells_w_base(image_manager.base_image, image_manager.clip)
         self.overlay_cells_w_fluor(image_manager.fluor_image)
 
@@ -825,102 +858,81 @@ class CellManager(object):
 
         self.compute_box_axes(rotations, image_manager.mask.shape)
 
-        for k in self.cells.keys():
-            c = self.cells[k]
-            if len(c.neighbours) > 0:
-
-                bestneigh = max(c.neighbours.iterkeys(),
-                                key=(lambda key: c.neighbours[key]))
-                bestinterface = c.neighbours[bestneigh]
-                cn = self.cells[str(int(bestneigh))]
-
-                if cp.check_merge(c, cn, rotations, bestinterface,
-                                  image_manager.mask, params):
-                    self.merge_cells(c.label, cn.label)
-
-        self.merged_labels = segments_manager.labels
-
-        if len(self.merged_cells) > 0:
-            self.compute_merged_cells(params, image_manager, segments_manager)
-
-        else:
-            for k in self.cells.keys():
-                cp.assign_cell_color(self.cells[k], self.cells,
-                                     self.cell_colors)
-
-            self.overlay_cells(image_manager)
-
-    def compute_merged_cells(self, params, image_manager, segments_manager):
-        """Computes a new list of cells taking into account the cells that
-        were merged"""
-        self.clean_empty_cells()
-        labels = np.zeros(segments_manager.labels.shape)
+        self.original_cells = deepcopy(self.cells)
 
         for k in self.cells.keys():
-            c = self.cells[k]
-            labels = cp.paint_cell(c, labels, c.label)
+            try:
+                c = self.cells[k]
+                if len(c.neighbours) > 0:
 
-        self.merged_labels = labels
+                    bestneigh = max(c.neighbours.iterkeys(),
+                                    key=(lambda key: c.neighbours[key]))
+                    bestinterface = c.neighbours[bestneigh]
+                    cn = self.cells[str(int(bestneigh))]
 
-        self.cell_regions_from_labels(labels)
-
-        rotations = cp.rotation_matrices(params.axial_step)
-        self.compute_box_axes(rotations, image_manager.mask.shape)
+                    if cp.check_merge(c, cn, rotations, bestinterface,
+                                      image_manager.mask, params):
+                        self.merge_cells(c.label, cn.label, params, segments_manager, image_manager)
+            except KeyError:
+                print "Cell was already merged and deleted"
 
         for k in self.cells.keys():
-            cp.assign_cell_color(self.cells[k], self.cells, self.cell_colors)
+            cp.assign_cell_color(self.cells[k], self.cells,
+                                 self.cell_colors)
 
         self.overlay_cells(image_manager)
 
-        for pair in self.merged_cells:
-            try:
-                self.cells[str(int(pair[1]))].merged_with = "Yes"
-            except KeyError:
-                print "Cell was already merged"
+    def merge_cells(self, label_c1, label_c2, params, segments_manager, image_manager):
+        """merges two cells"""
+        label_c1 = int(label_c1)
+        label_c2 = int(label_c2)
+        print len(self.cells[str(label_c2)].outline)
+        print len(self.cells[str(label_c2)].lines)
+        self.cells[str(label_c2)].stats["Area"] = self.cells[str(label_c2)].stats[
+            "Area"] + self.cells[str(label_c1)].stats["Area"]
 
-    def merge_cells(self, label_c1, label_c2):
-        """merges two cells.
-        Should be followed by the execution of the compute merged cells
-        method."""
-        pair = (int(label_c1), int(label_c2))
-        self.merged_cells.append(pair)
+        self.cells[str(label_c2)].lines.extend(self.cells[str(label_c1)].lines)
 
-        # temporary add to neighbour
-        self.cells[str(pair[1])].stats["Area"] = self.cells[str(pair[1])].stats[
-            "Area"] + self.cells[str(pair[0])].stats["Area"]
-        self.cells[str(pair[1])].lines.extend(self.cells[str(pair[0])].lines)
+        self.cells[str(label_c2)].merged_list.append(label_c1)
 
-        # mark for discard
-        self.cells[str(pair[0])].clean_cell()
+        self.cells[str(label_c2)].outline.extend(self.cells[str(label_c1)].outline)
 
-    def split_cells(self, label_c1, params, image_manager, segments_manager):
-        """Splits a previously merged cell.
-        Works by removing the cells from the cells to merge list and
-        recomputing the cells"""
-        new_merged_list = []
+        self.cells[str(label_c2)].stats["Neighbours"] = self.cells[str(label_c2)].stats["Neighbours"] + self.cells[str(label_c1)].stats["Neighbours"] - 2
 
-        for pair in self.merged_cells:
-            if int(label_c1) != pair[0] and int(label_c1) != pair[1]:
-                new_merged_list.append(pair)
+        del self.cells[str(label_c1)]
 
-        self.merged_cells = new_merged_list
-
-        self.cell_regions_from_labels(segments_manager.labels)
         rotations = cp.rotation_matrices(params.axial_step)
+        self.cells[str(label_c2)].compute_axes(rotations, image_manager.mask.shape)
 
-        self.compute_box_axes(rotations, image_manager.mask.shape)
+        self.cells[str(label_c2)].recompute_outline(segments_manager.labels)
 
-        for pair in self.merged_cells:
-            # temporary add to neighbour
-            self.cells[str(pair[1])].stats["Area"] = self.cells[str(pair[1])].stats[
-                "Area"] + self.cells[str(pair[0])].stats["Area"]
-            self.cells[str(pair[1])].lines.extend(
-                self.cells[str(pair[0])].lines)
+        if len(self.cells[str(label_c2)].merged_list) > 0:
+            self.cells[str(label_c2)].merged_with = "Yes"
 
-            # mark for discard
-            self.cells[str(pair[0])].clean_cell()
+        print len(self.cells[str(label_c2)].outline)
+        print len(self.cells[str(label_c2)].lines)
 
-        self.compute_merged_cells(params, image_manager, segments_manager)
+        print len(self.original_cells[str(label_c2)].outline)
+        print len(self.original_cells[str(label_c2)].lines)
+
+    def split_cells(self, label_c1, params, segments_manager, image_manager):
+        """Splits a previously merged cell."""
+        merged_cells = self.cells[str(label_c1)].merged_list
+        merged_cells.append(label_c1)
+        del self.cells[str(label_c1)]
+
+        rotations = cp.rotation_matrices(params.axial_step)
+        for id in merged_cells:
+            id = int(id)
+            self.cells[str(id)] = deepcopy(self.original_cells[str(id)])
+            self.cells[str(id)].compute_axes(rotations, image_manager.mask.shape)
+            self.cells[str(id)].recompute_outline(segments_manager.labels)
+            if len(self.cells[str(id)].merged_list) == 0:
+                self.cells[str(id)].merged_with = "No"
+
+        for k in self.cells.keys():
+            cp.assign_cell_color(self.cells[k], self.cells,
+                                 self.cell_colors)
 
     def mark_cell_as_noise(self, label_c1, image_manager, is_noise):
         """Used to change the selection_state of a cell to 0 (noise)

@@ -117,9 +117,12 @@ def assign_cell_color(cell, cells, cell_colors):
     neighcols = []
 
     for neigh in cell.neighbours.iterkeys():
-        col = cells[str(int(neigh))].color_i
-        if col not in neighcols:
-            neighcols.append(col)
+        try:
+            col = cells[str(int(neigh))].color_i
+            if col not in neighcols:
+                neighcols.append(col)
+        except KeyError:
+            print "Neighbour already merged"
 
     cell.color_i = cell.stats["Area"] % len(
         cell_colors)  # each cell has a preferred color
