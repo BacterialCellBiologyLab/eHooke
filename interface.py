@@ -764,20 +764,15 @@ class Interface(object):
                         int(event.ydata), int(event.xdata)])
 
             if label > 0:
+                if self.ehooke.cell_manager.cells[str(label)].merged_with != "No":
 
-                for pair in self.ehooke.cell_manager.merged_cells:
-                    if label == pair[0] or label == pair[1]:
+                    self.ehooke.split_cells(label)
+                    self.images[
+                        "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
+                    self.images[
+                        "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
 
-                        self.ehooke.split_cells(label)
-                        self.images[
-                            "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
-                        self.images[
-                            "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
-
-                        self.show_image(self.current_image)
-
-                    else:
-                        pass
+                    self.show_image(self.current_image)
 
             self.canvas.mpl_disconnect(self.cid)
             self.event_connected = False
