@@ -68,6 +68,9 @@ class Interface(object):
             self.bottom_frame, text="Phase 3", command=lambda: self.choose_phase(3))
         self.phase3_button.pack(side="left")
 
+        self.phase4_button = tk.Button(self.bottom_frame, text="Phase 4", command=lambda:self.choose_phase(4))
+        self.phase4_button.pack(side="left")
+
         self.discard_button = tk.Button(
             self.bottom_frame, text="Discard Cell", command=lambda: self.choose_phase("Discard"))
         self.discard_button.pack(side="left")
@@ -88,6 +91,8 @@ class Interface(object):
             self.choose_phase(2)
         elif event.char == "3":
             self.choose_phase(3)
+        elif event.char == "4":
+            self.choose_phase(4)
         elif event.char == "d":
             self.choose_phase("Discard")
 
@@ -104,7 +109,7 @@ class Interface(object):
         self.identifier.load_cells()
         self.cells_keys = self.identifier.cells.keys()
         self.total_cells = str(len(self.cells_keys))
-        self.label_text.set(str(self.current_index+1) + "of" + self.total_cells + " total")
+        self.label_text.set(str(self.current_index+1) + " of " + self.total_cells + " total")
         self.main_window.bind("<Key>", self.key)
         self.show_image(self.current_index)
 
@@ -112,7 +117,7 @@ class Interface(object):
         self.ax.cla()
         self.ax.imshow(self.identifier.cells[self.cells_keys[self.current_index]].image)
         self.ax.format_coord = self.show_luminance
-        self.label_text.set(str(self.current_index+1) + " of " + self.total_cells + " total")
+        self.label_text.set(str(self.current_index+1) + "of" + self.total_cells + " total")
         self.canvas.show()
 
     def choose_phase(self, phase):
@@ -131,9 +136,11 @@ class Interface(object):
             self.identifier.phase1_count = 0
             self.identifier.phase2_count = 0
             self.identifier.phase3_count = 0
+            self.identifier.phase4_count = 0
             self.identifier.phase1_ids = ""
             self.identifier.phase2_ids = ""
             self.identifier.phase3_ids = ""
+            self.identifier.phase4_ids = ""
 
         self.current_index -= 1
         if self.current_index < 0:
@@ -146,14 +153,14 @@ class Interface(object):
         self.ax = plt.subplot(111)
         self.ax.format_coord = self.show_nothing
         plt.subplots_adjust(left=0.2, bottom=0.2, right=0.8, top=0.8)
-        x = np.arange(4)
+        x = np.arange(5)
         width = 0.35
         self.ax.set_ylabel("Cell Count")
         self.ax.set_xlabel("Cell Cycle Phase")
         self.ax.set_xticks(x +width)
-        self.ax.set_xticklabels(("Discarded", "Phase 1", "Phase 2", "Phase 3"))
-        self.ax.bar(x, [self.identifier.discarded_count, self.identifier.phase1_count, self.identifier.phase2_count, self.identifier.phase3_count], width)
-        self.ax.set_title("Phase 1:" + str(self.identifier.phase1_count) + " - " + "Phase 2: " + str(self.identifier.phase2_count) + " - " + "Phase 3: " + str(self.identifier.phase3_count))
+        self.ax.set_xticklabels(("Discarded", "Phase 1", "Phase 2", "Phase 3", "Phase 4"))
+        self.ax.bar(x, [self.identifier.discarded_count, self.identifier.phase1_count, self.identifier.phase2_count, self.identifier.phase3_count, self.identifier.phase4_count], width)
+        self.ax.set_title("Phase 1:" + str(self.identifier.phase1_count) + " - " + "Phase 2: " + str(self.identifier.phase2_count) + " - " + "Phase 3: " + str(self.identifier.phase3_count) + " - " + "Phase 4: " + str(self.identifier.phase4_count))
         self.canvas.show()
 
     def new_analysis(self):
@@ -179,9 +186,11 @@ class Identifier(object):
         self.phase1_ids = ""
         self.phase2_ids = ""
         self.phase3_ids = ""
+        self.phase4_ids = ""
         self.phase1_count = 0
         self.phase2_count = 0
         self.phase3_count = 0
+        self.phase4_count = 0
         self.discarded_count = 0
 
     def load_cells(self):
@@ -218,10 +227,14 @@ class Identifier(object):
                 self.phase3_count += 1
                 self.phase3_ids += str(self.cells[key].id) + ";"
                 imsave(self.path + "/" + "3_" + self.cells[key].id + ".png", self.cells[key].image)
+            elif self.cells[key].phase == "4":
+                self.phase4_count += 1
+                self.phase4_ids += str(self.cells[key].id) + ";"
+                imsave(self.path + "/" + "4_" + self.cells[key].id + ".png", self.cells[key].image)
             else:
                 self.discarded_count += 1
 
-        report = ["Discarded Cells:;" + str(self.discarded_count) + "\n", "Phase 1 Cells:;" + str(self.phase1_count) + "\n", "Phase 2 Cells:;" + str(self.phase2_count) + "\n", "Phase 3 Cells:;" + str(self.phase3_count) + "\n"]
+        report = ["Discarded Cells:;" + str(self.discarded_count) + "\n", "Phase 1 Cells:;" + str(self.phase1_count) + "\n", "Phase 2 Cells:;" + str(self.phase2_count) + "\n", "Phase 3 Cells:;" + str(self.phase3_count) + "\n", "Phase 4 Cells:;" + str(self.phase4_count) + "\n"]
         open(self.report_path + "/cyphID_report.csv", 'w').writelines(report)
 
         open(self.report_path + "/phase1_cells.txt",
@@ -230,6 +243,8 @@ class Identifier(object):
              "w").writelines(self.phase2_ids)
         open(self.report_path + "/phase3_cells.txt",
              "w").writelines(self.phase3_ids)
+        open(self.report_path + "/phase4_cells.txt",
+             "w").writelines(self.phase4_ids)
 
 if __name__ == "__main__":
     identifier = Interface()
