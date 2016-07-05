@@ -202,18 +202,21 @@ class ReportManager:
             table = '<table cellpadding="10" cellspacing="10">\n<th>Line ID</th><th>Images</th><th>Background</th><th>Membrane</th><th>Septum</th><th>Fluorescence Ratio</th>'
 
             for key in sorted(linescan_manager.lines.keys()):
-                lin = linescan_manager.lines[key]
-                img = linescan_manager.lines[key].image
-                w, h, dummy = img.shape
-                if w > h:
-                    img = np.rot90(img)
-                imsave(filename + "/_linescan_images" +
-                       os.sep + key + '.png', img)
-                row = '<tr style="text-align:center"><td>' + key + '</td><td><img src="./' + '_linescan_images/' + key + '.png" alt="pic" width="200"/></td>' + \
-                    "<td>" + str(lin.background) + "</td>" + "<td>" + str(lin.membrane) + "</td>" + \
-                    "<td>" + str(lin.septum) + "</td>" + \
-                    "<td>" + str(lin.fr) + "</td></tr>"
-                table += row
+                try:
+                    lin = linescan_manager.lines[key]
+                    img = linescan_manager.lines[key].image
+                    w, h, dummy = img.shape
+                    if w > h:
+                        img = np.rot90(img)
+                    imsave(filename + "/_linescan_images" +
+                           os.sep + key + '.png', img)
+                    row = '<tr style="text-align:center"><td>' + key + '</td><td><img src="./' + '_linescan_images/' + key + '.png" alt="pic" width="200"/></td>' + \
+                        "<td>" + str(lin.background) + "</td>" + "<td>" + str(lin.membrane) + "</td>" + \
+                        "<td>" + str(lin.septum) + "</td>" + \
+                        "<td>" + str(lin.fr) + "</td></tr>"
+                    table += row
+                except IndexError:
+                    print "One Line Not Saved: too close to edge of image"
 
             report += table
             report += "</table></body></html>"
