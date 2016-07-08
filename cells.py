@@ -299,6 +299,7 @@ class Cell(object):
         """Method used to create a mask of the septum based on creating a box
         around the cell and then defining the septum as being the dilated short
         axis of the box."""
+        print self.label
         x0, y0, x1, y1 = self.box
         lx0, ly0 = self.short_axis[0]
         lx1, ly1 = self.short_axis[1]
@@ -518,17 +519,18 @@ class Cell(object):
     def recursive_compute_sept(self, cell_mask, inner_mask_thickness,
                                septum_base, algorithm):
         try:
+            self.sept_mask = self.compute_sept_mask(cell_mask,
+                                                    inner_mask_thickness,
+                                                    septum_base,
+                                                    algorithm)
+        except IndexError:
             try:
-                self.sept_mask = self.compute_sept_mask(cell_mask,
-                                                        inner_mask_thickness,
-                                                        septum_base,
-                                                        algorithm)
-            except IndexError:
                 self.recursive_compute_sept(cell_mask, inner_mask_thickness - 1,
-                                            septum_base,
-                                            algorithm)
-        except RuntimeError:
-                self.recursive_compute_sept(cell_mask, inner_mask_thickness -1, septum_base, "Box")
+                                        septum_base,
+                                        algorithm)
+            except RuntimeError:
+                    self.recursive_compute_sept(cell_mask, inner_mask_thickness -1, septum_base, "Box")
+
 
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
