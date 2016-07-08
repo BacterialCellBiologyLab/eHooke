@@ -31,6 +31,12 @@ class Interface(object):
                                              command=self.choose_report_directory)
         self.askdirectory_button.pack()
 
+        self.increase_figsize_button = tk.Button(self.top_frame, text=" + ", command=self.increase_figsize)
+        self.increase_figsize_button.pack(side="right")
+
+        self.decrease_figsize_button = tk.Button(self.top_frame, text="  -  ", command=self.decrease_figsize)
+        self.decrease_figsize_button.pack(side="right")
+
         self.label_text = tk.StringVar()
         self.label_text.set("No Cells Selected")
         self.number_of_cells_label = tk.Label(
@@ -38,10 +44,12 @@ class Interface(object):
         self.number_of_cells_label.pack()
 
         # creates the figure canvas
-        self.fig = plt.figure(figsize=(8, 5), frameon=True)
+        self.fig_width = 6
+        self.fig_height = 3
+        self.fig = plt.figure(figsize=(self.fig_width, self.fig_height), frameon=True)
         self.canvas = FigureCanvasTkAgg(self.fig, self.middle_frame)
         self.canvas.show()
-        self.canvas.get_tk_widget().pack(side="top")
+        self.canvas.get_tk_widget().pack(fill="both")
 
         self.ax = plt.subplot(111)
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1)
@@ -138,6 +146,23 @@ class Interface(object):
         self.current_index -= 1
         if self.current_index < 0:
             self.current_index = 0
+        self.show_image(self.current_index)
+
+    def increase_figsize(self):
+
+        self.fig_width += 1
+        self.fig_height += 1
+
+        self.fig.set_size_inches(self.fig_width, self.fig_height, forward=True)
+
+        self.show_image(self.current_index)
+
+    def decrease_figsize(self):
+        if self.fig_height > 2:
+            self.fig_width -= 1
+            self.fig_height -= 1
+        self.fig.set_size_inches(self.fig_width, self.fig_height, forward=True)
+
         self.show_image(self.current_index)
 
     def plot_stats(self):
