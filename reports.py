@@ -216,7 +216,11 @@ class ReportManager:
                         "<td>" + str(lin.fr) + "</td></tr>"
                     table += row
                 except IndexError:
+<<<<<<< HEAD
                     print "One Line too close to edge of image"
+=======
+                    print "One Line Not Saved: too close to edge of image"
+>>>>>>> 08306633155c19fbdc8d546bbb166d35dff18b59
 
             report += table
             report += "</table></body></html>"

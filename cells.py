@@ -518,17 +518,14 @@ class Cell(object):
     def recursive_compute_sept(self, cell_mask, inner_mask_thickness,
                                septum_base, algorithm):
         try:
-            try:
-                self.sept_mask = self.compute_sept_mask(cell_mask,
-                                                        inner_mask_thickness,
-                                                        septum_base,
-                                                        algorithm)
-            except IndexError:
-                self.recursive_compute_sept(cell_mask, inner_mask_thickness - 1,
-                                            septum_base,
-                                            algorithm)
-        except RuntimeError:
-                self.recursive_compute_sept(cell_mask, inner_mask_thickness -1, septum_base, "Box")
+            self.sept_mask = self.compute_sept_mask(cell_mask,
+                                                    inner_mask_thickness,
+                                                    septum_base,
+                                                    algorithm)
+        except IndexError:
+            self.recursive_compute_sept(cell_mask, inner_mask_thickness - 1,
+                                        septum_base,
+                                        algorithm)
 
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
