@@ -99,7 +99,10 @@ class EHooke(object):
         """Merges two cells using the merge_cells method from the cell_manager
         instance and the compute_merged_cells to create a new list of cells,
         containing a cell corresponding to the merge of the previous two."""
-        self.cell_manager.merge_cells(label_c1, label_c2, self.parameters.cellprocessingparams, self.segments_manager, self.image_manager)
+        self.cell_manager.merge_cells(label_c1, label_c2,
+                                      self.parameters.cellprocessingparams,
+                                      self.segments_manager,
+                                      self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)
 
         print "Merge Finished"
@@ -108,7 +111,10 @@ class EHooke(object):
         """Splits a previously merged cell, requires the label of cell to be
         splitted.
         Calls the split_cells method from the cell_manager instance"""
-        self.cell_manager.split_cells(int(label_c1), self.parameters.cellprocessingparams, self.segments_manager, self.image_manager)
+        self.cell_manager.split_cells(int(label_c1),
+                                      self.parameters.cellprocessingparams,
+                                      self.segments_manager,
+                                      self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)
 
         print "Split Finished"

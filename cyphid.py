@@ -210,6 +210,13 @@ class Identifier(object):
         self.discarded_count = 0
 
     def load_cells(self):
+        self.phase1_ids = ""
+        self.phase2_ids = ""
+        self.phase3_ids = ""
+        self.phase1_count = 0
+        self.phase2_count = 0
+        self.phase3_count = 0
+        self.discarded_count = 0
         self.report_path = FD.askdirectory()
         self.path = self.report_path + "/_cyphid_images/"
         images_list = sorted(os.listdir(self.report_path + "/_images"))
