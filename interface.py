@@ -14,7 +14,7 @@ from skimage.exposure import rescale_intensity
 class Interface(object):
     """Main class of the module. Used to create the GUI"""
 
-    def __init__(self):
+    def __init__(self, windowsize=(11, 8)):
         self.ehooke = EHooke()
         self.default_params = self.ehooke.parameters
 
@@ -46,7 +46,7 @@ class Interface(object):
         self.empty_space = tk.Label(self.images_frame, text="")
         self.empty_space.pack(side="top")
 
-        self.fig = plt.figure(figsize=(11, 8), frameon=True)
+        self.fig = plt.figure(figsize=windowsize, frameon=True)
         self.canvas = FigureCanvasTkAgg(self.fig, self.middle_frame)
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side="top")
