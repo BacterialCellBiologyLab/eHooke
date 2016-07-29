@@ -98,6 +98,8 @@ class Interface(object):
             self.choose_phase(3)
         elif event.char == "d":
             self.choose_phase("Discard")
+        elif event.char == "b":
+            self.previous_cell()
 
     def show_nothing(self, x, y):
 

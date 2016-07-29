@@ -126,7 +126,7 @@ class RegionParameters(object):
         self.peak_min_distance = 5
         self.peak_min_height = 5
         self.peak_min_distance_from_edge = 10
-        self.max_peaks = 1000
+        self.max_peaks = 10000
 
         # feature labelling parameters
         self.outline_use_base_mask = False
