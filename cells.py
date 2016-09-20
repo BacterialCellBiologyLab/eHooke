@@ -8,11 +8,9 @@ from collections import OrderedDict
 import numpy as np
 import matplotlib as plt
 from copy import deepcopy
-from skimage.io import imsave
 from skimage.draw import line
 from skimage.measure import label
 from skimage.filters import threshold_isodata
-from skimage.segmentation import mark_boundaries
 from skimage.util import img_as_float, img_as_int
 from skimage import morphology, color, exposure
 import cellprocessing as cp

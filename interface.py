@@ -1435,20 +1435,9 @@ class Interface(object):
         self.membrane_thickness_label = tk.Label(
             self.membrane_thickness_frame, text="Membrane Thickness: ")
         self.membrane_thickness_label.pack(side="top")
-        self.membrane_thickness_value = tk.IntVar()
-        self.membrane_thickness_value.set(4)
-        self.membrane_thickness_radio_frame =  \
-            tk.Frame(self.membrane_thickness_frame)
-        self.membrane_thickness_radio_frame.pack(side="top")
-        self.membrane_thickness_radio1 = \
-            tk.Radiobutton(self.membrane_thickness_radio_frame, text="Normal",
-                           variable=self.membrane_thickness_value, value=4)
-        self.membrane_thickness_radio1.pack(side="left")
-        self.membrane_thickness_radio2 = \
-            tk.Radiobutton(self.membrane_thickness_radio_frame, text="SIM",
-                           variable=self.membrane_thickness_value,
-                           value=7)
-        self.membrane_thickness_radio2.pack(side="left")
+
+        self.membrane_thickness_value = tk.Scale(self.membrane_thickness_frame, from_=4, to=8,  orient="horizontal")
+        self.membrane_thickness_value.pack()
 
         self.filters_label = tk.Label(
             self.parameters_panel, text="Cell Filters: ")
