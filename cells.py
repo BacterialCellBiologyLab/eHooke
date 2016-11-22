@@ -755,6 +755,7 @@ class CellManager(object):
 
         self.base_w_cells = None
         self.fluor_w_cells = None
+        self.optional_w_cells = None
 
     def clean_empty_cells(self):
         """Removes empty cell objects from the cells dict"""
@@ -830,6 +831,12 @@ class CellManager(object):
         self.fluor_w_cells = cp.overlay_cells(self.cells, fluor,
                                               self.cell_colors)
 
+    def overlay_cells_w_optional(self, optional_image):
+        """Creates an overlay of the cells over the optional image"""
+        optional = color.rgb2gray(img_as_float(optional_image))
+        optional = exposure.rescale_intensity(optional)
+        self.optional_w_cells = cp.overlay_cells(self.cells, optional, self.cell_colors)
+
     def overlay_cells(self, image_manager):
         """Calls the methods used to create an overlay of the cells
         over the base and fluor images"""
@@ -842,6 +849,9 @@ class CellManager(object):
         self.merged_labels = labels
         self.overlay_cells_w_base(image_manager.base_image, image_manager.clip)
         self.overlay_cells_w_fluor(image_manager.fluor_image)
+
+        if image_manager.optional_image is not None:
+            self.overlay_cells_w_optional(image_manager.optional_image)
 
     def compute_box_axes(self, rotations, maskshape):
         for k in self.cells.keys():

@@ -1137,6 +1137,9 @@ class Interface(object):
                 self.images[
                     "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
 
+                if self.ehooke.image_manager.optional_image is not None:
+                    self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
+
                 self.show_image(self.current_image)
 
     def show_cell_info_cellprocessing(self, x, y):
@@ -1210,6 +1213,11 @@ class Interface(object):
 
         self.images[
             "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+
+        if self.ehooke.image_manager.optional_image is not None:
+            self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
+            self.optional_w_cells_button.config(state="active")
+
         self.images["Fluor_with_lines"] = self.ehooke.image_manager.fluor_image
 
         self.show_image(self.current_image)
@@ -1242,6 +1250,7 @@ class Interface(object):
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
         self.images[
             "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
 
         self.show_image(self.current_image)
 
@@ -1254,6 +1263,7 @@ class Interface(object):
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
         self.images[
             "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
 
         self.show_image(self.current_image)
 
@@ -1292,6 +1302,7 @@ class Interface(object):
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
         self.images[
             "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
 
         self.show_image(self.current_image)
 
@@ -1818,6 +1829,12 @@ class Interface(object):
             self.optional_button.config(state="disabled")
         else:
             self.optional_button.config(state="active")
+
+        self.optional_w_cells_button = tk.Button(self.images_frame, text="Optional With Cells",
+                                                command = lambda: self.show_image("Optional_cells_outlined"),
+                                                width=self.image_buttons_width)
+        self.optional_w_cells_button.pack(side="top", fill="x")
+        self.optional_w_cells_button.config(state="disabled")
 
         self.fluor_lines_button = tk.Button(self.images_frame, text="Fluor with Lines", command=lambda: self.show_image(
             "Fluor_with_lines"), width=self.image_buttons_width)
