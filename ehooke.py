@@ -186,7 +186,11 @@ class EHooke(object):
             filename = tkFileDialog.askdirectory()
         if label is None:
             label = self.fluor_path.split("/")
-            label = label[len(label) - 1].split(".")[0]
+            label = label[len(label) - 1].split(".")
+            if len(label) > 2:
+                label = label[len(label)-3] + "." + label[len(label)-2]
+            else:
+                label = label[len(label)-2]
 
         if len(self.linescan_manager.lines.keys()) > 0:
             self.linescan_manager.measure_fluorescence(
