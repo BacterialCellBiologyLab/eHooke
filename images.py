@@ -105,8 +105,13 @@ class ImageManager(object):
 
         elif params.mask_algorithm == "Local Average":
             # need to invert because threshold_adaptive sets dark parts to 0
+            block_size = params.mask_blocksize
+
+            if block_size%2 == 0:
+                block_size += 1
+
             base_mask = 1.0 - threshold_adaptive(base_mask,
-                                                 params.mask_blocksize,
+                                                 block_size,
                                                  offset=params.mask_offset)
 
         else:

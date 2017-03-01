@@ -1845,7 +1845,9 @@ class Interface(object):
         """Restarts ehooke to conduct a new analysis"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
+        working_dir = self.ehooke.working_dir
         self.ehooke = EHooke()
+        self.ehooke.working_dir = working_dir
         self.default_params = self.ehooke.parameters
         self.images = {}
         self.current_image = None

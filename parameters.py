@@ -62,7 +62,7 @@ class MaskParameters(object):
         self.mask_algorithm = 'Isodata'
 
         # used for local average algorithm
-        self.mask_blocksize = 100  # block size for moving average
+        self.mask_blocksize = 151  # block size for moving average
         self.mask_offset = 0.02    # offset for moving average
 
         # used as mask creation parameters
@@ -73,7 +73,7 @@ class MaskParameters(object):
         # matrix for removing white and black spots, if empty no removal
         self.mask_dilation = 0  # mask dilation iterations
 
-        self.auto_align = False
+        self.auto_align = True
 
         self.x_align = 0
         self.y_align = 0
