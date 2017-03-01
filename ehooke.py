@@ -24,6 +24,7 @@ class EHooke(object):
         self.cell_manager = None
         self.linescan_manager = None
         self.report_manager = None
+        self.working_dir = None
         self.base_path = None
         self.fluor_path = None
         self.get_cell_images = cell_data
@@ -33,7 +34,9 @@ class EHooke(object):
         Can be called without a filename or by passing one as an arg
         (filename=...)"""
         if filename is None:
-            filename = tkFileDialog.askopenfilename()
+            filename = tkFileDialog.askopenfilename(initialdir=self.working_dir)
+
+        self.working_dir = "/".join(filename.split("/")[:len(filename.split("/"))-1])
 
         self.base_path = filename
 
@@ -54,7 +57,7 @@ class EHooke(object):
         Can be called without a filename or by passing one as an arg
         (filename=...)"""
         if filename is None:
-            filename = tkFileDialog.askopenfilename()
+            filename = tkFileDialog.askopenfilename(initialdir=self.working_dir)
 
         self.fluor_path = filename
 
