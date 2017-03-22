@@ -968,8 +968,7 @@ class CellManager(object):
                 self.cells[k].compute_regions(params, image_manager)
                 self.cells[k].compute_fluor_stats(params, image_manager)
             except TypeError:
-                self.cells[k].selection_state = 0
-                self.cells[k].marked_as_noise = "Yes"
+                del self.cells[k]
 
         self.overlay_cells(image_manager)
 
