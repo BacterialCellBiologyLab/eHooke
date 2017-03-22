@@ -179,7 +179,7 @@ class ImageManager(object):
                     tot = -np.sum(np.multiply(inverted_mask,
                                               fluor_image[x0 + dx:x1 + dx,
                                                           y0 + dy:y1 + dy]))
-
+                                                          
                     if tot < minscore:
                         minscore = tot
                         best = (dx, dy)

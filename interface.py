@@ -200,7 +200,13 @@ class Interface(object):
         self.ehooke.compute_mask()
         self.images["Mask"] = self.ehooke.image_manager.mask
         self.images["Base_mask"] = self.ehooke.image_manager.base_w_mask
-        self.show_image("Base_mask")
+
+        if self.ehooke.image_manager.fluor_image is not None:
+            self.images["Fluor_mask"] = self.ehooke.image_manager.fluor_w_mask
+            self.show_image("Fluor_mask")
+        else:
+            self.show_image("Base_mask")
+
         self.load_fluorescence_button.config(state="active")
         self.mask_button.config(state="active")
         self.base_with_mask_button.config(state="active")

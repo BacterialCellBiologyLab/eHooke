@@ -50,6 +50,9 @@ class EHooke(object):
 
         self.image_manager.compute_mask(self.parameters.imageloaderparams)
 
+        if self.image_manager.fluor_image is not None:
+            self.load_fluor_image(self.fluor_path)
+
         print "Mask Computation Finished"
 
     def load_fluor_image(self, filename=None):
