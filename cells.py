@@ -297,7 +297,6 @@ class Cell(object):
         """Method used to create a mask of the septum based on creating a box
         around the cell and then defining the septum as being the dilated short
         axis of the box."""
-        print self.label
         x0, y0, x1, y1 = self.box
         lx0, ly0 = self.short_axis[0]
         lx1, ly1 = self.short_axis[1]
@@ -649,16 +648,16 @@ class Cell(object):
                 fluorbox, self.sept_mask) - self.stats["Baseline"]
 
             self.stats["Fluor Ratio"] = (self.measure_fluor(fluorbox, self.sept_mask) - self.stats[
-                                         "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
+                                        "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
 
             self.stats["Fluor Ratio 75%"] = (self.measure_fluor(fluorbox, self.sept_mask, 0.75) - self.stats[
-                                             "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
+                                            "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
 
             self.stats["Fluor Ratio 25%"] = (self.measure_fluor(fluorbox, self.sept_mask, 0.25) - self.stats[
-                                             "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
+                                            "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
 
             self.stats["Fluor Ratio 10%"] = (self.measure_fluor(fluorbox, self.sept_mask, 0.10) - self.stats[
-                                             "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
+                                            "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
 
         else:
             self.stats["Septum Median"] = 0
@@ -719,7 +718,6 @@ class Cell(object):
     def recompute_outline(self, labels):
         ids = self.merged_list
         ids.append(self.label)
-        print ids
         new_outline = []
 
         for px in self.outline:
@@ -899,8 +897,6 @@ class CellManager(object):
         """merges two cells"""
         label_c1 = int(label_c1)
         label_c2 = int(label_c2)
-        print len(self.cells[str(label_c2)].outline)
-        print len(self.cells[str(label_c2)].lines)
         self.cells[str(label_c2)].stats["Area"] = self.cells[str(label_c2)].stats[
             "Area"] + self.cells[str(label_c1)].stats["Area"]
 
@@ -921,12 +917,6 @@ class CellManager(object):
 
         if len(self.cells[str(label_c2)].merged_list) > 0:
             self.cells[str(label_c2)].merged_with = "Yes"
-
-        print len(self.cells[str(label_c2)].outline)
-        print len(self.cells[str(label_c2)].lines)
-
-        print len(self.original_cells[str(label_c2)].outline)
-        print len(self.original_cells[str(label_c2)].lines)
 
     def split_cells(self, label_c1, params, segments_manager, image_manager):
         """Splits a previously merged cell."""
@@ -970,12 +960,12 @@ class CellManager(object):
             except TypeError:
                 del self.cells[k]
 
-        self.overlay_cells(image_manager)
-
         fluorgray = exposure.rescale_intensity(color.rgb2gray(img_as_float(
             image_manager.fluor_image)))
         for k in self.cells.keys():
             self.cells[k].set_image(params, [self.fluor_w_cells], fluorgray)
+
+        self.overlay_cells(image_manager)
 
     def filter_cells(self, params, image_manager):
         """Gets the list of filters on the parameters [("Stat", min, max)].

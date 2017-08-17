@@ -101,7 +101,7 @@ def overlay_cells(cells, image, colors):
             if c.sept_mask is not None:
                 try:
                     x0, y0, x1, y1 = c.box
-                    tmp[x0:x1, y0:y1] = mark_boundaries(tmp[x0:x1, y0:y1],
+                    tmp[x0:x1+1, y0:y1+1] = mark_boundaries(tmp[x0:x1+1, y0:y1+1],
                                                         img_as_int(
                                                             c.sept_mask),
                                                         color=col)

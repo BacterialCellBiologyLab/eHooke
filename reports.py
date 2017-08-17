@@ -255,26 +255,58 @@ class ReportManager:
     def get_cell_images(self, path, label, image_manager, cell_manager, params):
         if label is None:
             filename = path + "/Report/"
-            if not os.path.exists(filename + "cell_data"):
-                os.makedirs(filename + "/cell_data")
+            if not os.path.exists(filename + "cell_data/fluor"):
+                os.makedirs(filename + "/cell_data/fluor")
+            if not os.path.exists(filename + "cell_data/fluor_mask"):
+                os.makedirs(filename + "/cell_data/fluor_mask")
+            if not os.path.exists(filename + "cell_data/fluor_overlay"):
+                os.makedirs(filename + "/cell_data/fluor_overlay")
+
+            if image_manager.optional_image is not None:
+                if not os.path.exists(filename + "cell_data/optional"):
+                    os.makedirs(filename + "/cell_data/optional")
+                if not os.path.exists(filename + "cell_data/optional_mask"):
+                    os.makedirs(filename + "/cell_data/optional_mask")
+                if not os.path.exists(filename + "cell_data/optional_overlay"):
+                    os.makedirs(filename + "/cell_data/optional_overlay")
         else:
             filename = path + "/Report_" + label + "/"
-            if not os.path.exists(filename + "cell_data"):
-                os.makedirs(filename + "/cell_data")
+            if not os.path.exists(filename + "cell_data/fluor"):
+                os.makedirs(filename + "/cell_data/fluor")
+            if not os.path.exists(filename + "cell_data/fluor_mask"):
+                os.makedirs(filename + "/cell_data/fluor_mask")
+            if not os.path.exists(filename + "cell_data/fluor_overlay"):
+                os.makedirs(filename + "/cell_data/fluor_overlay")
+
+            if image_manager.optional_image is not None:
+                if not os.path.exists(filename + "cell_data/optional"):
+                    os.makedirs(filename + "/cell_data/optional")
+                if not os.path.exists(filename + "cell_data/optional_mask"):
+                    os.makedirs(filename + "/cell_data/optional_mask")
+                if not os.path.exists(filename + "cell_data/optional_overlay"):
+                    os.makedirs(filename + "/cell_data/optional_overlay")
+
         x_align, y_align = params.imageloaderparams.x_align, params.imageloaderparams.y_align
 
-        lin = "cell_id;x0;y0;x1;y1;\n"
+        fluor_img = image_manager.fluor_image
+        fluor_w_cells = cell_manager.fluor_w_cells
+        optional_image = image_manager.optional_image
+        optional_w_cells = cell_manager.optional_w_cells
 
         for key in cell_manager.cells.keys():
-            cell_id = str(int(cell_manager.cells[key].label))
             x0, y0, x1, y1 = cell_manager.cells[key].box
-            lin += cell_id + ";" + str(x0 + x_align) + ";" + str(
-                y0 + y_align) + ";" + str(x1 + x_align) + ";" + str(y1 + y_align) + ";\n"
-            imsave(filename + "/cell_data" + os.sep + cell_id + "_cellmask.png",
-                   cell_manager.cells[key].cell_mask)
-            imsave(filename + "/cell_data" + os.sep + cell_id + "_perimmask.png",
-                   cell_manager.cells[key].perim_mask)
-            imsave(filename + "/cell_data" + os.sep + cell_id + "_septmask.png",
-                   cell_manager.cells[key].sept_mask)
+            imsave(filename + "cell_data/fluor/" + key + ".png",
+                   fluor_img[x0:x1+1, y0:y1+1])
+            imsave(filename + "cell_data/fluor_mask/" + key + ".png",
+                   fluor_img[x0:x1+1, y0:y1+1] * cell_manager.cells[key].cell_mask)
+            imsave(filename + "cell_data/fluor_overlay/" + key + ".png",
+                   fluor_w_cells[x0:x1+1, y0:y1+1])
 
-        open(filename + "box_data.csv", 'w').writelines(lin)
+            if optional_image is not None:
+                imsave(filename + "cell_data/optional/" + key + ".png",
+                       optional_image[x0:x1+1, y0:y1+1])
+                imsave(filename + "cell_data/optional_mask/" + key + ".png",
+                       optional_image[x0:x1+1, y0:y1+1] * cell_manager.cells[key].cell_mask)
+                imsave(filename + "cell_data/optional_overlay/" + key + ".png",
+                       optional_w_cells[x0:x1+1, y0:y1+1])
+            

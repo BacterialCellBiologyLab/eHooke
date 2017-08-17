@@ -131,7 +131,7 @@ class ImageManager(object):
         self.compute_base_mask(params)
 
         mask = np.copy(self.base_mask)
-        closing_matrix = np.ones((params.mask_closing, params.mask_closing))
+        closing_matrix = np.ones((int(params.mask_closing), int(params.mask_closing)))
 
         if params.mask_closing > 0:
             # removes small dark spots and then small white spots
