@@ -168,7 +168,7 @@ class CellParameters(object):
     def __init__(self):
         self.axial_step = 5
 
-        self.find_septum = True
+        self.find_septum = False
         self.look_for_septum_in_base = False
         self.septum_algorithms = ["Box", "Isodata"]
         self.septum_algorithm = "Isodata"

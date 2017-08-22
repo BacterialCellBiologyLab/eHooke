@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from skimage.io import imread, imsave
 from skimage.color import rgb2gray
 from skimage.util import img_as_float
+from skimage.exposure import rescale_intensity
 
 
 class Interface(object):
@@ -120,7 +121,7 @@ class Interface(object):
 
     def show_image(self, index):
         self.ax.cla()
-        self.ax.imshow(self.identifier.cells[self.cells_keys[self.current_index]].image)
+        self.ax.imshow(rescale_intensity(self.identifier.cells[self.cells_keys[self.current_index]].image), cmap="gray")
         self.ax.format_coord = self.show_luminance
         self.label_text.set(str(self.current_index+1) + " of " + self.total_cells + " total")
         self.canvas.show()
@@ -220,15 +221,14 @@ class Identifier(object):
         self.phase3_count = 0
         self.discarded_count = 0
         self.report_path = FD.askdirectory()
-        self.path = self.report_path + "/_cyphid_images/"
-        images_list = sorted(os.listdir(self.report_path + "/_images"))
+        self.path = self.report_path + "/_cell_data/fluor"
+        images_list = sorted(os.listdir(self.path))
 
         for image in images_list:
             id = str(image.split(".")[0])
             self.cells[id] = Cell()
             self.cells[id].id = id
-            self.cells[id].image = imread(self.report_path + "/_images/"+image)
-            self.cells[id].image = self.cells[id].image[:, len(self.cells[id].image[0]) / 5:len(self.cells[id].image[0]) * 2 / 5:]
+            self.cells[id].image = imread(self.path+"/"+image)
             self.cells[id].image = img_as_float(self.cells[id].image)
 
 
@@ -243,15 +243,12 @@ class Identifier(object):
             if self.cells[key].phase == "1":
                 self.phase1_count += 1
                 self.phase1_ids += str(self.cells[key].id) + ";"
-                imsave(self.path + "1_" + self.cells[key].id + ".png", self.cells[key].image)
             elif self.cells[key].phase == "2":
                 self.phase2_count += 1
                 self.phase2_ids += str(self.cells[key].id) + ";"
-                imsave(self.path + "2_" + self.cells[key].id + ".png", self.cells[key].image)
             elif self.cells[key].phase == "3":
                 self.phase3_count += 1
                 self.phase3_ids += str(self.cells[key].id) + ";"
-                imsave(self.path + "/" + "3_" + self.cells[key].id + ".png", self.cells[key].image)
             else:
                 self.discarded_count += 1
 
