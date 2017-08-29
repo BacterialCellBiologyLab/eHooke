@@ -1245,6 +1245,7 @@ class Interface(object):
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
         self.images[
             "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
 
         self.show_image(self.current_image)
 
