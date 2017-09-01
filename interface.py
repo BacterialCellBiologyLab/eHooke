@@ -122,10 +122,7 @@ class Interface(object):
 
     def load_default_params_cell_computation(self):
         """Loads the default params for the cell computation"""
-        self.find_septum_checkbox_value.set(
-            self.default_params.cellprocessingparams.find_septum)
-        self.look_for_septum_in_base_checkbox_value.set(
-            self.default_params.cellprocessingparams.look_for_septum_in_base)
+        
         self.axial_step_value.set(
             self.default_params.imageprocessingparams.axial_step)
         self.force_merge_below_value.set(
@@ -138,6 +135,13 @@ class Interface(object):
             self.default_params.cellprocessingparams.merge_min_interface)
         self.membrane_thickness_value.set(
             self.default_params.cellprocessingparams.inner_mask_thickness)
+
+    def load_default_params_cell_processing(self):
+        """Loads the default params for cell processing"""
+        self.find_septum_checkbox_value.set(
+            self.default_params.cellprocessingparams.find_septum)
+        self.look_for_septum_in_base_checkbox_value.set(
+            self.default_params.cellprocessingparams.look_for_septum_in_base)
 
     def show_image(self, image):
         """Method use to display the selected image on the canvas"""
@@ -545,6 +549,10 @@ class Interface(object):
             self.top_frame, text="Back", command=self.new_analysis)
         self.back_button.pack(side="right")
 
+        self.new_analysis_button = tk.Button(
+            self.top_frame, text="New Analysis", command=self.new_analysis)
+        self.new_analysis_button.pack(side="right")
+
         self.segments_parameters_label = tk.Label(self.parameters_panel,
                                                   text="Segments Computation Parameters:")
         self.segments_parameters_label.pack(side="top", fill="x")
@@ -890,6 +898,10 @@ class Interface(object):
         self.back_button = tk.Button(
             self.top_frame, text="Back", command=self.set_segmentscomputation)
         self.back_button.pack(side="right")
+
+        self.new_analysis_button = tk.Button(
+            self.top_frame, text="New Analysis", command=self.new_analysis)
+        self.new_analysis_button.pack(side="right")
 
         self.cellcomputation_parameters_label = tk.Label(self.parameters_panel,
                                                          text="Cell Computation Parameters:")
@@ -1356,6 +1368,30 @@ class Interface(object):
             "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
         self.show_image("Fluor_with_lines")
 
+    def check_filter_params(self):
+        
+        for flt in self.ehooke.parameters.cellprocessingparams.cell_filters:
+            if flt[0] == "Area":
+                self.areafilter_checkbox_value.set(True)
+                self.areafilter_min_value.set(int(flt[1]))
+                self.areafilter_max_value.set(int(flt[2]))
+            elif flt[0] == "Perimeter":
+                self.perimeterfilter_checkbox_value.set(True)
+                self.perimeterfilter_min_value.set(int(flt[1]))
+                self.perimeterfilter_max_value.set(int(flt[2]))
+            elif flt[0] == "Eccentricity":
+                self.eccentricityfilter_checkbox_value.set(True)
+                self.eccentricityfilter_min_value.set(float(flt[1]))
+                self.eccentricityfilter_max_value.set(float(flt[2]))
+            elif flt[0] == "Irregularity":
+                self.irregularityfilter_checkbox_value.set(True)
+                self.irregularityfilter_min_value.set(float(flt[1]))
+                self.irregularityfilter_max_value.set(float(flt[2]))
+            elif flt[0] == "Neighbours":
+                self.neighboursfilter_checkbox_value.set(True)
+                self.neighboursfilter_min_value.set(int(flt[1]))
+                self.neighboursfilter_max_value.set(int(flt[2]))
+    
     def set_cellprocessing(self):
         """Method used to change the interface to the Cell Processing
         Step"""
@@ -1400,16 +1436,16 @@ class Interface(object):
 
         self.generate_report_button = tk.Button(
             self.top_frame, text="Save Report", command=self.generate_report)
-        self.generate_report_button.pack(side="left")
+        self.generate_report_button.pack(side="right")
         self.generate_report_button.config(state="disabled")
-
-        self.new_analysis_button = tk.Button(
-            self.top_frame, text="New Analysis", command=self.new_analysis)
-        self.new_analysis_button.pack(side="right")
 
         self.back_button = tk.Button(
             self.top_frame, text="Back", command=self.set_cellcomputation_from_cellprocessing)
         self.back_button.pack(side="right")
+
+        self.new_analysis_button = tk.Button(
+            self.top_frame, text="New Analysis", command=self.new_analysis)
+        self.new_analysis_button.pack(side="right")
 
         self.cellprocessing_label = tk.Label(
             self.parameters_panel, text="Cell Processing Parameters: ")
@@ -1569,6 +1605,8 @@ class Interface(object):
         self.neighboursfilter_min_value.set(0)
         self.neighboursfilter_max_value.set(10)
 
+        self.check_filter_params()
+
         self.selection_label = tk.Label(
             self.parameters_panel, text="Cell Selection:")
         self.selection_label.pack(side="top")
@@ -1606,7 +1644,7 @@ class Interface(object):
         self.parameters_label.pack(side="top")
 
         self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
-                                                       command=self.load_default_params_cell_computation)
+                                                       command=self.load_default_params_cell_processing)
         self.cellprocessing_default_button.pack(side="top", fill="x")
 
         self.save_parameters_button = tk.Button(
