@@ -37,6 +37,7 @@ class Cell(object):
         self.perim_mask = None
         self.sept_mask = None
         self.cyto_mask = None
+        self.membsept_mask = None
 
         self.fluor = None
         self.image = None
@@ -98,7 +99,8 @@ class Cell(object):
                                   ("Fluor Ratio", 0),
                                   ("Fluor Ratio 75%", 0),
                                   ("Fluor Ratio 25%", 0),
-                                  ("Fluor Ratio 10%", 0)])
+                                  ("Fluor Ratio 10%", 0),
+                                  ("Memb+Sept Median", 0)])
 
         self.selection_state = 1
 
@@ -528,7 +530,6 @@ class Cell(object):
             except RuntimeError:
                     self.recursive_compute_sept(cell_mask, inner_mask_thickness -1, septum_base, "Box")
 
-
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
         septum, cytoplasm) and creates their respectives masks."""
@@ -549,6 +550,8 @@ class Cell(object):
             if params.septum_algorithm == "Isodata":
                 self.perim_mask = self.compute_perim_mask(self.cell_mask,
                                                           params.inner_mask_thickness)
+                
+                self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
                 linmask = self.remove_sept_from_membrane(
                     image_manager.mask.shape)
                 if linmask is not None:
@@ -564,6 +567,7 @@ class Cell(object):
                 self.perim_mask = (self.compute_perim_mask(self.cell_mask,
                                                            params.inner_mask_thickness) -
                                    self.sept_mask) > 0
+                self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
                 self.cyto_mask = (self.cell_mask - self.perim_mask -
                                   self.sept_mask) > 0
         else:
@@ -658,6 +662,7 @@ class Cell(object):
 
             self.stats["Fluor Ratio 10%"] = (self.measure_fluor(fluorbox, self.sept_mask, 0.10) - self.stats[
                                             "Baseline"]) / (self.measure_fluor(fluorbox, self.perim_mask) - self.stats["Baseline"])
+            self.stats["Memb+Sept Median"] = self.measure_fluor(fluorbox, self.membsept_mask) - self.stats["Baseline"]
 
         else:
             self.stats["Septum Median"] = 0
@@ -669,6 +674,8 @@ class Cell(object):
             self.stats["Fluor Ratio 25%"] = 0
 
             self.stats["Fluor Ratio 10%"] = 0
+
+            self.stats["Memb+Sept Median"] = 0
 
     def set_image(self, params, images, background):
         """ creates a strip with the cell in different images
