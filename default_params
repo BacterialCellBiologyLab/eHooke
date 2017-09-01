@@ -1,0 +1,33 @@
+[ImageLoader]
+border = 10
+invert base = False
+mask algorithm = Isodata
+mask blocksize = 151
+mask offset = 0.02
+mask fill holes = False
+mask closing = 1
+mask dilation = 0
+auto align = True
+x align = 0
+y align = 0
+
+[ImageProcessing]
+peak min distance = 5
+peak min height = 5
+peak min distance from edge = 10
+max peaks = 10000
+outline use base mask = False
+
+[CellProcessing]
+axial step = 5
+find septum = False
+look for septum in base = False
+cell filters = []
+cell force merge below = 150
+merge dividing cells = False
+merge length tolerance = 1.1
+merge min interface = 15
+inner mask thickness = 4
+baseline margin = 30
+cell colors = 10
+
