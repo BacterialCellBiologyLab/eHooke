@@ -1,5 +1,6 @@
 "Module used to encapsulate some functions used in the cells module"
 
+import cells
 import numpy as np
 from skimage import color
 from skimage.util import img_as_int
@@ -80,6 +81,7 @@ def stats_format(params):
         result.append(("Fluor Ratio 75%", 4))
         result.append(("Fluor Ratio 25%", 4))
         result.append(("Fluor Ratio 10%", 4))
+        result.append(("Memb+Sept Median", 4))
 
     return result
 
@@ -172,9 +174,12 @@ def check_merge(cell1, cell2, rotations, interface, mask, params):
         tmp = cells.Cell(0)
         tmp.outline.extend(cell1.outline)
         tmp.outline.extend(cell2.outline)
+        tmp.lines.extend(cell1.lines)
+        tmp.lines.extend(cell2.lines)
+        tmp.stats["Area"] = cell1.stats["Area"] + cell2.stats["Area"]
         tmp.compute_axes(rotations, mask.shape)
-        tmpshort = axis_length(tmp.short)
-        maxshort = max(axis_length(cell1.short), axis_length(cell2.short))
+        tmpshort = tmp.stats["Width"]
+        maxshort = max(cell1.stats["Width"], cell2.stats["Width"])
 
         if tmpshort <= maxshort * params.merge_length_tolerance:
             return True
