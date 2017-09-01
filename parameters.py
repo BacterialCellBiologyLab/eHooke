@@ -5,6 +5,13 @@ to the parameters of each step of the analysis"""
 import ConfigParser as cp
 import tkFileDialog
 
+def check_bool(param):
+    if param == "True":
+        return True
+    elif param == "False":
+        return False
+    else:
+        return param
 
 class ParametersManager(object):
     """Main class. Encapsulates the different stages parameters
@@ -84,16 +91,16 @@ class MaskParameters(object):
         file section"""
 
         self.border = int(parser.get(section, "border"))
-        self.invert_base = parser.get(section, "invert base")
-        self.mask_algorithm = parser.get(section, "mask algorithm")
-        self.mask_blocksize = parser.get(section, "mask blocksize")
-        self.mask_offset = parser.get(section, "mask offset")
-        self.mask_fill_holes = parser.get(section, "mask fill holes")
-        self.mask_closing = parser.get(section, "mask closing")
-        self.mask_dilation = parser.get(section, "mask dilation")
-        self.auto_align = parser.get(section, "auto align")
-        self.x_align = parser.get(section, "x align")
-        self.y_align = parser.get(section, "y align")
+        self.invert_base = check_bool(parser.get(section, "invert base"))
+        self.mask_algorithm = str(parser.get(section, "mask algorithm"))
+        self.mask_blocksize = int(parser.get(section, "mask blocksize"))
+        self.mask_offset = float(parser.get(section, "mask offset"))
+        self.mask_fill_holes = check_bool(parser.get(section, "mask fill holes"))
+        self.mask_closing = int(float(parser.get(section, "mask closing")))
+        self.mask_dilation = int(parser.get(section, "mask dilation"))
+        self.auto_align = check_bool(parser.get(section, "auto align"))
+        self.x_align = int(parser.get(section, "x align"))
+        self.y_align = int(parser.get(section, "y align"))
 
     def save_to_parser(self, parser, section):
         """Saves mask parameters to a ConfigParser object of the
@@ -137,14 +144,14 @@ class RegionParameters(object):
         configuration file. The section parameters specifies the
         configuration file section"""
 
-        self.peak_min_distance = parser.get(section,
-                                            "peak min distance")
-        self.peak_min_height = parser.get(section, "peak min height")
+        self.peak_min_distance = int(parser.get(section,
+                                            "peak min distance"))
+        self.peak_min_height = int(parser.get(section, "peak min height"))
         self.peak_min_distance_from_edge = \
-            parser.get(section, "peak min distance from edge")
-        self.max_peaks = parser.get(section, "max peaks")
-        self.outline_use_base_mask = parser.get(section,
-                                                "outline use base mask")
+            int(parser.get(section, "peak min distance from edge"))
+        self.max_peaks = int(parser.get(section, "max peaks"))
+        self.outline_use_base_mask = check_bool(parser.get(section,
+                                                "outline use base mask"))
 
     def save_to_parser(self, parser, section):
         """Saves mask parameters to a ConfigParser object of the configuration
@@ -191,23 +198,40 @@ class CellParameters(object):
         # display
         self.cell_colors = 10
 
+    def process_filters(self, text):
+        filters = []
+        if len(text.split(")")) > 1:
+            tmp_filters = text.split(")")
+
+            for i in range(len(tmp_filters)-1):
+                flt = tmp_filters[i]
+                tmp_filter = flt.split("(")[1]
+                values = tmp_filter.split(",")
+                name = str(values[0].split("'")[1])
+                mini = float(values[1])
+                maxi = float(values[2])
+
+                filters.append((name, mini, maxi))
+
+        return filters
+
     def load_from_parser(self, parser, section):
         """Loads frame parameters from a ConfigParser object of the
         configuration file. The section parameters specifies the configuration
         file section"""
 
         self.axial_step = int(parser.get(section, "axial step"))
-        self.find_septum = parser.get(section, "find septum")
-        self.look_for_septum_in_base = parser.get(section,
-                                                  "look for septum in base")
-        self.cell_filters = parser.get(section, "cell filters")
-        self.cell_force_merge_below = parser.get(section,
-                                                 "cell force merge below")
-        self.merge_dividing_cells = parser.get(section, "merge dividing cells")
-        self.merge_length_tolerance = parser.get(section,
-                                                 "merge length tolerance")
-        self.merge_min_interface = parser.get(section, "merge min interface")
-        self.inner_mask_thickness = parser.get(section, "inner mask thickness")
+        self.find_septum = check_bool(parser.get(section, "find septum"))
+        self.look_for_septum_in_base = check_bool(parser.get(section,
+                                                  "look for septum in base"))
+        self.cell_filters = self.process_filters(parser.get(section, "cell filters"))
+        self.cell_force_merge_below = int(parser.get(section,
+                                                 "cell force merge below"))
+        self.merge_dividing_cells = check_bool(parser.get(section, "merge dividing cells"))
+        self.merge_length_tolerance = float(parser.get(section,
+                                                 "merge length tolerance"))
+        self.merge_min_interface = int(parser.get(section, "merge min interface"))
+        self.inner_mask_thickness = int(parser.get(section, "inner mask thickness"))
         self.baseline_margin = int(parser.get(section, "baseline margin"))
         self.cell_colors = int(parser.get(section, "cell colors"))
 
