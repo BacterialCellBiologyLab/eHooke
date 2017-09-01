@@ -246,11 +246,16 @@ class ReportManager:
             if not os.path.exists(filename + "_linescan_images"):
                 os.makedirs(filename + "/_linescan_images")
 
+        selected_cells = ""
+        for cell in cell_manager.cells.keys():
+            selected_cells += cell + ";"
+
         self.csv_report(filename, cell_manager)
         self.html_report(filename, cell_manager)
         self.linescan_report(filename, linescan_manager)
         imsave(filename + "selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename + "params")
+        open(filename + "selected_cells.txt", "wb").writelines(selected_cells)
 
     def get_cell_images(self, path, label, image_manager, cell_manager, params):
         if label is None:
