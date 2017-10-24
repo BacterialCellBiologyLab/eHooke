@@ -31,6 +31,7 @@ class ImageManager(object):
         self.base_mask = None
         self.mask = None
         self.fluor_image = None
+        self.original_fluor_image = None
         self.optional_image = None
         self.base_w_mask = None
         self.fluor_w_mask = None
@@ -45,6 +46,7 @@ class ImageManager(object):
         self.base_mask = None
         self.mask = None
         self.fluor_image = None
+        self.original_fluor_image = None
         self.optional_image = None
         self.base_w_mask = None
         self.fluor_w_mask = None
@@ -165,6 +167,8 @@ class ImageManager(object):
 
         if len(fluor_image.shape) > 2:
             fluor_image = color.rgb2gray(fluor_image)
+
+        self.original_fluor_image = fluor_image
 
         fluor_image = img_as_float(fluor_image)
 

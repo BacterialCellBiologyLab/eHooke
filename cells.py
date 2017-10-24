@@ -630,10 +630,10 @@ class Cell(object):
     def compute_fluor_stats(self, params, image_manager):
         """Computes the cell stats related to the fluorescence"""
         self.compute_fluor_baseline(image_manager.mask,
-                                    image_manager.fluor_image,
+                                    image_manager.original_fluor_image,
                                     params.baseline_margin)
 
-        fluorbox = self.fluor_box(image_manager.fluor_image)
+        fluorbox = self.fluor_box(image_manager.original_fluor_image)
 
         self.stats["Cell Median"] = \
             self.measure_fluor(fluorbox, self.cell_mask) - \
