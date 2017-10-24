@@ -10,6 +10,7 @@ with the main module of the software."""
 
 from tkFileDialog import asksaveasfilename
 import numpy as np
+from copy import deepcopy
 from skimage.segmentation import mark_boundaries
 from skimage.io import imsave, imread
 from skimage.util import img_as_float, img_as_uint
@@ -168,7 +169,7 @@ class ImageManager(object):
         if len(fluor_image.shape) > 2:
             fluor_image = color.rgb2gray(fluor_image)
 
-        self.original_fluor_image = fluor_image
+        self.original_fluor_image = deepcopy(fluor_image)
 
         fluor_image = img_as_float(fluor_image)
 
@@ -194,6 +195,7 @@ class ImageManager(object):
         self.align_values = best
 
         dx, dy = best
+        self.original_fluor_image = self.original_fluor_image[x0 + dx:x1 + dx, y0 + dy:y1 + dy]
         self.fluor_image = fluor_image[x0 + dx:x1 + dx, y0 + dy:y1 + dy]
 
         self.overlay_mask_fluor_image()

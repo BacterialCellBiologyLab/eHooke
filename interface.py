@@ -691,7 +691,7 @@ class Interface(object):
             self.irregularity_value.set(0)
             self.neighbours_value.set(0)
 
-        lum = self.ehooke.image_manager.fluor_image[int(y), int(x)]
+        lum = self.ehooke.image_manager.original_fluor_image[int(y), int(x)]
         return "Luminance: " + str(lum)
 
     def compute_cells(self):
@@ -1213,7 +1213,7 @@ class Interface(object):
             self.fr25_value.set(0)
             self.fr10_value.set(0)
 
-        lum = self.ehooke.image_manager.fluor_image[int(y), int(x)]
+        lum = self.ehooke.image_manager.original_fluor_image[int(y), int(x)]
         return "Luminance: " + str(lum)
 
     def process_cells(self):
