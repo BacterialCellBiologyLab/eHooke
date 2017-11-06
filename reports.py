@@ -248,7 +248,8 @@ class ReportManager:
 
         selected_cells = ""
         for cell in cell_manager.cells.keys():
-            selected_cells += cell + ";"
+            if cell_manager.cells[cell].selection_state == CELL_SELECTED:
+                selected_cells += cell + ";"
 
         self.csv_report(filename, cell_manager)
         self.html_report(filename, cell_manager)
