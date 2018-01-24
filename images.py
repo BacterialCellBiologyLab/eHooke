@@ -116,6 +116,12 @@ class ImageManager(object):
             base_mask = 1.0 - threshold_adaptive(base_mask,
                                                  block_size,
                                                  offset=params.mask_offset)
+        
+        elif params.mask_algorithm == "Absolute":
+            value = float(raw_input("Insert Threshold Value: "))
+            print value
+
+            base_mask = img_as_float(base_mask <= value)
 
         else:
             print "Not a valid mask algorithm"
