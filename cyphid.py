@@ -233,7 +233,6 @@ class Identifier(object):
             self.cells[id].image = imread(self.path+"/"+image)
             self.cells[id].image = img_as_float(self.cells[id].image)
 
-
     def choose_phase(self, cell_id, phase):
         self.cells[cell_id].phase = phase
 
