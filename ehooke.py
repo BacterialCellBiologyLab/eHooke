@@ -17,7 +17,7 @@ class EHooke(object):
     Starts with an instance of the Parameters and Image class.
     Contains the methods needed to perform the analysis"""
 
-    def __init__(self, cell_data=False):
+    def __init__(self, cell_data=True):
         self.parameters = ParametersManager()
         self.image_manager = ImageManager()
         self.segments_manager = None
