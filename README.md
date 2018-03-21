@@ -6,3 +6,5 @@
 #### matplotlib==2.0.2
 #### numpy==1.13.1
 #### scipy==0.19.1
+
+##### newer versions of this libraries won't work with current code
