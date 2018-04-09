@@ -189,7 +189,7 @@ class EHooke(object):
         from Reports"""
 
         if filename is None:
-            filename = tkFileDialog.askdirectory()
+            filename = tkFileDialog.askdirectory(initialdir=self.working_dir)
         if label is None:
             label = self.fluor_path.split("/")
             label = label[len(label) - 1].split(".")
