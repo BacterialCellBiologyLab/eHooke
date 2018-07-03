@@ -554,22 +554,16 @@ class Cell(object):
                 self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
                 linmask = self.remove_sept_from_membrane(
                     image_manager.mask.shape)
+                self.cyto_mask = (self.cell_mask - self.perim_mask -
+                                      self.sept_mask) > 0
                 if linmask is not None:
                     old_membrane = self.perim_mask
                     self.perim_mask = (old_membrane - linmask) > 0
-                    self.cyto_mask = (self.cell_mask - self.perim_mask -
-                                      self.sept_mask) > 0
-
-                else:
-                    self.cyto_mask = (
-                        self.cell_mask - self.perim_mask - self.sept_mask) > 0
             else:
                 self.perim_mask = (self.compute_perim_mask(self.cell_mask,
                                                            params.inner_mask_thickness) -
                                    self.sept_mask) > 0
                 self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
-                self.cyto_mask = (self.cell_mask - self.perim_mask -
-                                  self.sept_mask) > 0
         else:
             self.sept_mask = None
             self.perim_mask = self.compute_perim_mask(self.cell_mask,
