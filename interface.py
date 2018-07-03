@@ -1902,6 +1902,7 @@ class Interface(object):
         """Creates a prompt when trying to close the main windows"""
         if tkMessageBox.askokcancel("Quit", "Do you want to quit?"):
             self.main_window.destroy()
+            self.main_window.quit()
 
 if __name__ == "__main__":
     interface = Interface()
