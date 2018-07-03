@@ -76,7 +76,8 @@ class EHooke(object):
         if filename is None:
             filename = tkFileDialog.askopenfilename()
 
-        self.image_manager.load_option_image(filename)
+        self.image_manager.load_option_image(filename,
+                                             self.parameters.imageloaderparams)
 
     def compute_segments(self):
         """Calls the compute_segments method from Segments.

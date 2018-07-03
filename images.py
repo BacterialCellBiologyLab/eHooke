@@ -206,7 +206,7 @@ class ImageManager(object):
 
         self.overlay_mask_fluor_image()
 
-    def load_option_image(self, filename):
+    def load_option_image(self, filename, params):
         """Loads an option image that can be used to look for the septum
         and to help classify the cell cycle phases. No fluorescence is measured
         on this image"""
@@ -218,8 +218,26 @@ class ImageManager(object):
 
         optional_image = img_as_float(optional_image)
 
+        best = (0, 0)
         x0, y0, x1, y1 = self.clip
-        dx, dy = self.align_values
+
+        if params.auto_align:
+            minscore = 0
+            width = params.border
+            for dx in range(-width, width):
+                for dy in range(-width, width):
+                    tot = -np.sum(np.multiply(inverted_mask,
+                                              fluor_image[x0 + dx:x1 + dx,
+                                                          y0 + dy:y1 + dy]))
+                                                          
+                    if tot < minscore:
+                        minscore = tot
+                        best = (dx, dy)
+
+        else:
+            best = (params.x_align, params.y_align)
+
+        dx, dy = best
 
         self.optional_image = optional_image[x0 + dx:x1 + dx, y0 + dy:y1 + dy]
 
