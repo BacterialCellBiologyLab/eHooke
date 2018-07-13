@@ -62,9 +62,7 @@ class EHooke(object):
         if filename is None:
             filename = tkFileDialog.askopenfilename(initialdir=self.working_dir)
 
-        self.fluor_path = filename
-
-        self.image_manager.load_fluor_image(self.fluor_path,
+        self.image_manager.load_fluor_image(filename,
                                             self.parameters.imageloaderparams)
 
         print "Fluor Image Loaded"
@@ -74,7 +72,7 @@ class EHooke(object):
         Can be called without a filename or by passing on as an arg"""
 
         if filename is None:
-            filename = tkFileDialog.askopenfilename()
+            filename = tkFileDialog.askopenfilename(initialdir=self.working_dir)
 
         self.image_manager.load_option_image(filename,
                                              self.parameters.imageloaderparams)
