@@ -62,6 +62,8 @@ class EHooke(object):
         if filename is None:
             filename = tkFileDialog.askopenfilename(initialdir=self.working_dir)
 
+        self.fluor_path = filename
+
         self.image_manager.load_fluor_image(filename,
                                             self.parameters.imageloaderparams)
 
