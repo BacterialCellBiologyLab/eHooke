@@ -211,6 +211,8 @@ class ImageManager(object):
         and to help classify the cell cycle phases. No fluorescence is measured
         on this image"""
 
+        inverted_mask = 1 - self.mask
+
         optional_image = imread(filename)
 
         if len(optional_image.shape) > 2:
