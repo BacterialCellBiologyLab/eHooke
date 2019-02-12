@@ -229,8 +229,8 @@ class ImageManager(object):
             for dx in range(-width, width):
                 for dy in range(-width, width):
                     tot = -np.sum(np.multiply(inverted_mask,
-                                              fluor_image[x0 + dx:x1 + dx,
-                                                          y0 + dy:y1 + dy]))
+                                              optional_image[x0 + dx:x1 + dx,
+                                                             y0 + dy:y1 + dy]))
                                                           
                     if tot < minscore:
                         minscore = tot
