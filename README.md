@@ -7,4 +7,4 @@
 #### numpy==1.13.1
 #### scipy==0.19.1
 
-##### newer versions of this libraries won't work with current code
+##### newer versions of these libraries won't work with current code
