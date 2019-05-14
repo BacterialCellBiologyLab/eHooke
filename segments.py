@@ -3,8 +3,7 @@ mask, which should correspond to the cell regions.
 The regions are then labeled using the watershed algorithm. Requires an
 ImageManager object containg the loaded images (base + fluor) and the mask.
 Contains a single class, Segments, which stores the data from the processing
-of the mask: features
-and labels, which will later be used to define the different cell regions
+of the mask: features and labels, which will later be used to define the different cell regions
 """
 
 import numpy as np
