@@ -1244,6 +1244,7 @@ class Interface(object):
         self.generate_report_button.config(state="active")
         self.select_all_button.config(state="active")
         self.unselect_all_button.config(state="active")
+        self.invert_selection_button.config(state="active")
         self.select_from_file_button.config(state="active")
         self.add_line_button.config(state="active")
         self.remove_line_button.config(state="active")
@@ -1264,6 +1265,17 @@ class Interface(object):
     def reject_all_cells(self):
         """Method used to mark all cells as rejected"""
         self.ehooke.reject_all_cells()
+
+        self.images[
+            "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
+        self.images[
+            "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
+
+        self.show_image(self.current_image)
+
+    def invert_selection(self):
+        self.ehooke.invert_selection()
 
         self.images[
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
@@ -1620,6 +1632,11 @@ class Interface(object):
                                              command=self.reject_all_cells)
         self.unselect_all_button.pack(side="top", fill="x")
         self.unselect_all_button.config(state="disabled")
+        
+        self.invert_selection_button = tk.Button(self.parameters_panel, text="Invert Selection",
+                                                command=self.invert_selection)
+        self.invert_selection_button.pack(side="top", fill="x")
+        self.invert_selection_button.config(state="disabled")
 
         self.select_from_file_button = tk.Button(
             self.parameters_panel, text="Select From File", command=self.select_from_file)

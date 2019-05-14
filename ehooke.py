@@ -162,6 +162,13 @@ class EHooke(object):
 
         self.cell_manager.overlay_cells(self.image_manager)
 
+    def invert_selection(self):
+
+        for k in self.cell_manager.cells.keys():
+            self.cell_manager.cells[k].selection_state *= -1
+
+        self.cell_manager.overlay_cells(self.image_manager)
+
     def select_from_file(self, filename=None):
         if filename is None:
             filename = tkFileDialog.askopenfilename()
