@@ -1238,6 +1238,7 @@ class Interface(object):
 
         self.filter_cells_button.config(state="active")
         self.generate_report_button.config(state="active")
+        self.compute_coloc_button.config(state="active")
         self.select_all_button.config(state="active")
         self.unselect_all_button.config(state="active")
         self.invert_selection_button.config(state="active")
@@ -1336,6 +1337,9 @@ class Interface(object):
     def generate_report(self):
         """Method used to save a report with the cell stats"""
         self.ehooke.generate_reports()
+
+    def compute_pcc(self):
+        self.ehooke.compute_coloc()
 
     def draw_line(self, event):
         if event.button == 3:
@@ -1443,6 +1447,11 @@ class Interface(object):
             self.top_frame, text="Save Report", command=self.generate_report)
         self.generate_report_button.pack(side="right")
         self.generate_report_button.config(state="disabled")
+
+        self.compute_coloc_button = tk.Button(
+            self.top_frame, text="PCC Analysis", command=self.compute_pcc)
+        self.compute_coloc_button.pack(side="right")
+        self.compute_coloc_button.config(state="disabled")
 
         self.back_button = tk.Button(
             self.top_frame, text="Back", command=self.set_cellcomputation_from_cellprocessing)

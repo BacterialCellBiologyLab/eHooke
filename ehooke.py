@@ -10,6 +10,7 @@ from segments import SegmentsManager
 from cells import CellManager
 from reports import ReportManager
 from linescan import LineScanManager
+from colocmanager import ColocManager
 
 
 class EHooke(object):
@@ -23,6 +24,7 @@ class EHooke(object):
         self.segments_manager = None
         self.cell_manager = None
         self.linescan_manager = None
+        self.coloc_manager = None
         self.report_manager = None
         self.working_dir = None
         self.base_path = None
@@ -191,6 +193,14 @@ class EHooke(object):
                                        self.image_manager)
 
         print "Finished Filtering Cells"
+
+    def compute_coloc(self):
+        if self.image_manager.optional_image is not None:
+            self.coloc_manager = ColocManager()
+            self.coloc_manager.compute_pcc(self.cell_manager, self.image_manager, self.parameters)
+
+        else:
+            print("Optional Image not loaded")
 
     def generate_reports(self, filename=None, label=None):
         """Generates the report files by calling the generate_report method
