@@ -1,6 +1,6 @@
 ﻿"""Module used to create the report of the cell identification"""
 from skimage.io import imsave
-from skimage.util import img_as_float
+from skimage.util import img_as_float, img_as_uint
 import cellprocessing as cp
 import numpy as np
 import os
@@ -56,14 +56,14 @@ class ReportManager:
                         lin = lin + ";" + str(cell.stats[stat[0]])
                     noise.append(lin + "\n")
 
-        if len(selects) > 1:
-            open(filename + "csv_selected.csv", 'w').writelines(selects)
+            if len(selects) > 1:
+                open(filename + "csv_selected.csv", 'w').writelines(selects)
 
-        if len(rejects) > 1:
-            open(filename + "csv_rejected.csv", "w").writelines(rejects)
+            if len(rejects) > 1:
+                open(filename + "csv_rejected.csv", "w").writelines(rejects)
 
-        if len(noise) > 1:
-            open(filename + "csv_noise.csv", "w").writelines(noise)
+            if len(noise) > 1:
+                open(filename + "csv_noise.csv", "w").writelines(noise)
 
     def html_report(self, filename, cell_manager):
         """generates an html report with the all the cell stats from the
@@ -98,7 +98,7 @@ class ReportManager:
             count2 = 0
             count3 = 0
 
-            print "Total Cells: " + str(len(cells))
+            print("Total Cells: " + str(len(cells)))
 
             sorted_keys = []
             for k in sorted(cells.keys()):
@@ -165,9 +165,9 @@ class ReportManager:
                     lin += '</td></tr>\n'
                     noise.append(lin)
 
-            print "Selected Cells: " + str(count)
-            print "Rejected Cells: " + str(count2)
-            print "Noise objects: " + str(count3)
+            print("Selected Cells: " + str(count))
+            print("Rejected Cells: " + str(count2))
+            print("Noise objects: " + str(count3))
 
             if len(selects) > 1:
                 report.extend(selects)
@@ -216,8 +216,7 @@ class ReportManager:
                         "<td>" + str(lin.fr) + "</td></tr>"
                     table += row
                 except IndexError:
-                    print "One Line too close to edge of image"
-                    print "One Line Not Saved: too close to edge of image"
+                    print("One Line Not Saved: too close to edge of image")
 
             report += table
             report += "</table></body></html>"
@@ -256,7 +255,7 @@ class ReportManager:
         self.linescan_report(filename, linescan_manager)
         imsave(filename + "selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename + "params")
-        open(filename + "selected_cells.txt", "wb").writelines(selected_cells)
+        open(filename + "selected_cells.txt", "w").writelines(selected_cells)
 
     def get_cell_images(self, path, label, image_manager, cell_manager, params):
         if label is None:
@@ -287,10 +286,9 @@ class ReportManager:
             x0, y0, x1, y1 = cell_manager.cells[key].box
             fluor_cell = np.concatenate((fluor_img[x0:x1+1, y0:y1+1], fluor_img[x0:x1+1, y0:y1+1] * cell_manager.cells[key].cell_mask), axis=1)
             imsave(filename + "_cell_data/fluor/" + key + ".png",
-                   fluor_cell)
+                   img_as_uint(fluor_cell))
 
             if optional_image is not None:
                 optional_cell = np.concatenate((optional_image[x0:x1+1, y0:y1+1], optional_image[x0:x1+1, y0:y1+1] * cell_manager.cells[key].cell_mask), axis=1)
                 imsave(filename + "_cell_data/optional/" + key + ".png",
-                       optional_cell)
-            
+                       img_as_uint(optional_cell))

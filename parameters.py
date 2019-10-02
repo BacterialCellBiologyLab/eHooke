@@ -2,8 +2,8 @@
 Creates a class that encapsulates three different classes corresponding
 to the parameters of each step of the analysis"""
 
-import ConfigParser as cp
-import tkFileDialog
+import configparser as cp
+from tkinter import filedialog as tkFileDialog
 
 def check_bool(param):
     if param == "True":
@@ -111,17 +111,17 @@ class MaskParameters(object):
         if section not in parser.sections():
             parser.add_section(section)
 
-        parser.set(section, "border", self.border)
-        parser.set(section, "invert base", self.invert_base)
-        parser.set(section, "mask algorithm", self.mask_algorithm)
-        parser.set(section, "mask blocksize", self.mask_blocksize)
-        parser.set(section, "mask offset", self.mask_offset)
-        parser.set(section, "mask fill holes", self.mask_fill_holes)
-        parser.set(section, "mask closing", self.mask_closing)
-        parser.set(section, "mask dilation", self.mask_dilation)
-        parser.set(section, "auto align", self.auto_align)
-        parser.set(section, "x align", self.x_align)
-        parser.set(section, "y align", self.y_align)
+        parser.set(section, "border", str(self.border))
+        parser.set(section, "invert base", str(self.invert_base))
+        parser.set(section, "mask algorithm", str(self.mask_algorithm))
+        parser.set(section, "mask blocksize", str(self.mask_blocksize))
+        parser.set(section, "mask offset", str(self.mask_offset))
+        parser.set(section, "mask fill holes", str(self.mask_fill_holes))
+        parser.set(section, "mask closing", str(self.mask_closing))
+        parser.set(section, "mask dilation", str(self.mask_dilation))
+        parser.set(section, "auto align", str(self.auto_align))
+        parser.set(section, "x align", str(self.x_align))
+        parser.set(section, "y align", str(self.y_align))
 
 
 class RegionParameters(object):
@@ -160,13 +160,13 @@ class RegionParameters(object):
         if section not in parser.sections():
             parser.add_section(section)
 
-        parser.set(section, "peak min distance", self.peak_min_distance)
-        parser.set(section, "peak min height", self.peak_min_height)
+        parser.set(section, "peak min distance", str(self.peak_min_distance))
+        parser.set(section, "peak min height", str(self.peak_min_height))
         parser.set(section, "peak min distance from edge",
-                   self.peak_min_distance_from_edge)
-        parser.set(section, "max peaks", self.max_peaks)
+                   str(self.peak_min_distance_from_edge))
+        parser.set(section, "max peaks", str(self.max_peaks))
         parser.set(section, "outline use base mask",
-                   self.outline_use_base_mask)
+                   str(self.outline_use_base_mask))
 
 
 class CellParameters(object):
@@ -179,6 +179,13 @@ class CellParameters(object):
         self.look_for_septum_in_base = False
         self.septum_algorithms = ["Box", "Isodata"]
         self.septum_algorithm = "Isodata"
+
+        # microscope options for cyphid
+
+        self.classify_cells = True
+        self.microscope = "Epifluorescence"
+        self.microscope_options = ["Epifluorescence", "SIM"]
+
 
         # cell filtering criteria
         self.cell_filters = []
@@ -222,6 +229,8 @@ class CellParameters(object):
 
         self.axial_step = int(parser.get(section, "axial step"))
         self.find_septum = check_bool(parser.get(section, "find septum"))
+        self.classify_cells = check_bool(parser.get(section, "classify cells"))
+        self.microscope = str(parser.get(section, "microscope"))
         self.look_for_septum_in_base = check_bool(parser.get(section,
                                                   "look for septum in base"))
         self.cell_filters = self.process_filters(parser.get(section, "cell filters"))
@@ -242,17 +251,19 @@ class CellParameters(object):
         if section not in parser.sections():
             parser.add_section(section)
 
-        parser.set(section, "axial step", self.axial_step)
-        parser.set(section, "find septum", self.find_septum)
+        parser.set(section, "axial step", str(self.axial_step))
+        parser.set(section, "find septum", str(self.find_septum))
+        parser.set(section, "classify cells", str(self.classify_cells))
+        parser.set(section, "microscope", str(self.microscope))
         parser.set(section, "look for septum in base",
-                   self.look_for_septum_in_base)
-        parser.set(section, "cell filters", self.cell_filters)
+                   str(self.look_for_septum_in_base))
+        parser.set(section, "cell filters", str(self.cell_filters))
         parser.set(section, "cell force merge below",
-                   self.cell_force_merge_below)
-        parser.set(section, "merge dividing cells", self.merge_dividing_cells)
+                   str(self.cell_force_merge_below))
+        parser.set(section, "merge dividing cells", str(self.merge_dividing_cells))
         parser.set(section, "merge length tolerance",
-                   self.merge_length_tolerance)
-        parser.set(section, "merge min interface", self.merge_min_interface)
-        parser.set(section, "inner mask thickness", self.inner_mask_thickness)
-        parser.set(section, "baseline margin", self.baseline_margin)
-        parser.set(section, "cell colors", self.cell_colors)
+                   str(self.merge_length_tolerance))
+        parser.set(section, "merge min interface", str(self.merge_min_interface))
+        parser.set(section, "inner mask thickness", str(self.inner_mask_thickness))
+        parser.set(section, "baseline margin", str(self.baseline_margin))
+        parser.set(section, "cell colors", str(self.cell_colors))

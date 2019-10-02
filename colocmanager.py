@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import tkFileDialog as fd
+from tkinter import filedialog as fd
 from scipy.stats import pearsonr
 
 class ColocManager(object):

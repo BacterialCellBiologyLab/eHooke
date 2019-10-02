@@ -8,13 +8,13 @@ the handling of the images and the computation of the mask.
 This class should also be responsible for the connection of this module
 with the main module of the software."""
 
-from tkFileDialog import asksaveasfilename
+from tkinter.filedialog import asksaveasfilename
 import numpy as np
 from copy import deepcopy
 from skimage.segmentation import mark_boundaries
 from skimage.io import imsave, imread
 from skimage.util import img_as_float, img_as_uint
-from skimage.filters import threshold_isodata, threshold_adaptive
+from skimage.filters import threshold_isodata, threshold_local
 from skimage import exposure, color, morphology
 from scipy import ndimage
 
@@ -96,7 +96,7 @@ class ImageManager(object):
         and the clip area, which should be already defined
         by the load_base_image method
         To create the base mask, two algorithms are available, on based on the
-        threshold_isodata and the other one on the threshold_adaptive functions
+        threshold_isodata and the other one on the threshold_local functions
         of the scikit-image.threshold module.
         """
         x0, y0, x1, y1 = self.clip
@@ -113,18 +113,18 @@ class ImageManager(object):
             if block_size%2 == 0:
                 block_size += 1
 
-            base_mask = 1.0 - threshold_adaptive(base_mask,
-                                                 block_size,
-                                                 offset=params.mask_offset)
+            base_mask = 1.0 - threshold_local(base_mask,
+                                              block_size,
+                                              offset=params.mask_offset)
         
         elif params.mask_algorithm == "Absolute":
             value = float(raw_input("Insert Threshold Value: "))
-            print value
+            print(value)
 
             base_mask = img_as_float(base_mask <= value)
 
         else:
-            print "Not a valid mask algorithm"
+            print("Not a valid mask algorithm")
 
         self.base_mask = 1 - base_mask
 
@@ -295,6 +295,6 @@ class ImageManager(object):
         elif image_to_save == "Fluor With Mask":
             imsave(filename + ".png", self.fluor_w_mask)
         else:
-            print "Not a valid image selection."
-            print "Choose between:"
-            print "Base, Fluor, Base With Mask, Fluor With Mask"
+            print("Not a valid image selection.")
+            print("Choose between:")
+            print("Base, Fluor, Base With Mask, Fluor With Mask")

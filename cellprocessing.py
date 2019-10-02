@@ -83,6 +83,9 @@ def stats_format(params):
         result.append(("Fluor Ratio 10%", 4))
         result.append(("Memb+Sept Median", 4))
 
+    if params.classify_cells:
+        result.append(("Cell Cycle Phase", 1))
+
     return result
 
 
@@ -118,16 +121,15 @@ def assign_cell_color(cell, cells, cell_colors):
 
     neighcols = []
 
-    for neigh in cell.neighbours.iterkeys():
+    for neigh in list(iter(cell.neighbours.keys())):
         try:
             col = cells[str(int(neigh))].color_i
             if col not in neighcols:
                 neighcols.append(col)
         except KeyError:
-            print "Neighbour already merged"
+            print("Neighbour already merged")
 
-    cell.color_i = cell.stats["Area"] % len(
-        cell_colors)  # each cell has a preferred color
+    cell.color_i = cell.stats["Area"] % len(cell_colors)  # each cell has a preferred color
 
     while len(neighcols) < len(cell_colors) and (cell.color_i in neighcols):
         cell.color_i += 1

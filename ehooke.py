@@ -3,7 +3,7 @@ Controls the flow of the analysis and handles the interaction of the different
 modules.
 Contains a single class EHooke."""
 
-import tkFileDialog
+from tkinter import filedialog as tkFileDialog
 from parameters import ParametersManager
 from images import ImageManager
 from segments import SegmentsManager
@@ -11,6 +11,7 @@ from cells import CellManager
 from reports import ReportManager
 from linescan import LineScanManager
 from colocmanager import ColocManager
+from classifier import CellCycleClassifier
 
 
 class EHooke(object):
@@ -45,7 +46,7 @@ class EHooke(object):
         self.image_manager.load_base_image(filename,
                                            self.parameters.imageloaderparams)
 
-        print "Base Image Loaded"
+        print("Base Image Loaded")
 
     def compute_mask(self):
         """Calls the compute_mask method from image_manager."""
@@ -55,7 +56,7 @@ class EHooke(object):
         if self.image_manager.fluor_image is not None:
             self.load_fluor_image(self.fluor_path)
 
-        print "Mask Computation Finished"
+        print("Mask Computation Finished")
 
     def load_fluor_image(self, filename=None):
         """Calls the load_fluor_image method from the ImageManager
@@ -69,7 +70,7 @@ class EHooke(object):
         self.image_manager.load_fluor_image(filename,
                                             self.parameters.imageloaderparams)
 
-        print "Fluor Image Loaded"
+        print("Fluor Image Loaded")
 
     def load_option_image(self, filename=None):
         """Calls the load_optional_image method from the ImageManager
@@ -91,7 +92,7 @@ class EHooke(object):
                                                imageprocessingparams,
                                                self.image_manager)
 
-        print "Segments Computation Finished"
+        print("Segments Computation Finished")
 
     def compute_cells(self):
         """Creates an instance of the CellManager class and uses the
@@ -102,7 +103,7 @@ class EHooke(object):
                                         self.image_manager,
                                         self.segments_manager)
 
-        print "Cells Computation Finished"
+        print("Cells Computation Finished")
 
     def merge_cells(self, label_c1, label_c2):
         """Merges two cells using the merge_cells method from the cell_manager
@@ -114,7 +115,7 @@ class EHooke(object):
                                       self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)
 
-        print "Merge Finished"
+        print("Merge Finished")
 
     def split_cells(self, label_c1):
         """Splits a previously merged cell, requires the label of cell to be
@@ -126,7 +127,7 @@ class EHooke(object):
                                       self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)
 
-        print "Split Finished"
+        print("Split Finished")
 
     def define_as_noise(self, label_c1, noise):
         """Method used to change the state of a cell to noise or to undo it"""
@@ -140,7 +141,21 @@ class EHooke(object):
                                         self.image_manager)
         self.linescan_manager = LineScanManager()
 
-        print "Processing Cells Finished"
+        if self.parameters.cellprocessingparams.classify_cells:
+            self.compute_cellcyclephases()
+        else:
+            for k in self.cell_manager.cells.keys():
+                self.cell_manager.cells[k].stats["Cell Cycle Phase"] = 0
+
+        print("Processing Cells Finished")
+
+    def select_cells_phase(self, phase):
+
+        for k in self.cell_manager.cells.keys():
+            if self.cell_manager.cells[k].stats["Cell Cycle Phase"] == phase:
+                self.cell_manager.cells[k].selection_state = 1
+
+        self.cell_manager.overlay_cells(self.image_manager)
 
     def add_line_linescan(self, point_1, point_2, point_3):
         self.linescan_manager.add_line(point_1, point_2, point_3)
@@ -192,7 +207,7 @@ class EHooke(object):
         self.cell_manager.filter_cells(self.parameters.cellprocessingparams,
                                        self.image_manager)
 
-        print "Finished Filtering Cells"
+        print("Finished Filtering Cells")
 
     def compute_coloc(self):
         if self.image_manager.optional_image is not None:
@@ -201,6 +216,12 @@ class EHooke(object):
 
         else:
             print("Optional Image not loaded")
+
+    def compute_cellcyclephases(self):
+
+        self.cellcycleclassifier = CellCycleClassifier()
+        self.cellcycleclassifier.classify_cells(self.image_manager, self.cell_manager,
+                                                self.parameters.cellprocessingparams.microscope)
 
     def generate_reports(self, filename=None, label=None):
         """Generates the report files by calling the generate_report method
@@ -231,4 +252,4 @@ class EHooke(object):
                                                 self.cell_manager,
                                                 self.parameters)
 
-        print "Reports Generated"
+        print("Reports Generated")

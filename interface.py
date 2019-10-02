@@ -1,11 +1,11 @@
 """Module responsible for creating the GUI and handling the ehooke module"""
 
-import tkMessageBox
-import Tkinter as tk
+from tkinter import messagebox as tkMessageBox
+import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from ehooke import EHooke
 from skimage.segmentation import mark_boundaries
 from skimage.exposure import rescale_intensity
@@ -48,7 +48,7 @@ class Interface(object):
 
         self.fig = plt.figure(figsize=windowsize, frameon=True)
         self.canvas = FigureCanvasTkAgg(self.fig, self.middle_frame)
-        self.canvas.show()
+        self.canvas.draw()
         self.canvas.get_tk_widget().pack(side="top")
 
         self.ax = plt.subplot(111)
@@ -56,9 +56,9 @@ class Interface(object):
         self.ax.axis("off")
         plt.autoscale(False)
 
-        self.canvas.show()
+        self.canvas.draw()
 
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.middle_frame)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.middle_frame)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(fill="both")
 
@@ -122,7 +122,9 @@ class Interface(object):
 
     def load_default_params_cell_computation(self):
         """Loads the default params for the cell computation"""
-        
+
+        self.classify_cells_checkbox_value.set(self.default_params.imageprocessingparams.classify_cells)
+        self.microscope_value.set(self.default_params.imageprocessingparams.microscope)
         self.axial_step_value.set(
             self.default_params.imageprocessingparams.axial_step)
         self.force_merge_below_value.set(
@@ -169,7 +171,6 @@ class Interface(object):
             self.ax.imshow(self.images[image], cmap=cm.Greys_r)
 
         self.canvas.draw()
-        self.canvas.show()
 
     def load_base_image(self):
         """Loads the base image"""
@@ -253,7 +254,7 @@ class Interface(object):
         plt.autoscale(False)
         self.ax.format_coord = self.remove_coord
 
-        self.canvas.show()
+        self.canvas.draw()
 
         for w in self.top_frame.winfo_children():
             w.destroy()
@@ -512,7 +513,7 @@ class Interface(object):
         Step"""
         self.show_image("Fluor_mask")
         self.ax.format_coord = self.remove_coord
-        self.canvas.show()
+        self.canvas.draw()
 
         for w in self.top_frame.winfo_children():
             w.destroy()
@@ -863,7 +864,7 @@ class Interface(object):
         Step"""
         self.show_image("Base_features")
         self.ax.format_coord = self.remove_coord
-        self.canvas.show()
+        self.canvas.draw()
 
         for w in self.top_frame.winfo_children():
             w.destroy()
@@ -1168,6 +1169,7 @@ class Interface(object):
             self.cellid_value.set(label)
             self.merged_with_value.set(self.ehooke.cell_manager.cells[
                                        str(label)].merged_with)
+            self.cell_cycle_phase_value.set(str(stats["Cell Cycle Phase"]))
             self.marked_as_noise_value.set(self.ehooke.cell_manager.cells[
                                            str(label)].marked_as_noise)
             self.area_value.set(int(stats["Area"]))
@@ -1191,6 +1193,7 @@ class Interface(object):
         else:
             self.cellid_value.set(0)
             self.merged_with_value.set("No")
+            self.cell_cycle_phase_value.set("0")
             self.marked_as_noise_value.set("No")
             self.area_value.set(0)
             self.perimeter_value.set(0)
@@ -1215,6 +1218,8 @@ class Interface(object):
     def process_cells(self):
         """Method used to process the individual regions of each cell
         aswell as their fluor stats"""
+        self.ehooke.parameters.cellprocessingparams.classify_cells = self.classify_cells_checkbox_value.get()
+        self.ehooke.parameters.cellprocessingparams.microscope = self.microscope_value.get()
         self.ehooke.parameters.cellprocessingparams.find_septum = self.find_septum_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = self.look_for_septum_in_base_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.septum_algorithm = self.septum_algorithm_value.get()
@@ -1246,6 +1251,15 @@ class Interface(object):
         self.add_line_button.config(state="active")
         self.remove_line_button.config(state="active")
         self.status.set("Cell Processing Finished")
+
+        if self.classify_cells_checkbox_value.get():
+            self.select_phase1_button.config(state="active")
+            self.select_phase2_button.config(state="active")
+            self.select_phase3_button.config(state="active")
+        else:
+            self.select_phase1_button.config(state="disabled")
+            self.select_phase2_button.config(state="disabled")
+            self.select_phase3_button.config(state="disabled")
 
     def select_all_cells(self):
         """Method used to mark all cells as selected"""
@@ -1286,6 +1300,18 @@ class Interface(object):
         """Loads a file generated by cyphID with a list of cells to be selected"""
 
         self.ehooke.select_from_file()
+
+        self.images[
+            "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
+        self.images[
+            "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
+
+        self.show_image(self.current_image)
+
+    def select_cells_phase(self, phase):
+
+        self.ehooke.select_cells_phase(phase)
 
         self.images[
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
@@ -1409,7 +1435,7 @@ class Interface(object):
         Step"""
         self.show_image("Fluor_cells_outlined")
         self.ax.format_coord = self.show_cell_info_cellprocessing
-        self.canvas.show()
+        self.canvas.draw()
 
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.on_press)
@@ -1464,6 +1490,28 @@ class Interface(object):
         self.cellprocessing_label = tk.Label(
             self.parameters_panel, text="Cell Processing Parameters: ")
         self.cellprocessing_label.pack(side="top")
+
+        self.microscope_frame = tk.Frame(self.parameters_panel)
+        self.microscope_frame.pack(side="top", fill="x")
+        self.microscope_label = tk.Label(
+            self.microscope_frame, text="Microscope: ")
+        self.microscope_label.pack(side="left")
+        self.microscope_value = tk.StringVar()
+        self.microscope_menu = tk.OptionMenu(self.microscope_frame, self.microscope_value,
+                                                   'Epifluorescence', 'SIM')
+        self.microscope_menu.pack(side="left")
+        self.microscope_value.set("Epifluorescence")
+
+        self.classify_cells_frame = tk.Frame(self.parameters_panel)
+        self.classify_cells_frame.pack(side="top", fill="x")
+        self.classify_cells_label = tk.Label(
+            self.classify_cells_frame, text="Classify Cell Cycle Phase: ")
+        self.classify_cells_label.pack(side="left")
+        self.classify_cells_checkbox_value = tk.BooleanVar()
+        self.classify_cells_checkbox = tk.Checkbutton(self.classify_cells_frame, variable=self.classify_cells_checkbox_value,
+                                                      onvalue=True, offvalue=False)
+        self.classify_cells_checkbox_value.set(False)
+        self.classify_cells_checkbox.pack(side="left")
 
         self.find_septum_frame = tk.Frame(self.parameters_panel)
         self.find_septum_frame.pack(side="top", fill="x")
@@ -1645,6 +1693,24 @@ class Interface(object):
         self.select_from_file_button.pack(side="top", fill="x")
         self.select_from_file_button.config(state="disabled")
 
+        self.linescan_label = tk.Label(self.parameters_panel, text="Cell Cycle Phase:")
+        self.linescan_label.pack(side="top")
+
+        self.select_phase1_button = tk.Button(
+            self.parameters_panel, text="Select Phase 1 cells", command=lambda: self.select_cells_phase(1))
+        self.select_phase1_button.pack(side="top", fill="x")
+        self.select_phase1_button.config(state="disabled")
+
+        self.select_phase2_button = tk.Button(
+            self.parameters_panel, text="Select Phase 2 cells", command=lambda: self.select_cells_phase(2))
+        self.select_phase2_button.pack(side="top", fill="x")
+        self.select_phase2_button.config(state="disabled")
+
+        self.select_phase3_button = tk.Button(
+            self.parameters_panel, text="Select Phase 3 cells", command=lambda: self.select_cells_phase(3))
+        self.select_phase3_button.pack(side="top", fill="x")
+        self.select_phase3_button.config(state="disabled")
+
         self.linescan_label = tk.Label(self.parameters_panel, text="Linescan:")
         self.linescan_label.pack(side="top")
 
@@ -1701,6 +1767,16 @@ class Interface(object):
         self.marked_as_noise_value_label = tk.Label(
             self.marked_as_noise_frame, textvariable=self.marked_as_noise_value)
         self.marked_as_noise_value_label.pack(side="left")
+
+        self.cell_cycle_phase_frame = tk.Frame(self.cell_info_frame)
+        self.cell_cycle_phase_frame.pack(side="top", fill="x")
+        self.cell_cycle_phase_label = tk.Label(
+            self.cell_cycle_phase_frame, text="Cell Cycle Phase: ")
+        self.cell_cycle_phase_label.pack(side="left")
+        self.cell_cycle_phase_value = tk.StringVar()
+        self.cell_cycle_phase_value_label = tk.Label(
+            self.cell_cycle_phase_frame, textvariable=self.cell_cycle_phase_value)
+        self.cell_cycle_phase_value_label.pack(side="left")
 
         self.area_frame = tk.Frame(self.cell_info_frame)
         self.area_frame.pack(side="top", fill="x")

@@ -57,7 +57,8 @@ class Cell(object):
                                   ("Fluor Ratio", 0),
                                   ("Fluor Ratio 75%", 0),
                                   ("Fluor Ratio 25%", 0),
-                                  ("Fluor Ratio 10%", 0)])
+                                  ("Fluor Ratio 10%", 0),
+                                  ("Cell Cycle Phase", 0)])
 
         self.selection_state = 1
 
@@ -100,7 +101,8 @@ class Cell(object):
                                   ("Fluor Ratio 75%", 0),
                                   ("Fluor Ratio 25%", 0),
                                   ("Fluor Ratio 10%", 0),
-                                  ("Memb+Sept Median", 0)])
+                                  ("Memb+Sept Median", 0),
+                                  ("Cell Cycle Phase", 0)],)
 
         self.selection_state = 1
 
@@ -198,7 +200,7 @@ class Cell(object):
         width = len(points) + 1
 
         # no need to do more rotations, due to symmetry
-        for rix in range(len(rotations) / 2 + 1):
+        for rix in range(int(len(rotations) / 2 + 1)):
             r = rotations[rix]
             nx0, ny0, nx1, ny1, nwidth = cp.bound_rectangle(
                 np.asarray(np.dot(points, r)))
@@ -266,7 +268,7 @@ class Cell(object):
             return self.compute_sept_box(mask, thick)
 
         else:
-            print "Not a a valid algorithm"
+            print("Not a a valid algorithm")
 
     def compute_sept_isodata(self, mask, thick, septum_base):
         """Method used to create the cell sept_mask using the threshold_isodata
@@ -387,7 +389,7 @@ class Cell(object):
         width = len(points) + 1
 
         # no need to do more rotations, due to symmetry
-        for rix in range(len(rotations) / 2 + 1):
+        for rix in range(int(len(rotations) / 2) + 1):
             r = rotations[rix]
             nx0, ny0, nx1, ny1, nwidth = cp.bound_rectangle(
                 np.asarray(np.dot(points, r)))
@@ -528,7 +530,7 @@ class Cell(object):
                                         septum_base,
                                         algorithm)
             except RuntimeError:
-                    self.recursive_compute_sept(cell_mask, inner_mask_thickness -1, septum_base, "Box")
+                    self.recursive_compute_sept(cell_mask, inner_mask_thickness-1, septum_base, "Box")
 
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
@@ -564,6 +566,8 @@ class Cell(object):
                                                            params.inner_mask_thickness) -
                                    self.sept_mask) > 0
                 self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
+                self.cyto_mask = (self.cell_mask - self.perim_mask -
+                                  self.sept_mask) > 0
         else:
             self.sept_mask = None
             self.perim_mask = self.compute_perim_mask(self.cell_mask,
@@ -872,12 +876,12 @@ class CellManager(object):
 
         self.original_cells = deepcopy(self.cells)
 
-        for k in self.cells.keys():
+        for k in list(self.cells.keys()):
             try:
                 c = self.cells[k]
                 if len(c.neighbours) > 0:
 
-                    bestneigh = max(c.neighbours.iterkeys(),
+                    bestneigh = max(list(iter(c.neighbours.keys())),
                                     key=(lambda key: c.neighbours[key]))
                     bestinterface = c.neighbours[bestneigh]
                     cn = self.cells[str(int(bestneigh))]
@@ -886,7 +890,7 @@ class CellManager(object):
                                       image_manager.mask, params):
                         self.merge_cells(c.label, cn.label, params, segments_manager, image_manager)
             except KeyError:
-                print "Cell was already merged and deleted"
+                print("Cell was already merged and deleted")
 
         for k in self.cells.keys():
             cp.assign_cell_color(self.cells[k], self.cells,
@@ -954,7 +958,7 @@ class CellManager(object):
     def process_cells(self, params, image_manager):
         """Method used to compute the individual regions of each cell and the
         computation of the stats related to the fluorescence"""
-        for k in self.cells.keys():
+        for k in list(self.cells.keys()):
             try:
                 self.cells[k].compute_regions(params, image_manager)
                 self.cells[k].compute_fluor_stats(params, image_manager)
@@ -975,7 +979,5 @@ class CellManager(object):
             if self.cells[k].selection_state != 0:
                 if cp.blocked_by_filter(self.cells[k], params.cell_filters):
                     self.cells[k].selection_state = -1
-                else:
-                    self.cells[k].selection_state = 1
 
         self.overlay_cells(image_manager)

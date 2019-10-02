@@ -60,10 +60,10 @@ class FluorLine(object):
         self.septum = np.max(septum_fluorescence) - self.background
         self.fr = self.septum / self.membrane
 
-        print "Background: ", self.background
-        print "Membrane: ", self.membrane
-        print "Septum: ", self.septum
-        print "FR: ", self.fr
+        print("Background: ", self.background)
+        print("Membrane: ", self.membrane)
+        print("Septum: ", self.septum)
+        print("FR: ", self.fr)
 
     def compute_image(self, fluor_image):
 
