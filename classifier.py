@@ -19,29 +19,46 @@ class CellCycleClassifier(object):
             max_dim = 100
 
         h, w = image.shape
-        image = image[:, int(w/2):w+1]
-        h, w = image.shape
 
         max_h, max_w = max_dim, max_dim
 
         lines_to_add = max_h - h
         columns_to_add = max_w - w
 
-        if lines_to_add%2 == 0:
-            new_line = np.zeros((int(lines_to_add/2), w))
-            image = np.concatenate((new_line, image, new_line), axis=0)
-        else:
-            new_line_top = np.zeros((int(lines_to_add/2)+1, w))
-            new_line_bot = np.zeros((int(lines_to_add/2), w))
-            image = np.concatenate((new_line_top, image, new_line_bot), axis=0)
+        if lines_to_add > 0:
+            if lines_to_add%2 == 0:
+                new_line = np.zeros((int(lines_to_add/2), w))
+                image = np.concatenate((new_line, image, new_line), axis=0)
+            else:
+                new_line_top = np.zeros((int(lines_to_add/2)+1, w))
+                new_line_bot = np.zeros((int(lines_to_add/2), w))
+                image = np.concatenate((new_line_top, image, new_line_bot), axis=0)
 
-        if columns_to_add%2 == 0:
-            columns_to_add = np.zeros((max_dim, int(columns_to_add/2)))
-            image = np.concatenate((columns_to_add, image, columns_to_add), axis=1)
-        else:
-            columns_to_add_left = np.zeros((max_dim, int(columns_to_add/2)+1))
-            columns_to_add_right = np.zeros((max_dim, int(columns_to_add/2)))
-            image = np.concatenate((columns_to_add_left, image, columns_to_add_right), axis=1)
+        elif lines_to_add < 0:
+            if (lines_to_add * -1)%2 == 0:
+                cutsize = int((lines_to_add * -1)/2)
+                image = image[cutsize:h-cutsize+1, :]
+            else:
+                cutsize = int((lines_to_add * -1)/2)
+                image = image[cutsize:h-cutsize+2, :]
+
+
+        if columns_to_add > 0:
+            if columns_to_add%2 == 0:
+                columns_to_add = np.zeros((max_dim, int(columns_to_add/2)))
+                image = np.concatenate((columns_to_add, image, columns_to_add), axis=1)
+            else:
+                columns_to_add_left = np.zeros((max_dim, int(columns_to_add/2)+1))
+                columns_to_add_right = np.zeros((max_dim, int(columns_to_add/2)))
+                image = np.concatenate((columns_to_add_left, image, columns_to_add_right), axis=1)
+
+        elif columns_to_add < 0:
+            if (columns_to_add * -1)%2 == 0:
+                cutsize = int((columns_to_add * -1)/2)
+                image = image[:, cutsize:w-cutsize]
+            else:
+                cutsize = int((columns_to_add * -1)/2)
+                image = image[:, cutsize:w-cutsize+1]
 
         image = img_as_float(image)
         image = image.reshape(max_dim, max_dim, 1)
@@ -79,6 +96,8 @@ class CellCycleClassifier(object):
 
         for k in cell_manager.cells.keys():
             cell = cell_manager.cells[k]
+
+            print(k)
 
             x0, y0, x1, y1 = cell.box
 
