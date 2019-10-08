@@ -21,6 +21,9 @@
 ###### `conda activate env_name`
 #### 6. Install requirements from file
 ###### `conda install --file requirements.txt`
+#### 7. Test setup (optional)
+###### `python test.py`
+###### if program asks you to save a report and pcc scores everything is properly running
 ## ---------------------------------------------------------
 ### Usage Instructions:
 #### 1. Open Terminal inside eHooke directory
