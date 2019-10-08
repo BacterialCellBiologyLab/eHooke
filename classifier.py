@@ -37,10 +37,12 @@ class CellCycleClassifier(object):
         elif lines_to_add < 0:
             if (lines_to_add * -1)%2 == 0:
                 cutsize = int((lines_to_add * -1)/2)
-                image = image[cutsize:h-cutsize+1, :]
+                image = image[cutsize:h-cutsize, :]
             else:
+                print(lines_to_add)
                 cutsize = int((lines_to_add * -1)/2)
-                image = image[cutsize:h-cutsize+2, :]
+                print(cutsize)
+                image = image[cutsize:h-cutsize-1, :]
 
 
         if columns_to_add > 0:
@@ -58,7 +60,7 @@ class CellCycleClassifier(object):
                 image = image[:, cutsize:w-cutsize]
             else:
                 cutsize = int((columns_to_add * -1)/2)
-                image = image[:, cutsize:w-cutsize+1]
+                image = image[:, cutsize:w-cutsize-1]
 
         image = img_as_float(image)
         image = image.reshape(max_dim, max_dim, 1)

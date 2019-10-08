@@ -511,6 +511,7 @@ class Interface(object):
     def set_segmentscomputation(self):
         """Method used to change the interface to the Segments Computation
         Step"""
+        self.ax.axis("off")
         self.show_image("Fluor_mask")
         self.ax.format_coord = self.remove_coord
         self.canvas.draw()
@@ -862,6 +863,7 @@ class Interface(object):
     def set_cellcomputation(self):
         """Method used to change the interface to the Cell Computation
         Step"""
+        self.ax.axis("off")
         self.show_image("Base_features")
         self.ax.format_coord = self.remove_coord
         self.canvas.draw()
@@ -1433,6 +1435,8 @@ class Interface(object):
     def set_cellprocessing(self):
         """Method used to change the interface to the Cell Processing
         Step"""
+        self.ax.axis("off")
+        plt.subplots_adjust(left=0, bottom=0, right=1, top=1)
         self.show_image("Fluor_cells_outlined")
         self.ax.format_coord = self.show_cell_info_cellprocessing
         self.canvas.draw()
