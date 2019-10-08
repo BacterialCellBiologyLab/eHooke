@@ -113,9 +113,12 @@ class ImageManager(object):
             if block_size%2 == 0:
                 block_size += 1
 
-            base_mask = 1.0 - threshold_local(base_mask,
+            threshold = threshold_local(base_mask,
                                               block_size,
+                                              method="gaussian",
                                               offset=params.mask_offset)
+
+            base_mask = 1.0 - (base_mask > threshold)
         
         elif params.mask_algorithm == "Absolute":
             value = float(raw_input("Insert Threshold Value: "))
