@@ -182,7 +182,7 @@ class CellParameters(object):
 
         # microscope options for cyphid
 
-        self.classify_cells = True
+        self.classify_cells = False
         self.microscope = "Epifluorescence"
         self.microscope_options = ["Epifluorescence", "SIM"]
 
@@ -195,6 +195,9 @@ class CellParameters(object):
         self.merge_dividing_cells = False
         self.merge_length_tolerance = 1.1
         self.merge_min_interface = 15
+
+        # cell selection based on optional signal
+        self.signal_ratio = 0.5
 
         # cell mask for brightness
         self.inner_mask_thickness = 4
@@ -243,6 +246,7 @@ class CellParameters(object):
         self.inner_mask_thickness = int(parser.get(section, "inner mask thickness"))
         self.baseline_margin = int(parser.get(section, "baseline margin"))
         self.cell_colors = int(parser.get(section, "cell colors"))
+        self.signal_ratio = float(parser.get(section, "signal ratio"))
 
     def save_to_parser(self, parser, section):
         """Saves mask parameters to a ConfigParser object of the configuration
@@ -267,3 +271,4 @@ class CellParameters(object):
         parser.set(section, "inner mask thickness", str(self.inner_mask_thickness))
         parser.set(section, "baseline margin", str(self.baseline_margin))
         parser.set(section, "cell colors", str(self.cell_colors))
+        parser.set(section, "signal ratio", str(self.signal_ratio))

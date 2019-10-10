@@ -982,7 +982,7 @@ class CellManager(object):
 
         self.overlay_cells(image_manager)
 
-    def select_cells_optional(self, image_manager):
+    def select_cells_optional(self, signal_ratio, image_manager):
         optional_image = image_manager.optional_image
         thresh = threshold_isodata(optional_image)
 
@@ -994,5 +994,5 @@ class CellManager(object):
             optional_cell = optional_image[x0:x1+1, y0:y1+1]
             optional_signal = (optional_cell * cell_mask) > thresh
 
-            if np.sum(optional_signal)/np.sum(cell_mask) > 0.5:
+            if np.sum(optional_signal)/np.sum(cell_mask) > signal_ratio:
                 self.cells[k].selection_state = 1

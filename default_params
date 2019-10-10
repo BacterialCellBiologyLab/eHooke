@@ -30,4 +30,6 @@ merge min interface = 15
 inner mask thickness = 4
 baseline margin = 30
 cell colors = 10
-
+classify cells = True
+microscope = Epifluorescence
+signal ratio = 0.5

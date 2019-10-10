@@ -223,9 +223,9 @@ class EHooke(object):
         self.cellcycleclassifier.classify_cells(self.image_manager, self.cell_manager,
                                                 self.parameters.cellprocessingparams.microscope)
 
-    def select_cells_optional(self):
+    def select_cells_optional(self, signal_ratio):
         if self.image_manager.optional_image is not None:
-            self.cell_manager.select_cells_optional(self.image_manager)
+            self.cell_manager.select_cells_optional(signal_ratio, self.image_manager)
             self.cell_manager.overlay_cells(self.image_manager)
         else:
             print("No optional image loaded")

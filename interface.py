@@ -123,7 +123,6 @@ class Interface(object):
     def load_default_params_cell_computation(self):
         """Loads the default params for the cell computation"""
 
-        self.classify_cells_checkbox_value.set(self.default_params.imageprocessingparams.classify_cells)
         self.microscope_value.set(self.default_params.imageprocessingparams.microscope)
         self.axial_step_value.set(
             self.default_params.imageprocessingparams.axial_step)
@@ -144,6 +143,11 @@ class Interface(object):
             self.default_params.cellprocessingparams.find_septum)
         self.look_for_septum_in_base_checkbox_value.set(
             self.default_params.cellprocessingparams.look_for_septum_in_base)
+        self.optional_signal_ratio_value.set(
+            self.default_params.cellprocessingparams.signal_ratio)
+        self.classify_cells_checkbox_value.set(
+            self.default_params.cellprocessingparams.classify_cells
+        )
 
     def show_image(self, image):
         """Method use to display the selected image on the canvas"""
@@ -1226,6 +1230,7 @@ class Interface(object):
         self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = self.look_for_septum_in_base_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.septum_algorithm = self.septum_algorithm_value.get()
         self.ehooke.parameters.cellprocessingparams.inner_mask_thickness = self.membrane_thickness_value.get()
+        self.ehooke.parameters.cellprocessingparams.signal_ratio = self.optional_signal_ratio_value.get()
         self.status.set("Processing cells...")
         self.ehooke.process_cells()
 
@@ -1410,7 +1415,10 @@ class Interface(object):
         self.show_image("Fluor_with_lines")
 
     def select_optional_signal(self):
-        self.ehooke.select_cells_optional()
+
+        self.ehooke.parameters.cellprocessingparams.signal_ratio = self.optional_signal_ratio_value.get()
+        signal_ratio = self.ehooke.parameters.cellprocessingparams.signal_ratio
+        self.ehooke.select_cells_optional(signal_ratio)
 
         self.images[
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
@@ -1703,6 +1711,16 @@ class Interface(object):
                                                 command=self.select_optional_signal)
         self.select_optional_button.pack(side="top", fill="x")
         self.select_optional_button.config(state="disabled")
+
+        self.optionalfilter_frame = tk.Frame(self.parameters_panel)
+        self.optionalfilter_frame.pack(side="top", fill="x")
+        self.optionalfilter_label = tk.Label(self.optionalfilter_frame, text="Optional Signal Ratio: ")
+        self.optionalfilter_label.pack(side="left")
+        self.optional_signal_ratio_value = tk.DoubleVar()
+        self.optionalfilter_min_entry = tk.Entry(
+            self.optionalfilter_frame, textvariable=self.optional_signal_ratio_value, width=5)
+        self.optionalfilter_min_entry.pack(side="left")
+        self.optional_signal_ratio_value.set(self.default_params.cellprocessingparams.signal_ratio)
         
         self.invert_selection_button = tk.Button(self.parameters_panel, text="Invert Selection",
                                                  command=self.invert_selection)
