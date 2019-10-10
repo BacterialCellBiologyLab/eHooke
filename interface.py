@@ -1238,6 +1238,7 @@ class Interface(object):
         if self.ehooke.image_manager.optional_image is not None:
             self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
             self.optional_w_cells_button.config(state="active")
+            self.select_optional_button.config(state="active")
 
         self.images["Fluor_with_lines"] = self.ehooke.image_manager.fluor_image
 
@@ -1407,6 +1408,17 @@ class Interface(object):
         self.images[
             "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
         self.show_image("Fluor_with_lines")
+
+    def select_optional_signal(self):
+        self.ehooke.select_cells_optional()
+
+        self.images[
+            "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
+        self.images[
+            "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+        self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
+
+        self.show_image(self.current_image)
 
     def check_filter_params(self):
         
@@ -1686,9 +1698,14 @@ class Interface(object):
                                              command=self.reject_all_cells)
         self.unselect_all_button.pack(side="top", fill="x")
         self.unselect_all_button.config(state="disabled")
+
+        self.select_optional_button = tk.Button(self.parameters_panel, text="Select w/ Optional Signal",
+                                                command=self.select_optional_signal)
+        self.select_optional_button.pack(side="top", fill="x")
+        self.select_optional_button.config(state="disabled")
         
         self.invert_selection_button = tk.Button(self.parameters_panel, text="Invert Selection",
-                                                command=self.invert_selection)
+                                                 command=self.invert_selection)
         self.invert_selection_button.pack(side="top", fill="x")
         self.invert_selection_button.config(state="disabled")
 
