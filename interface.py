@@ -1264,10 +1264,16 @@ class Interface(object):
             self.select_phase1_button.config(state="active")
             self.select_phase2_button.config(state="active")
             self.select_phase3_button.config(state="active")
+            self.assign_phase1_button.config(state="active")
+            self.assign_phase2_button.config(state="active")
+            self.assign_phase3_button.config(state="active")
         else:
             self.select_phase1_button.config(state="disabled")
             self.select_phase2_button.config(state="disabled")
             self.select_phase3_button.config(state="disabled")
+            self.assign_phase1_button.config(state="disabled")
+            self.assign_phase2_button.config(state="disabled")
+            self.assign_phase3_button.config(state="disabled")
 
     def select_all_cells(self):
         """Method used to mark all cells as selected"""
@@ -1427,6 +1433,53 @@ class Interface(object):
         self.images["Optional_cells_outlined"] = self.ehooke.cell_manager.optional_w_cells
 
         self.show_image(self.current_image)
+
+    def phase1_on_press(self, event):
+        if event.button == 3:
+            label = int(self.ehooke.cell_manager.merged_labels[
+                            int(event.ydata), int(event.xdata)])
+
+            if label > 0:
+                self.ehooke.cell_manager.cells[str(label)].stats["Cell Cycle Phase"] = 1
+            self.canvas.mpl_disconnect(self.cid)
+            self.cid = self.canvas.mpl_connect('button_release_event',
+                                               self.on_press)
+    def phase2_on_press(self, event):
+        if event.button == 3:
+            label = int(self.ehooke.cell_manager.merged_labels[
+                            int(event.ydata), int(event.xdata)])
+
+            if label > 0:
+                self.ehooke.cell_manager.cells[str(label)].stats["Cell Cycle Phase"] = 2
+            self.canvas.mpl_disconnect(self.cid)
+            self.cid = self.canvas.mpl_connect('button_release_event',
+                                               self.on_press)
+
+    def phase3_on_press(self, event):
+        if event.button == 3:
+            label = int(self.ehooke.cell_manager.merged_labels[
+                            int(event.ydata), int(event.xdata)])
+
+            if label > 0:
+                self.ehooke.cell_manager.cells[str(label)].stats["Cell Cycle Phase"] = 3
+            self.canvas.mpl_disconnect(self.cid)
+            self.cid = self.canvas.mpl_connect('button_release_event',
+                                               self.on_press)
+
+    def assign_cell_cycle_phase(self, phase):
+        if self.event_connected:
+            self.canvas.mpl_disconnect(self.cid)
+        self.status.set("Select Cell for cell cycle phase assignment")
+        if phase == 1:
+            self.cid = self.canvas.mpl_connect('button_release_event',
+                                           self.phase1_on_press)
+        elif phase == 2:
+            self.cid = self.canvas.mpl_connect('button_release_event',
+                                               self.phase2_on_press)
+        elif phase == 3:
+            self.cid = self.canvas.mpl_connect('button_release_event',
+                                               self.phase3_on_press)
+        self.event_connected = True
 
     def check_filter_params(self):
         
@@ -1732,23 +1785,41 @@ class Interface(object):
         self.select_from_file_button.pack(side="top", fill="x")
         self.select_from_file_button.config(state="disabled")
 
-        self.linescan_label = tk.Label(self.parameters_panel, text="Cell Cycle Phase:")
-        self.linescan_label.pack(side="top")
+        self.cell_cycle_label = tk.Label(self.parameters_panel, text="Cell Cycle Phase:")
+        self.cell_cycle_label.pack(side="top")
 
+        self.phase1_frame = tk.Frame(self.parameters_panel)
+        self.phase1_frame.pack(side="top")
         self.select_phase1_button = tk.Button(
-            self.parameters_panel, text="Select Phase 1 cells", command=lambda: self.select_cells_phase(1))
-        self.select_phase1_button.pack(side="top", fill="x")
+            self.phase1_frame, text="Select Phase 1 cells", command=lambda: self.select_cells_phase(1))
+        self.select_phase1_button.pack(side="left", fill="x")
         self.select_phase1_button.config(state="disabled")
+        self.assign_phase1_button = tk.Button(
+            self.phase1_frame, text="Assign Phase 1", command=lambda: self.assign_cell_cycle_phase(1))
+        self.assign_phase1_button.pack(side="left", fill="x")
+        self.assign_phase1_button.config(state="disabled")
 
+        self.phase2_frame = tk.Frame(self.parameters_panel)
+        self.phase2_frame.pack(side="top")
         self.select_phase2_button = tk.Button(
-            self.parameters_panel, text="Select Phase 2 cells", command=lambda: self.select_cells_phase(2))
-        self.select_phase2_button.pack(side="top", fill="x")
+            self.phase2_frame, text="Select Phase 2 cells", command=lambda: self.select_cells_phase(2))
+        self.select_phase2_button.pack(side="left", fill="x")
         self.select_phase2_button.config(state="disabled")
+        self.assign_phase2_button = tk.Button(
+            self.phase2_frame, text="Assign Phase 2", command=lambda: self.assign_cell_cycle_phase(2))
+        self.assign_phase2_button.pack(side="left", fill="x")
+        self.assign_phase2_button.config(state="disabled")
 
+        self.phase3_frame = tk.Frame(self.parameters_panel)
+        self.phase3_frame.pack(side="top")
         self.select_phase3_button = tk.Button(
-            self.parameters_panel, text="Select Phase 3 cells", command=lambda: self.select_cells_phase(3))
-        self.select_phase3_button.pack(side="top", fill="x")
+            self.phase3_frame, text="Select Phase 3 cells", command=lambda: self.select_cells_phase(3))
+        self.select_phase3_button.pack(side="left", fill="x")
         self.select_phase3_button.config(state="disabled")
+        self.assign_phase3_button = tk.Button(
+            self.phase3_frame, text="Assign Phase 3", command=lambda: self.assign_cell_cycle_phase(3))
+        self.assign_phase3_button.pack(side="left", fill="x")
+        self.assign_phase3_button.config(state="disabled")
 
         self.linescan_label = tk.Label(self.parameters_panel, text="Linescan:")
         self.linescan_label.pack(side="top")

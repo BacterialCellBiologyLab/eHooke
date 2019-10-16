@@ -230,6 +230,9 @@ class EHooke(object):
         else:
             print("No optional image loaded")
 
+    def assign_cell_cycle_phase(self, key, phase):
+        self.cell_manager.cells[key].stats["Cell Cycle Phase"] = int(phase)
+
     def generate_reports(self, filename=None, label=None):
         """Generates the report files by calling the generate_report method
         from Reports"""
