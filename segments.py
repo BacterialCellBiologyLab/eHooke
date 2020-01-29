@@ -10,6 +10,8 @@ import numpy as np
 from skimage.feature import peak_local_max
 from skimage import morphology
 from scipy import ndimage
+from skimage.io import imsave
+from tkinter.filedialog import asksaveasfilename
 
 
 class SegmentsManager(object):
@@ -160,3 +162,9 @@ class SegmentsManager(object):
         self.overlay_base_w_features(image_manager)
         self.overlay_fluor_w_features(image_manager)
         self.compute_labels(params, image_manager)
+
+    def save_labels(self, filename=None):
+        if filename is None:
+            filename = asksaveasfilename()
+
+        imsave(filename + ".tif", self.labels)

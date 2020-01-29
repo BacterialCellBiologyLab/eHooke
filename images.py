@@ -301,3 +301,11 @@ class ImageManager(object):
             print("Not a valid image selection.")
             print("Choose between:")
             print("Base, Fluor, Base With Mask, Fluor With Mask")
+
+    def save_mask(self, filename=None):
+
+        if filename is None:
+            filename = asksaveasfilename()
+
+        imsave(filename + ".png", self.mask)
+

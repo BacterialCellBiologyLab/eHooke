@@ -30,6 +30,7 @@ class Interface(object):
 
         self.main_window = tk.Tk()
         self.main_window.wm_title("eHooke")
+        self.main_window.configure(background="black")
 
         self.top_frame = tk.Frame(self.main_window, width=1200, height=10)
         self.top_frame.pack(fill="x")
@@ -219,6 +220,7 @@ class Interface(object):
         self.load_fluorescence_button.config(state="active")
         self.mask_button.config(state="active")
         self.base_with_mask_button.config(state="active")
+        self.save_mask_button.config(state="active")
         self.status.set("Mask computation finished. Load Fluorescence Image")
 
     def load_fluor(self):
@@ -248,6 +250,9 @@ class Interface(object):
         self.show_image("Optional")
         self.optional_button.config(state="active")
         self.status.set("Optional Image Loaded. Proceed to the next step")
+
+    def save_mask(self):
+            self.ehooke.save_mask()
 
     def set_imageloader(self):
         """Method used to change the interface to the Image Loader Step"""
@@ -448,6 +453,10 @@ class Interface(object):
         self.next_button.pack(side="right")
         self.next_button.config(state="disabled")
 
+        self.save_mask_button = tk.Button(self.top_frame, text="Save Mask", command=self.save_mask)
+        self.save_mask_button.pack(side="right")
+        self.save_mask_button.config(state="disabled")
+
         self.base_button = tk.Button(self.images_frame, text="Base", command=lambda: self.show_image("Base"),
                                      width=self.image_buttons_width)
         self.base_button.pack(side="top", fill="x")
@@ -508,9 +517,13 @@ class Interface(object):
         self.next_button.config(state="active")
         self.base_features_button.config(state="active")
         self.fluor_features_button.config(state="active")
+        self.save_labels_button.config(state="active")
         self.labels_button.config(state="active")
         self.status.set(
             "Computation of the features finished. Proceed to the next step")
+
+    def save_labels(self):
+        self.ehooke.save_labels()
 
     def set_segmentscomputation(self):
         """Method used to change the interface to the Segments Computation
@@ -552,6 +565,10 @@ class Interface(object):
         self.back_button = tk.Button(
             self.top_frame, text="Back", command=self.new_analysis)
         self.back_button.pack(side="right")
+
+        self.save_labels_button = tk.Button(self.top_frame, text="Save Labels", command=self.save_labels)
+        self.save_labels_button.pack(side="right")
+        self.save_labels_button.config(state="disabled")
 
         self.new_analysis_button = tk.Button(
             self.top_frame, text="New Analysis", command=self.new_analysis)
