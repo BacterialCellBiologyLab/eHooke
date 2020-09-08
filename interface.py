@@ -103,8 +103,8 @@ class Interface(object):
         # Horizontal and vertical DPIs calculated
         hdpi, vdpi = dw / mw, dh / mh
 
-        w_px = GetSystemMetrics(0)
-        h_px = GetSystemMetrics(1)
+
+        h_px = root.winfo_screenheight()
 
         return ((h_px/vdpi-3)*1.3, h_px/vdpi-3)
 
