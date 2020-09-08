@@ -254,7 +254,7 @@ class ImageManager(object):
 
         self.base_w_mask = mark_boundaries(self.base_image[x0:x1, y0:y1],
                                            img_as_uint(self.mask),
-                                           color=(1, 0, 1),
+                                           color=(0, 1, 1),
                                            outline_color=None)
 
     def overlay_mask_fluor_image(self):
@@ -266,7 +266,7 @@ class ImageManager(object):
         fluor_image = img_as_float(fluor_image)
 
         self.fluor_w_mask = mark_boundaries(fluor_image, img_as_uint(self.mask),
-                                            color=(1, 0, 1),
+                                            color=(0, 1, 1),
                                             outline_color=None)
 
     def overlay_mask_optional_image(self):
@@ -278,7 +278,7 @@ class ImageManager(object):
         optional_image = img_as_float(optional_image)
 
         self.optional_w_mask = mark_boundaries(optional_image, img_as_uint(
-            self.mask), color=(1, 0, 1), outline_color=None)
+            self.mask), color=(0, 1, 1), outline_color=None)
 
     def save_image(self, image_to_save, filename=None):
         """Saves the choosen image as a .png file.

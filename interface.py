@@ -1,6 +1,15 @@
 """Module responsible for creating the GUI and handling the ehooke module"""
 
+import sys
+import matplotlib
+
+if sys.platform == "darwin":
+    matplotlib.use("MACOSX")
+else:
+    matplotlib.use("TkAgg")
+
 from tkinter import messagebox as tkMessageBox
+import ctypes
 import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -9,14 +18,25 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from ehooke import EHooke
 from skimage.segmentation import mark_boundaries
 from skimage.exposure import rescale_intensity
+from win32api import GetSystemMetrics
 
+#TODO: add adjust min/max
+#TODO: change images panel add border to currently selected image (do the same for buttons that require clicks)
 
 class Interface(object):
     """Main class of the module. Used to create the GUI"""
 
-    def __init__(self, windowsize=(11, 8)):
+
+    def __init__(self):
         self.ehooke = EHooke()
         self.default_params = self.ehooke.parameters
+
+        self.dark_mode = True
+
+        self.gui_font = ("Verdana", 9, "normal")
+        self.gui_font_bold = ("Verdana", 9, "bold")
+
+        self.pady = (9, 3)
 
         self.images = {}
         self.current_image = None
@@ -24,13 +44,12 @@ class Interface(object):
         self.cid = None
         self.event_connected = False
 
-        self.image_buttons_width = 25
+        self.image_buttons_width = 20
         self.status_bar_width = 40
         self.status_length = 200
 
         self.main_window = tk.Tk()
         self.main_window.wm_title("eHooke")
-        self.main_window.configure(background="black")
 
         self.top_frame = tk.Frame(self.main_window, width=1200, height=10)
         self.top_frame.pack(fill="x")
@@ -47,13 +66,13 @@ class Interface(object):
         self.empty_space = tk.Label(self.images_frame, text="")
         self.empty_space.pack(side="top")
 
-        self.fig = plt.figure(figsize=windowsize, frameon=True)
+        self.fig = plt.figure(figsize=self.calculate_fisize(), frameon=True)
         self.canvas = FigureCanvasTkAgg(self.fig, self.middle_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side="top")
 
         self.ax = plt.subplot(111)
-        plt.subplots_adjust(left=0, bottom=0, right=1, top=1)
+        plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9)
         self.ax.axis("off")
         plt.autoscale(False)
 
@@ -70,6 +89,24 @@ class Interface(object):
         self.status_bar.pack(side="bottom")
 
         self.set_imageloader()
+
+    def calculate_fisize(self):
+        MM_TO_IN = 0.0393700787
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        root = self.main_window
+        dc = ctypes.windll.user32.GetDC(root.winfo_id())
+        mw = ctypes.windll.gdi32.GetDeviceCaps(dc, 4) * MM_TO_IN
+        mh = ctypes.windll.gdi32.GetDeviceCaps(dc, 6) * MM_TO_IN
+        dw = ctypes.windll.gdi32.GetDeviceCaps(dc, 8)
+        dh = ctypes.windll.gdi32.GetDeviceCaps(dc, 10)
+
+        # Horizontal and vertical DPIs calculated
+        hdpi, vdpi = dw / mw, dh / mh
+
+        w_px = GetSystemMetrics(0)
+        h_px = GetSystemMetrics(1)
+
+        return ((h_px/vdpi-3)*1.3, h_px/vdpi-3)
 
     def remove_coord(self, x, y):
         """"Hack" to remove the mpl coordinates"""
@@ -124,9 +161,8 @@ class Interface(object):
     def load_default_params_cell_computation(self):
         """Loads the default params for the cell computation"""
 
-        self.microscope_value.set(self.default_params.imageprocessingparams.microscope)
         self.axial_step_value.set(
-            self.default_params.imageprocessingparams.axial_step)
+            self.default_params.cellprocessingparams.axial_step)
         self.force_merge_below_value.set(
             self.default_params.cellprocessingparams.cell_force_merge_below)
         self.merge_dividing_value.set(
@@ -135,8 +171,6 @@ class Interface(object):
             self.default_params.cellprocessingparams.merge_length_tolerance)
         self.merge_min_interface_value.set(
             self.default_params.cellprocessingparams.merge_min_interface)
-        self.membrane_thickness_value.set(
-            self.default_params.cellprocessingparams.inner_mask_thickness)
 
     def load_default_params_cell_processing(self):
         """Loads the default params for cell processing"""
@@ -149,6 +183,55 @@ class Interface(object):
         self.classify_cells_checkbox_value.set(
             self.default_params.cellprocessingparams.classify_cells
         )
+        self.microscope_value.set(self.default_params.cellprocessingparams.microscope)
+        self.membrane_thickness_value.set(
+            self.default_params.cellprocessingparams.inner_mask_thickness)
+
+        self.areafilter_checkbox_value.set(False)
+        self.areafilter_min_value.set(0)
+        self.areafilter_max_value.set(1000)
+
+        self.perimeterfilter_checkbox_value.set(False)
+        self.perimeterfilter_min_value.set(0)
+        self.perimeterfilter_max_value.set(500)
+
+        self.eccentricityfilter_checkbox_value.set(False)
+        self.eccentricityfilter_min_value.set(-10)
+        self.eccentricityfilter_max_value.set(10)
+
+        self.irregularityfilter_checkbox_value.set(False)
+        self.irregularityfilter_min_value.set(0)
+        self.irregularityfilter_max_value.set(20)
+
+        self.neighboursfilter_checkbox_value.set(False)
+        self.neighboursfilter_min_value.set(0)
+        self.neighboursfilter_max_value.set(10)
+
+        for filter in self.default_params.cellprocessingparams.cell_filters:
+            name = filter[0]
+            min = filter[1]
+            max = filter[2]
+
+            if name == "Area":
+                self.areafilter_checkbox_value.set(True)
+                self.areafilter_min_value.set(min)
+                self.areafilter_max_value.set(max)
+            elif name == "Perimeter":
+                self.perimeterfilter_checkbox_value.set(True)
+                self.perimeterfilter_min_value.set(min)
+                self.perimeterfilter_max_value.set(max)
+            elif name == "Eccentricity":
+                self.eccentricityfilter_checkbox_value.set(True)
+                self.eccentricityfilter_min_value.set(min)
+                self.eccentricityfilter_max_value.set(max)
+            elif name == "Irregularity":
+                self.irregularityfilter_checkbox_value.set(True)
+                self.irregularityfilter_max_value.set(max)
+                self.irregularityfilter_min_value.set(min)
+            elif name == "Neighbours":
+                self.neighboursfilter_checkbox_value.set(True)
+                self.neighboursfilter_min_value.set(min)
+                self.neighboursfilter_max_value.set(max)
 
     def show_image(self, image):
         """Method use to display the selected image on the canvas"""
@@ -175,6 +258,9 @@ class Interface(object):
         else:
             self.ax.imshow(self.images[image], cmap=cm.Greys_r)
 
+        plt.subplots_adjust(left=0.005, bottom=0.005, right=0.995, top=0.995)
+        #figZoom = self.zoom_factory(self.ax)
+        #figPan = self.pan_factory(self.ax)
         self.canvas.draw()
 
     def load_base_image(self):
@@ -307,7 +393,7 @@ class Interface(object):
 
         self.base_parameters_label = tk.Label(self.parameters_panel,
                                               text="Load Base Parameters:")
-        self.base_parameters_label.pack(side="top", fill="x")
+        self.base_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.border_frame = tk.Frame(self.parameters_panel)
         self.border_frame.pack(side="top", fill="both")
@@ -333,7 +419,7 @@ class Interface(object):
 
         self.mask_parameters_label = tk.Label(
             self.parameters_panel, text="Mask Parameters:")
-        self.mask_parameters_label.pack(side="top", fill="x")
+        self.mask_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.mask_algorithm_frame = tk.Frame(self.parameters_panel)
         self.mask_algorithm_frame.pack(side="top", fill="x")
@@ -408,7 +494,7 @@ class Interface(object):
 
         self.load_fluor_label = tk.Label(self.parameters_panel,
                                          text="Fluorescence Image Parameters:")
-        self.load_fluor_label.pack(side="top", fill="x")
+        self.load_fluor_label.pack(side="top", fill="x", pady=self.pady)
 
         self.auto_align_frame = tk.Frame(self.parameters_panel)
         self.auto_align_frame.pack(side="top", fill="x")
@@ -499,6 +585,12 @@ class Interface(object):
             self.parameters_panel, textvariable=self.status, wraplength=self.status_length)
         self.status_bar.pack(side="bottom")
 
+
+        self.config_gui(self.main_window)
+        self.base_parameters_label.config(font=self.gui_font_bold)
+        self.mask_parameters_label.config(font=self.gui_font_bold)
+        self.load_fluor_label.config(font=self.gui_font_bold)
+
     def compute_features(self):
         """Calls the compute_segments method from ehooke"""
         self.ehooke.parameters.imageprocessingparams.peak_min_distance = self.peak_min_distance_value.get()
@@ -571,12 +663,12 @@ class Interface(object):
         self.save_labels_button.config(state="disabled")
 
         self.new_analysis_button = tk.Button(
-            self.top_frame, text="New Analysis", command=self.new_analysis)
+            self.top_frame, text="New", command=self.new_analysis)
         self.new_analysis_button.pack(side="right")
 
         self.segments_parameters_label = tk.Label(self.parameters_panel,
                                                   text="Segments Computation Parameters:")
-        self.segments_parameters_label.pack(side="top", fill="x")
+        self.segments_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.peak_min_distance_frame = tk.Frame(self.parameters_panel)
         self.peak_min_distance_frame.pack(side="top", fill="x")
@@ -679,6 +771,10 @@ class Interface(object):
                                        width=self.image_buttons_width)
         self.labels_button.pack(side="top", fill="x")
         self.labels_button.config(state="disabled")
+
+        self.config_gui(self.main_window)
+
+        self.segments_parameters_label.config(font=self.gui_font_bold)
 
     def show_cell_info_cellcomputation(self, x, y):
         """Shows the stats of each cell on the side panel"""
@@ -920,12 +1016,12 @@ class Interface(object):
         self.back_button.pack(side="right")
 
         self.new_analysis_button = tk.Button(
-            self.top_frame, text="New Analysis", command=self.new_analysis)
+            self.top_frame, text="New", command=self.new_analysis)
         self.new_analysis_button.pack(side="right")
 
         self.cellcomputation_parameters_label = tk.Label(self.parameters_panel,
                                                          text="Cell Computation Parameters:")
-        self.cellcomputation_parameters_label.pack(side="top", fill="x")
+        self.cellcomputation_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.axial_step_frame = tk.Frame(self.parameters_panel)
         self.axial_step_frame.pack(side="top", fill="x")
@@ -987,17 +1083,13 @@ class Interface(object):
         self.merge_min_interface_value.set(
             self.ehooke.parameters.cellprocessingparams.merge_min_interface)
 
-        self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
-                                                       command=self.load_default_params_cell_computation)
-        self.cellprocessing_default_button.pack(side="top", fill="x")
-
         self.force_merge_button = tk.Button(self.parameters_panel, text="Force Merge",
                                             command=self.force_merge)
         self.force_merge_button.pack(side="top", fill="x")
         self.force_merge_button.config(state="disabled")
 
         self.split_cell_button = tk.Button(
-            self.parameters_panel, text="Split Cell", command=self.split_cell)
+            self.parameters_panel, text="Undo merge", command=self.split_cell)
         self.split_cell_button.pack(side="top", fill="x")
         self.split_cell_button.config(state="disabled")
 
@@ -1010,6 +1102,10 @@ class Interface(object):
                                               command=self.undo_as_noise)
         self.undo_as_noise_button.config(state="disabled")
         self.undo_as_noise_button.pack(side="top", fill="x")
+
+        self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
+                                                       command=self.load_default_params_cell_computation)
+        self.cellprocessing_default_button.pack(side="top", fill="x")
 
         self.cell_info_frame = tk.Frame(self.images_frame)
         self.cell_info_frame.pack(side="bottom", fill="x")
@@ -1124,7 +1220,7 @@ class Interface(object):
                                               width=self.image_buttons_width)
         self.base_features_button.pack(side="top", fill="x")
 
-        self.base_w_cells_button = tk.Button(self.images_frame, text="Base With Cells Outlined", command=lambda: self.show_image("Base_cells_outlined"),
+        self.base_w_cells_button = tk.Button(self.images_frame, text="Base Outlined", command=lambda: self.show_image("Base_cells_outlined"),
                                              width=self.image_buttons_width)
         self.base_w_cells_button.pack(side="top", fill="x")
         self.base_w_cells_button.config(state="disabled")
@@ -1133,7 +1229,7 @@ class Interface(object):
                                       width=self.image_buttons_width)
         self.fluor_button.pack(side="top", fill="x")
 
-        self.fluor_cells_out_button = tk.Button(self.images_frame, text="Fluorescence with Cells Outlined",
+        self.fluor_cells_out_button = tk.Button(self.images_frame, text="Fluorescence Outlined",
                                                 command=lambda: self.show_image(
                                                     "Fluor_cells_outlined"),
                                                 width=self.image_buttons_width)
@@ -1149,6 +1245,15 @@ class Interface(object):
             self.optional_button.config(state="disabled")
         else:
             self.optional_button.config(state="active")
+
+
+        self.config_gui(self.main_window)
+
+        self.cellcomputation_parameters_label.config(font=self.gui_font_bold)
+
+        for w in self.cell_info_frame.winfo_children():
+            for w1 in w.winfo_children():
+                w1.config(font=("Verdana", 8, "normal"))
 
     def set_cellcomputation_from_cellprocessing(self):
         """Method to go back to cell computation"""
@@ -1275,7 +1380,7 @@ class Interface(object):
         self.select_from_file_button.config(state="active")
         self.add_line_button.config(state="active")
         self.remove_line_button.config(state="active")
-        self.status.set("Cell Processing Finished")
+        self.status.set("Cell Processing Finished. Use right-click to select/unselect cells")
 
         if self.classify_cells_checkbox_value.get():
             self.select_phase1_button.config(state="active")
@@ -1552,16 +1657,47 @@ class Interface(object):
         self.status_bar = tk.Label(
             self.parameters_panel, textvariable=self.status, wraplength=self.status_length)
         self.status_bar.pack(side="bottom")
-        self.status.set("Right click to change selection state of a cell")
+        self.status.set("Waiting Cell Processing")
 
         self.process_cells_button = tk.Button(
-            self.top_frame, text="Process Cells", command=self.process_cells)
+            self.top_frame, text="Process", command=self.process_cells)
         self.process_cells_button.pack(side="left")
+
+        self.select_all_button = tk.Button(self.top_frame, text="Select All",
+                                           command=self.select_all_cells)
+        self.select_all_button.pack(side="left", fill="x")
+        self.select_all_button.config(state="disabled")
+
+        self.unselect_all_button = tk.Button(self.top_frame, text="Reject All",
+                                             command=self.reject_all_cells)
+        self.unselect_all_button.pack(side="left", fill="x")
+        self.unselect_all_button.config(state="disabled")
 
         self.filter_cells_button = tk.Button(
             self.top_frame, text="Apply Filters", command=self.filter_cells)
         self.filter_cells_button.pack(side="left")
         self.filter_cells_button.config(state="disabled")
+
+        self.invert_selection_button = tk.Button(self.top_frame, text="Invert Selection",
+                                                 command=self.invert_selection)
+        self.invert_selection_button.pack(side="left", fill="x")
+        self.invert_selection_button.config(state="disabled")
+
+        self.select_from_file_button = tk.Button(
+            self.top_frame, text="Load Selection", command=self.select_from_file)
+        self.select_from_file_button.pack(side="left", fill="x")
+        self.select_from_file_button.config(state="disabled")
+
+        self.select_optional_button = tk.Button(self.top_frame, text="Select Optional Signal Ratio:",
+                                                command=self.select_optional_signal)
+        self.select_optional_button.pack(side="left", fill="x")
+        self.select_optional_button.config(state="disabled")
+
+        self.optional_signal_ratio_value = tk.DoubleVar()
+        self.optionalfilter_min_entry = tk.Entry(
+            self.top_frame, textvariable=self.optional_signal_ratio_value, width=5)
+        self.optionalfilter_min_entry.pack(side="left")
+        self.optional_signal_ratio_value.set(self.default_params.cellprocessingparams.signal_ratio)
 
         self.generate_report_button = tk.Button(
             self.top_frame, text="Save Report", command=self.generate_report)
@@ -1569,7 +1705,7 @@ class Interface(object):
         self.generate_report_button.config(state="disabled")
 
         self.compute_coloc_button = tk.Button(
-            self.top_frame, text="PCC Analysis", command=self.compute_pcc)
+            self.top_frame, text="PCC", command=self.compute_pcc)
         self.compute_coloc_button.pack(side="right")
         self.compute_coloc_button.config(state="disabled")
 
@@ -1578,12 +1714,12 @@ class Interface(object):
         self.back_button.pack(side="right")
 
         self.new_analysis_button = tk.Button(
-            self.top_frame, text="New Analysis", command=self.new_analysis)
+            self.top_frame, text="New", command=self.new_analysis)
         self.new_analysis_button.pack(side="right")
 
         self.cellprocessing_label = tk.Label(
             self.parameters_panel, text="Cell Processing Parameters: ")
-        self.cellprocessing_label.pack(side="top")
+        self.cellprocessing_label.pack(side="top", pady=self.pady)
 
         self.microscope_frame = tk.Frame(self.parameters_panel)
         self.microscope_frame.pack(side="top", fill="x")
@@ -1651,7 +1787,7 @@ class Interface(object):
 
         self.filters_label = tk.Label(
             self.parameters_panel, text="Cell Filters: ")
-        self.filters_label.pack(side="top")
+        self.filters_label.pack(side="top", pady=self.pady)
 
         self.areafilter_frame = tk.Frame(self.parameters_panel)
         self.areafilter_frame.pack(side="top", fill="x")
@@ -1763,47 +1899,12 @@ class Interface(object):
 
         self.check_filter_params()
 
-        self.selection_label = tk.Label(
-            self.parameters_panel, text="Cell Selection:")
-        self.selection_label.pack(side="top")
-
-        self.select_all_button = tk.Button(self.parameters_panel, text="Select All Cells",
-                                           command=self.select_all_cells)
-        self.select_all_button.pack(side="top", fill="x")
-        self.select_all_button.config(state="disabled")
-
-        self.unselect_all_button = tk.Button(self.parameters_panel, text="Reject All Cells",
-                                             command=self.reject_all_cells)
-        self.unselect_all_button.pack(side="top", fill="x")
-        self.unselect_all_button.config(state="disabled")
-
-        self.select_optional_button = tk.Button(self.parameters_panel, text="Select w/ Optional Signal",
-                                                command=self.select_optional_signal)
-        self.select_optional_button.pack(side="top", fill="x")
-        self.select_optional_button.config(state="disabled")
-
-        self.optionalfilter_frame = tk.Frame(self.parameters_panel)
-        self.optionalfilter_frame.pack(side="top", fill="x")
-        self.optionalfilter_label = tk.Label(self.optionalfilter_frame, text="Optional Signal Ratio: ")
-        self.optionalfilter_label.pack(side="left")
-        self.optional_signal_ratio_value = tk.DoubleVar()
-        self.optionalfilter_min_entry = tk.Entry(
-            self.optionalfilter_frame, textvariable=self.optional_signal_ratio_value, width=5)
-        self.optionalfilter_min_entry.pack(side="left")
-        self.optional_signal_ratio_value.set(self.default_params.cellprocessingparams.signal_ratio)
-        
-        self.invert_selection_button = tk.Button(self.parameters_panel, text="Invert Selection",
-                                                 command=self.invert_selection)
-        self.invert_selection_button.pack(side="top", fill="x")
-        self.invert_selection_button.config(state="disabled")
-
-        self.select_from_file_button = tk.Button(
-            self.parameters_panel, text="Select From File", command=self.select_from_file)
-        self.select_from_file_button.pack(side="top", fill="x")
-        self.select_from_file_button.config(state="disabled")
+        self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
+                                                       command=self.load_default_params_cell_processing)
+        self.cellprocessing_default_button.pack(side="top", fill="x", pady=(5,5))
 
         self.cell_cycle_label = tk.Label(self.parameters_panel, text="Cell Cycle Phase:")
-        self.cell_cycle_label.pack(side="top")
+        self.cell_cycle_label.pack(side="top", pady=self.pady)
 
         self.phase1_frame = tk.Frame(self.parameters_panel)
         self.phase1_frame.pack(side="top")
@@ -1839,7 +1940,7 @@ class Interface(object):
         self.assign_phase3_button.config(state="disabled")
 
         self.linescan_label = tk.Label(self.parameters_panel, text="Linescan:")
-        self.linescan_label.pack(side="top")
+        self.linescan_label.pack(side="top", pady=self.pady)
 
         self.add_line_button = tk.Button(self.parameters_panel, text="Add Line",
                                          command=self.add_line_linescan)
@@ -1850,18 +1951,6 @@ class Interface(object):
                                             command=self.remove_line_linescan)
         self.remove_line_button.pack(side="top", fill="x")
         self.remove_line_button.config(state="disabled")
-
-        self.parameters_label = tk.Label(
-            self.parameters_panel, text="Parameters Loading:")
-        self.parameters_label.pack(side="top")
-
-        self.cellprocessing_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
-                                                       command=self.load_default_params_cell_processing)
-        self.cellprocessing_default_button.pack(side="top", fill="x")
-
-        self.save_parameters_button = tk.Button(
-            self.parameters_panel, text="Save Parameters", command=self.save_parameters)
-        self.save_parameters_button.pack(side="top", fill="x")
 
         self.cell_info_frame = tk.Frame(self.images_frame)
         self.cell_info_frame.pack(side="bottom", fill="x")
@@ -2071,7 +2160,7 @@ class Interface(object):
                                               width=self.image_buttons_width)
         self.base_features_button.pack(side="top", fill="x")
 
-        self.base_w_cells_button = tk.Button(self.images_frame, text="Base With Cells Outlined", command=lambda: self.show_image("Base_cells_outlined"),
+        self.base_w_cells_button = tk.Button(self.images_frame, text="Base Outlined", command=lambda: self.show_image("Base_cells_outlined"),
                                              width=self.image_buttons_width)
         self.base_w_cells_button.pack(side="top", fill="x")
         self.base_w_cells_button.config(state="active")
@@ -2080,7 +2169,7 @@ class Interface(object):
                                       width=self.image_buttons_width)
         self.fluor_button.pack(side="top", fill="x")
 
-        self.fluor_cells_out_button = tk.Button(self.images_frame, text="Fluorescence with Cells Outlined",
+        self.fluor_cells_out_button = tk.Button(self.images_frame, text="Fluorescence Outlined",
                                                 command=lambda: self.show_image(
                                                     "Fluor_cells_outlined"),
                                                 width=self.image_buttons_width)
@@ -2097,7 +2186,7 @@ class Interface(object):
         else:
             self.optional_button.config(state="active")
 
-        self.optional_w_cells_button = tk.Button(self.images_frame, text="Optional With Cells",
+        self.optional_w_cells_button = tk.Button(self.images_frame, text="Optional Outlined",
                                                 command = lambda: self.show_image("Optional_cells_outlined"),
                                                 width=self.image_buttons_width)
         self.optional_w_cells_button.pack(side="top", fill="x")
@@ -2107,6 +2196,19 @@ class Interface(object):
             "Fluor_with_lines"), width=self.image_buttons_width)
         self.fluor_lines_button.pack(side="top", fill="x")
         self.fluor_lines_button.config(state="active")
+
+
+        self.config_gui(self.main_window)
+
+        self.cellprocessing_label.config(font=self.gui_font_bold)
+        self.membrane_thickness_label.config(font=self.gui_font_bold)
+        self.filters_label.config(font=self.gui_font_bold)
+        self.cell_cycle_label.config(font=self.gui_font_bold)
+        self.linescan_label.config(font=self.gui_font_bold)
+
+        for w in self.cell_info_frame.winfo_children():
+            for w1 in w.winfo_children():
+                w1.config(font=("Verdana", 8, "normal"))
 
     def new_analysis(self):
         """Restarts ehooke to conduct a new analysis"""
@@ -2125,6 +2227,64 @@ class Interface(object):
         if tkMessageBox.askokcancel("Quit", "Do you want to quit?"):
             self.main_window.destroy()
             self.main_window.quit()
+
+    def config_gui_loop(self, widget):
+        for w in widget.winfo_children():
+            widget_class = w.winfo_class()
+
+            if widget_class == "Frame":
+                w.config(background=self.frames_background)
+                self.config_gui_loop(w)
+
+            elif widget_class == "Label":
+                w.config(background=self.frames_background,
+                         foreground=self.text_color,
+                         font=self.gui_font)
+            elif widget_class == "Button":
+                w.config(background=self.button_background,
+                         activebackground=self.button_background,
+                         activeforeground=self.text_color,
+                         highlightbackground=self.button_background,
+                         highlightcolor=self.button_background,
+                         foreground=self.text_color,
+                         font=self.gui_font)
+            elif widget_class == "Menubutton":
+                w.config(background=self.button_background,
+                         activebackground=self.button_background,
+                         activeforeground=self.text_color,
+                         foreground=self.text_color,
+                         highlightbackground=self.button_background,
+                         highlightcolor=self.button_background,
+                         font=self.gui_font)
+            elif widget_class == "Entry":
+                w.config(background=self.button_background,
+                         foreground=self.text_color,
+                         font=self.gui_font)
+            elif widget_class == "Checkbutton":
+                w.config(background=self.button_background,
+                         font=self.gui_font)
+            elif widget_class == "Scale":
+                w.config(background=self.button_background,
+                         foreground=self.text_color,
+                         highlightbackground=self.button_background,
+                         highlightcolor=self.button_background,
+                         font=self.gui_font)
+
+    def config_gui(self, widget):
+
+        if self.dark_mode:
+            self.frames_background = "#102027"
+            self.button_background = "#37474F"
+            self.text_color = "#CFD8DC"
+            self.fig.patch.set_facecolor('#4F5B62')
+
+        else:
+            self.frames_background = "gray99"
+            self.button_background = "gray70"
+            self.text_color = "gray5"
+            self.fig.patch.set_facecolor('#E0E0E0')
+
+        self.config_gui_loop(widget)
 
 if __name__ == "__main__":
     interface = Interface()
