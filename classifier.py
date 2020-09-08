@@ -4,6 +4,10 @@ from skimage.exposure import rescale_intensity
 from skimage.transform import resize as skresize
 from keras.models import load_model
 
+# force classification to happen on CPU to avoid CUDA problems
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 class CellCycleClassifier(object):
 
     def __init__(self):
