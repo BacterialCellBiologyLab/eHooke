@@ -10,17 +10,18 @@ else:
 
 from tkinter import messagebox as tkMessageBox
 import ctypes
+import numpy as np
 import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import cellprocessing as cp
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from ehooke import EHooke
 from skimage.segmentation import mark_boundaries
 from skimage.exposure import rescale_intensity
-
-#TODO: add adjust min/max
-#TODO: change images panel add border to currently selected image (do the same for buttons that require clicks)
+from skimage.util import img_as_uint, img_as_float
+from skimage.color import gray2rgb
 
 class Interface(object):
     """Main class of the module. Used to create the GUI"""
@@ -30,18 +31,25 @@ class Interface(object):
         self.ehooke = EHooke()
         self.default_params = self.ehooke.parameters
 
+        self.images = {}
+        self.current_image = None
+
+        self.base_min = 0.0
+        self.base_max = 1.0
+        self.fluor_min = 0.0
+        self.fluor_max = 1.0
+        self.optional_min = 0.0
+        self.optional_max = 1.0
+
+        self.cid = None
+        self.event_connected = False
+
         self.dark_mode = True
 
         self.gui_font = ("Verdana", 9, "normal")
         self.gui_font_bold = ("Verdana", 9, "bold")
 
         self.pady = (9, 3)
-
-        self.images = {}
-        self.current_image = None
-
-        self.cid = None
-        self.event_connected = False
 
         self.image_buttons_width = 20
         self.status_bar_width = 40
@@ -59,14 +67,17 @@ class Interface(object):
         self.parameters_panel = tk.Frame(self.middle_frame, width=600)
         self.parameters_panel.pack(side="left", fill="y")
 
+        self.middle_middle_frame = tk.Frame(self.middle_frame)
+        self.middle_middle_frame.pack(side="left")
+
         self.images_frame = tk.Frame(self.middle_frame)
         self.images_frame.pack(side="right", fill="y")
 
-        self.empty_space = tk.Label(self.images_frame, text="")
-        self.empty_space.pack(side="top")
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
         self.fig = plt.figure(figsize=self.calculate_fisize(), frameon=True)
-        self.canvas = FigureCanvasTkAgg(self.fig, self.middle_frame)
+        self.canvas = FigureCanvasTkAgg(self.fig, self.middle_middle_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side="top")
 
@@ -77,9 +88,27 @@ class Interface(object):
 
         self.canvas.draw()
 
-        self.toolbar = NavigationToolbar2Tk(self.canvas, self.middle_frame)
+        self.bottom_frame = tk.Frame(self.middle_middle_frame)
+        self.bottom_frame.pack(side="top")
+
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.middle_middle_frame)
         self.toolbar.update()
-        self.canvas._tkcanvas.pack(fill="both")
+        self.canvas._tkcanvas.pack(side="top")
+
+        self.min_label = tk.Label(self.bottom_frame, text="Min: ")
+        self.min_label.pack(side="left")
+
+        self.min_scale = tk.Scale(self.bottom_frame, from_=0, to=100, tickinterval=25,
+                                  length=150,  orient="horizontal", command=self.adjust_min)
+        self.min_scale.pack(side="left")
+
+        self.max_label = tk.Label(self.bottom_frame, text="Max: ")
+        self.max_label.pack(side="left")
+
+        self.max_scale = tk.Scale(self.bottom_frame, from_=0, to=100, tickinterval=25,
+                                  length=150,  orient="horizontal", command=self.adjust_max)
+        self.max_scale.pack(side="left")
+        self.max_scale.set(100)
 
         self.status = tk.StringVar()
         self.status.set("Load Base Image")
@@ -88,6 +117,36 @@ class Interface(object):
         self.status_bar.pack(side="bottom")
 
         self.set_imageloader()
+
+    def adjust_min(self, value):
+        current_min = float(value)
+
+        if self.current_image is None:
+            pass
+        elif self.current_image == "Base" or self.current_image == "Base_mask" or self.current_image == "Base_features" or self.current_image == "Base_cells_outlined":
+            self.base_min = current_min / 100.0
+            self.show_image(self.current_image)
+        elif self.current_image == "Fluor" or self.current_image == "Fluor_mask" or self.current_image == "Fluor_features" or self.current_image == "Fluor_cells_outlined" or self.current_image == "Fluor_with_lines":
+            self.fluor_min = current_min / 100.0
+            self.show_image(self.current_image)
+        elif self.current_image == "Optional" or self.current_image == "Optional_cells_outlined":
+            self.optional_min = current_min / 100.0
+            self.show_image(self.current_image)
+
+    def adjust_max(self, value):
+        current_max = float(value)
+
+        if self.current_image is None:
+            pass
+        elif self.current_image == "Base" or self.current_image == "Base_mask" or self.current_image == "Base_features" or self.current_image == "Base_cells_outlined":
+            self.base_max = current_max / 100.0
+            self.show_image(self.current_image)
+        elif self.current_image == "Fluor" or self.current_image == "Fluor_mask" or self.current_image == "Fluor_features" or self.current_image == "Fluor_cells_outlined" or self.current_image == "Fluor_with_lines":
+            self.fluor_max = current_max/ 100.0
+            self.show_image(self.current_image)
+        elif self.current_image == "Optional" or self.current_image == "Optional_cells_outlined":
+            self.optional_max = current_max / 100.0
+            self.show_image(self.current_image)
 
     def calculate_fisize(self):
         MM_TO_IN = 0.0393700787
@@ -253,9 +312,89 @@ class Interface(object):
 
         if image == "Base":
             x1, y1, x2, y2 = self.ehooke.image_manager.clip
-            self.ax.imshow(self.images[image][x1:x2, y1:y2], cmap=cm.Greys_r)
-        else:
-            self.ax.imshow(self.images[image], cmap=cm.Greys_r)
+            img = rescale_intensity(self.images[image][x1:x2, y1:y2], in_range=(self.base_min, self.base_max))
+            self.min_scale.set(int(self.base_min*100))
+            self.max_scale.set(int(self.base_max*100))
+            self.current_image_label.configure(text="Base")
+        elif image == "Base_mask":
+            x1, y1, x2, y2 = self.ehooke.image_manager.clip
+            img = rescale_intensity(self.images["Base"][x1:x2, y1:y2], in_range=(self.base_min, self.base_max))
+            img = mark_boundaries(img, img_as_uint(self.images["Mask"]), color=(0, 1, 1), outline_color=None)
+            self.min_scale.set(int(self.base_min*100))
+            self.max_scale.set(int(self.base_max*100))
+            self.current_image_label.configure(text="Base with mask")
+        elif image == "Base_features":
+            x1, y1, x2, y2 = self.ehooke.image_manager.clip
+            img = rescale_intensity(self.images["Base"][x1:x2, y1:y2], in_range=(self.base_min, self.base_max))
+            places = self.ehooke.segments_manager.features > 0.5
+            img[places] = 1
+            self.min_scale.set(int(self.base_min*100))
+            self.max_scale.set(int(self.base_max*100))
+            self.current_image_label.configure(text="Base with features")
+        elif image == "Base_cells_outlined":
+            x1, y1, x2, y2 = self.ehooke.image_manager.clip
+            img = rescale_intensity(self.images["Base"][x1:x2, y1:y2], in_range=(self.base_min, self.base_max))
+            img = cp.overlay_cells(self.ehooke.cell_manager.cells, img, self.ehooke.cell_manager.cell_colors)
+            self.min_scale.set(int(self.base_min*100))
+            self.max_scale.set(int(self.base_max*100))
+            self.current_image_label.configure(text="Base with cells")
+
+        elif image == "Mask":
+            img = self.images[image]
+            self.current_image_label.configure(text="Mask")
+
+        elif image == "Fluor":
+            img = rescale_intensity(self.images[image], in_range=(self.fluor_min, self.fluor_max))
+            self.min_scale.set(int(self.fluor_min*100))
+            self.max_scale.set(int(self.fluor_max*100))
+            self.current_image_label.configure(text="Fluor")
+        elif image == "Fluor_mask":
+            img = rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max))
+            img = mark_boundaries(img, img_as_uint(self.images["Mask"]), color=(0, 1, 1), outline_color=None)
+            self.min_scale.set(int(self.fluor_min*100))
+            self.max_scale.set(int(self.fluor_max*100))
+            self.current_image_label.configure(text="Fluor with Mask")
+        elif image == "Fluor_features":
+            img = rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max))
+            places = self.ehooke.segments_manager.features > 0.5
+            img[places] = 0
+            self.min_scale.set(int(self.fluor_min*100))
+            self.max_scale.set(int(self.fluor_max*100))
+            self.current_image_label.configure(text="Fluor with features")
+        elif image == "Fluor_cells_outlined":
+            img = rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max))
+            img = cp.overlay_cells(self.ehooke.cell_manager.cells, img, self.ehooke.cell_manager.cell_colors)
+            self.min_scale.set(int(self.fluor_min*100))
+            self.max_scale.set(int(self.fluor_max*100))
+            self.current_image_label.configure(text="Fluor with cells")
+        elif image == "Fluor_with_lines":
+            color = (0, 1, 1)
+            img = gray2rgb(rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max)))
+            for key in self.ehooke.linescan_manager.lines.keys():
+                ln = self.ehooke.linescan_manager.lines[key]
+                for i in range(len(ln.line_bg_mem[0])):
+                    img[ln.line_bg_mem[0][i], ln.line_bg_mem[1][i]] = color
+
+                for i in range(len(ln.line_cyt_sept[0])):
+                    img[ln.line_cyt_sept[0][i], ln.line_cyt_sept[1][i]] = color
+            self.min_scale.set(int(self.fluor_min*100))
+            self.max_scale.set(int(self.fluor_max*100))
+            self.current_image_label.configure(text="Linescan")
+
+
+        elif image == "Optional":
+            img = rescale_intensity(self.images[image], in_range=(self.optional_min, self.optional_max))
+            self.min_scale.set(int(self.optional_min*100))
+            self.max_scale.set(int(self.optional_max*100))
+            self.current_image_label.configure(text="Optional")
+        elif image == "Optional_cells_outlined":
+            img = rescale_intensity(self.images[image], in_range=(self.optional_min, self.optional_max))
+            img = cp.overlay_cells(self.ehooke.cell_manager.cells, img, self.ehooke.cell_manager.cell_colors)
+            self.min_scale.set(int(self.optional_min*100))
+            self.max_scale.set(int(self.optional_max*100))
+            self.current_image_label.configure(text="Optional with cells")
+
+        self.ax.imshow(img, cmap=cm.Greys_r)
 
         plt.subplots_adjust(left=0.005, bottom=0.005, right=0.995, top=0.995)
         #figZoom = self.zoom_factory(self.ax)
@@ -317,8 +456,8 @@ class Interface(object):
         self.ehooke.parameters.imageloaderparams.y_align = \
             self.y_align_value.get()
         self.ehooke.load_fluor_image()
-        self.images["Fluorescence"] = \
-            self.ehooke.image_manager.fluor_image
+        self.images["Fluor"] = \
+            rescale_intensity(img_as_float(self.ehooke.image_manager.original_fluor_image))
         self.images["Fluor_mask"] = self.ehooke.image_manager.fluor_w_mask
         self.show_image("Fluor_mask")
         self.next_button.config(state="active")
@@ -331,7 +470,7 @@ class Interface(object):
 
     def load_optional(self):
         self.ehooke.load_option_image()
-        self.images["Optional"] = self.ehooke.image_manager.optional_image
+        self.images["Optional"] = rescale_intensity(img_as_float(self.ehooke.image_manager.optional_image))
         self.show_image("Optional")
         self.optional_button.config(state="active")
         self.status.set("Optional Image Loaded. Proceed to the next step")
@@ -359,8 +498,8 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        self.empty_space = tk.Label(self.images_frame, text="")
-        self.empty_space.pack(side="top")
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
         self.load_base_button = tk.Button(self.top_frame,
                                           text="Load Base Image",
@@ -560,7 +699,7 @@ class Interface(object):
         self.base_with_mask_button.config(state="disabled")
 
         self.fluor_button = tk.Button(self.images_frame, text="Fluorescence",
-                                      command=lambda: self.show_image("Fluorescence"), width=self.image_buttons_width)
+                                      command=lambda: self.show_image("Fluor"), width=self.image_buttons_width)
         self.fluor_button.pack(side="top", fill="x")
         self.fluor_button.config(state="disabled")
 
@@ -633,8 +772,8 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        self.empty_space = tk.Label(self.images_frame, text="")
-        self.empty_space.pack(side="top")
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(self.parameters_panel,
@@ -768,12 +907,14 @@ class Interface(object):
                                        command=lambda: self.show_image(
                                            "Labels"),
                                        width=self.image_buttons_width)
-        self.labels_button.pack(side="top", fill="x")
-        self.labels_button.config(state="disabled")
+        #self.labels_button.pack(side="top", fill="x")
+        #self.labels_button.config(state="disabled")
 
         self.config_gui(self.main_window)
 
         self.segments_parameters_label.config(font=self.gui_font_bold)
+
+        self.show_image(self.current_image)
 
     def show_cell_info_cellcomputation(self, x, y):
         """Shows the stats of each cell on the side panel"""
@@ -993,8 +1134,8 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        self.empty_space = tk.Label(self.images_frame, text="")
-        self.empty_space.pack(side="top")
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(
@@ -1224,7 +1365,7 @@ class Interface(object):
         self.base_w_cells_button.pack(side="top", fill="x")
         self.base_w_cells_button.config(state="disabled")
 
-        self.fluor_button = tk.Button(self.images_frame, text="Fluorescence", command=lambda: self.show_image("Fluorescence"),
+        self.fluor_button = tk.Button(self.images_frame, text="Fluorescence", command=lambda: self.show_image("Fluor"),
                                       width=self.image_buttons_width)
         self.fluor_button.pack(side="top", fill="x")
 
@@ -1253,6 +1394,8 @@ class Interface(object):
         for w in self.cell_info_frame.winfo_children():
             for w1 in w.winfo_children():
                 w1.config(font=("Verdana", 8, "normal"))
+
+        self.show_image(self.current_image)
 
     def set_cellcomputation_from_cellprocessing(self):
         """Method to go back to cell computation"""
@@ -1648,8 +1791,8 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        self.empty_space = tk.Label(self.images_frame, text="")
-        self.empty_space.pack(side="top")
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
         self.status = tk.StringVar()
         self.status.set("Load Phase Image")
@@ -2164,7 +2307,7 @@ class Interface(object):
         self.base_w_cells_button.pack(side="top", fill="x")
         self.base_w_cells_button.config(state="active")
 
-        self.fluor_button = tk.Button(self.images_frame, text="Fluorescence", command=lambda: self.show_image("Fluorescence"),
+        self.fluor_button = tk.Button(self.images_frame, text="Fluorescence", command=lambda: self.show_image("Fluor"),
                                       width=self.image_buttons_width)
         self.fluor_button.pack(side="top", fill="x")
 
@@ -2191,7 +2334,7 @@ class Interface(object):
         self.optional_w_cells_button.pack(side="top", fill="x")
         self.optional_w_cells_button.config(state="disabled")
 
-        self.fluor_lines_button = tk.Button(self.images_frame, text="Fluor with Lines", command=lambda: self.show_image(
+        self.fluor_lines_button = tk.Button(self.images_frame, text="Linescan", command=lambda: self.show_image(
             "Fluor_with_lines"), width=self.image_buttons_width)
         self.fluor_lines_button.pack(side="top", fill="x")
         self.fluor_lines_button.config(state="active")
@@ -2208,6 +2351,8 @@ class Interface(object):
         for w in self.cell_info_frame.winfo_children():
             for w1 in w.winfo_children():
                 w1.config(font=("Verdana", 8, "normal"))
+
+        self.show_image(self.current_image)
 
     def new_analysis(self):
         """Restarts ehooke to conduct a new analysis"""
