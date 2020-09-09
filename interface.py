@@ -18,7 +18,6 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from ehooke import EHooke
 from skimage.segmentation import mark_boundaries
 from skimage.exposure import rescale_intensity
-from win32api import GetSystemMetrics
 
 #TODO: add adjust min/max
 #TODO: change images panel add border to currently selected image (do the same for buttons that require clicks)
