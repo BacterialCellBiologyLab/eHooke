@@ -58,7 +58,7 @@ class Interface(object):
         self.main_window = tk.Tk()
         self.main_window.wm_title("eHooke")
 
-        self.top_frame = tk.Frame(self.main_window, width=1200, height=10)
+        self.top_frame = tk.Frame(self.main_window, height=10)
         self.top_frame.pack(fill="x")
 
         self.middle_frame = tk.Frame(self.main_window)
@@ -67,17 +67,24 @@ class Interface(object):
         self.parameters_panel = tk.Frame(self.middle_frame, width=600)
         self.parameters_panel.pack(side="left", fill="y")
 
-        self.middle_middle_frame = tk.Frame(self.middle_frame)
-        self.middle_middle_frame.pack(side="left")
+        self.figure_frame = tk.Frame(self.middle_frame)
+        self.figure_frame.pack(side="left")
 
-        self.images_frame = tk.Frame(self.middle_frame)
-        self.images_frame.pack(side="right", fill="y")
+        self.right_frame = tk.Frame(self.middle_frame)
+        self.right_frame.pack(side="right", fill="y")
+
+        self.intensities_frame = tk.Frame(self.right_frame)
+        self.intensities_frame.pack(side="top")
+        self.intensities_frame.config(pady=5)
+
+        self.images_frame = tk.Frame(self.right_frame)
+        self.images_frame.pack(side="top", fill="y")
 
         self.current_image_label = tk.Label(self.images_frame, text="")
         self.current_image_label.pack(side="top")
 
         self.fig = plt.figure(figsize=self.calculate_fisize(), frameon=True)
-        self.canvas = FigureCanvasTkAgg(self.fig, self.middle_middle_frame)
+        self.canvas = FigureCanvasTkAgg(self.fig, self.middle_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side="top")
 
@@ -88,26 +95,23 @@ class Interface(object):
 
         self.canvas.draw()
 
-        self.bottom_frame = tk.Frame(self.middle_middle_frame)
-        self.bottom_frame.pack(side="top")
-
-        self.toolbar = NavigationToolbar2Tk(self.canvas, self.middle_middle_frame)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.middle_frame)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side="top")
 
-        self.min_label = tk.Label(self.bottom_frame, text="Min: ")
-        self.min_label.pack(side="left")
+        self.min_label = tk.Label(self.intensities_frame, text="Min Intensity: ")
+        self.min_label.pack(side="top")
 
-        self.min_scale = tk.Scale(self.bottom_frame, from_=0, to=100, tickinterval=25,
-                                  length=150,  orient="horizontal", command=self.adjust_min)
-        self.min_scale.pack(side="left")
+        self.min_scale = tk.Scale(self.intensities_frame, from_=0, to=100, tickinterval=0,
+                                  length=150,  orient="horizontal", command=self.adjust_min, width=10, showvalue=0)
+        self.min_scale.pack(side="top")
 
-        self.max_label = tk.Label(self.bottom_frame, text="Max: ")
-        self.max_label.pack(side="left")
+        self.max_label = tk.Label(self.intensities_frame, text="Max Intensity: ")
+        self.max_label.pack(side="top")
 
-        self.max_scale = tk.Scale(self.bottom_frame, from_=0, to=100, tickinterval=25,
-                                  length=150,  orient="horizontal", command=self.adjust_max)
-        self.max_scale.pack(side="left")
+        self.max_scale = tk.Scale(self.intensities_frame, from_=0, to=100, tickinterval=0,
+                                  length=150,  orient="horizontal", command=self.adjust_max, width=10, showvalue=0)
+        self.max_scale.pack(side="top")
         self.max_scale.set(100)
 
         self.status = tk.StringVar()
@@ -498,9 +502,6 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        self.current_image_label = tk.Label(self.images_frame, text="")
-        self.current_image_label.pack(side="top")
-
         self.load_base_button = tk.Button(self.top_frame,
                                           text="Load Base Image",
                                           command=self.load_base_image)
@@ -717,6 +718,9 @@ class Interface(object):
         self.optional_button.pack(side="top", fill="x")
         self.optional_button.config(state="disabled")
 
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
+
         self.status = tk.StringVar()
         self.status.set("Load Base Image")
         self.status_bar = tk.Label(
@@ -771,9 +775,6 @@ class Interface(object):
 
         for w in self.images_frame.winfo_children():
             w.destroy()
-
-        self.current_image_label = tk.Label(self.images_frame, text="")
-        self.current_image_label.pack(side="top")
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(self.parameters_panel,
@@ -909,6 +910,9 @@ class Interface(object):
                                        width=self.image_buttons_width)
         #self.labels_button.pack(side="top", fill="x")
         #self.labels_button.config(state="disabled")
+
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
         self.config_gui(self.main_window)
 
@@ -1133,9 +1137,6 @@ class Interface(object):
 
         for w in self.images_frame.winfo_children():
             w.destroy()
-
-        self.current_image_label = tk.Label(self.images_frame, text="")
-        self.current_image_label.pack(side="top")
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(
@@ -1385,6 +1386,9 @@ class Interface(object):
             self.optional_button.config(state="disabled")
         else:
             self.optional_button.config(state="active")
+
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
 
         self.config_gui(self.main_window)
@@ -1790,9 +1794,6 @@ class Interface(object):
 
         for w in self.images_frame.winfo_children():
             w.destroy()
-
-        self.current_image_label = tk.Label(self.images_frame, text="")
-        self.current_image_label.pack(side="top")
 
         self.status = tk.StringVar()
         self.status.set("Load Phase Image")
@@ -2338,6 +2339,11 @@ class Interface(object):
             "Fluor_with_lines"), width=self.image_buttons_width)
         self.fluor_lines_button.pack(side="top", fill="x")
         self.fluor_lines_button.config(state="active")
+
+
+
+        self.current_image_label = tk.Label(self.images_frame, text="")
+        self.current_image_label.pack(side="top")
 
 
         self.config_gui(self.main_window)
