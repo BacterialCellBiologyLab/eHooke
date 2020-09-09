@@ -105,7 +105,7 @@ class Interface(object):
 
         h_px = root.winfo_screenheight()
 
-        return ((h_px/vdpi-3)*1.3, h_px/vdpi-3)
+        return ((h_px/vdpi-2.5)*1.5, h_px/vdpi-2.5)
 
     def remove_coord(self, x, y):
         """"Hack" to remove the mpl coordinates"""
