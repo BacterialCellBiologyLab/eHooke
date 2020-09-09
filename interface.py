@@ -2301,7 +2301,7 @@ class Interface(object):
                                               command=lambda: self.show_image(
                                                   "Base_features"),
                                               width=self.image_buttons_width)
-        self.base_features_button.pack(side="top", fill="x")
+        #self.base_features_button.pack(side="top", fill="x")
 
         self.base_w_cells_button = tk.Button(self.images_frame, text="Base Outlined", command=lambda: self.show_image("Base_cells_outlined"),
                                              width=self.image_buttons_width)
