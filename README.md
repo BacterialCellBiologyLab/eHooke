@@ -9,10 +9,10 @@
 ##### newer versions of these libraries were not tested with current code
 ## ---------------------------------------------------------
 ### Setup instructions:
-#### 1. Clone or Download as zip this project
+#### 1. Install Anaconda3 or Miniconda3
+#### 2. Clone or Download as zip this project
 ###### https://github.com/brunomsaraiva/eHooke_1.0/archive/master.zip
-#### 2. Open Terminal inside eHooke directory
-#### 3. Install Anaconda3 or Miniconda3
+#### 3. Open Terminal inside eHooke directory
 ###### https://www.anaconda.com/distribution/
 #### 4. Create a new environment (optional)
 ###### `conda create -n env_name python=3.6`
