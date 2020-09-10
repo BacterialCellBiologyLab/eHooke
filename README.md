@@ -4,7 +4,6 @@
 ## ---------------------------------------------------------
 ### Currently this project requires the following libraries:
 #### keras==2.2.4
-#### numpy==1.14.3
 #### scikit_image==0.15.0
 
 ##### newer versions of these libraries were not tested with current code
