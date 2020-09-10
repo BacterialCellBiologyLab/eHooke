@@ -31,7 +31,18 @@
 ###### `conda activate env_name`
 #### 3. Run eHooke with GUI
 ###### `python interface.py`
+## ---------------------------------------------------------
+### Create an "executable":
+#### On windows
+###### 1. Open a simple text editor
+###### 2. Write:
+###### `call activate env_name`
+###### `python interface.py`
+###### `call conda deactivate`
+#### 3. Save file as run.bat (file extension needs to be .bat) inside eHooke folder
+#### 4. Create a shortcut for this file to run it from anywhere
 #### Enjoy!
 ## ---------------------------------------------------------
 #### Instructions Manual
-###### Soon<sup>TM</sup>
+###### https://docs.google.com/presentation/d/1-912PTSLvMj1qKhAutRRhTlz-6g5wX19nYxmqs0UVIs/edit#slide=id.g760ea0aa2d_1_23
+
