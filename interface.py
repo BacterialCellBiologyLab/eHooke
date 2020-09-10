@@ -153,22 +153,12 @@ class Interface(object):
             self.show_image(self.current_image)
 
     def calculate_fisize(self):
-        MM_TO_IN = 0.0393700787
-        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+
         root = self.main_window
-        dc = ctypes.windll.user32.GetDC(root.winfo_id())
-        mw = ctypes.windll.gdi32.GetDeviceCaps(dc, 4) * MM_TO_IN
-        mh = ctypes.windll.gdi32.GetDeviceCaps(dc, 6) * MM_TO_IN
-        dw = ctypes.windll.gdi32.GetDeviceCaps(dc, 8)
-        dh = ctypes.windll.gdi32.GetDeviceCaps(dc, 10)
 
-        # Horizontal and vertical DPIs calculated
-        hdpi, vdpi = dw / mw, dh / mh
+        h_inch = root.winfo_screenmmheight() * 0.0393701
 
-
-        h_px = root.winfo_screenheight()
-
-        return ((h_px/vdpi-2.5)*1.5, h_px/vdpi-2.5)
+        return ((h_inch-h_inch*0.2)*1.5, h_inch-h_inch*0.2)
 
     def remove_coord(self, x, y):
         """"Hack" to remove the mpl coordinates"""
