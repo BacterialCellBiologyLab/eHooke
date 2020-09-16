@@ -9,8 +9,6 @@ else:
     matplotlib.use("TkAgg")
 
 from tkinter import messagebox as tkMessageBox
-import ctypes
-import numpy as np
 import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
