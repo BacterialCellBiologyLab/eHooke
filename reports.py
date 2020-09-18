@@ -14,7 +14,9 @@ class ReportManager:
     def __init__(self, parameters):
         self.keys = cp.stats_format(parameters.cellprocessingparams)
 
-    def csv_report(self, filename, lbl, cell_manager):
+        self.cell_data_filename = None
+
+    def csv_report(self, filename, image_name, cell_manager):
 
         cells = cell_manager.cells
 
@@ -57,15 +59,15 @@ class ReportManager:
                     noise.append(lin + "\n")
 
             if len(selects) > 1:
-                open(filename + "csv_selected_" + lbl + ".csv", 'w').writelines(selects)
+                open(filename + "/csv_selected_" + image_name + ".csv", 'w').writelines(selects)
 
             if len(rejects) > 1:
-                open(filename + "csv_rejected_" + lbl + ".csv", "w").writelines(rejects)
+                open(filename + "/csv_rejected_" + image_name + ".csv", "w").writelines(rejects)
 
             if len(noise) > 1:
-                open(filename + "csv_noise_" + lbl + ".csv", "w").writelines(noise)
+                open(filename + "/csv_noise_" + image_name + ".csv", "w").writelines(noise)
 
-    def html_report(self, filename, lbl, cell_manager):
+    def html_report(self, filename, image_name, cell_manager):
         """generates an html report with the all the cell stats from the
         selected cells"""
 
@@ -183,9 +185,9 @@ class ReportManager:
 
             report.append('</body>\n</html>')
 
-        open(filename + 'html_report_' + lbl + '.html', 'w').writelines(report)
+        open(filename + '/html_report_' + image_name + '.html', 'w').writelines(report)
 
-    def linescan_report(self, filename, label, linescan_manager):
+    def linescan_report(self, filename, image_name, linescan_manager):
         if len(linescan_manager.lines.keys()) > 0:
             HTML_HEADER = """<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
                             "http://www.w3.org/TR/html4/strict.dtd">
@@ -221,7 +223,7 @@ class ReportManager:
             report += table
             report += "</table></body></html>"
 
-            open(filename + '/linescan_report_' + label + '.html', 'w').writelines(report)
+            open(filename + '/linescan_report_' + image_name + '.html', 'w').writelines(report)
 
     def check_filename(self, filename):
         if os.path.exists(filename):
@@ -238,6 +240,7 @@ class ReportManager:
         if label is None:
             filename = path + "/Report_1"
             filename = self.check_filename(filename)
+            self.cell_data_filename = filename
 
             if not os.path.exists(filename + "/_images"):
                 os.makedirs(filename + "/_images")
@@ -250,6 +253,7 @@ class ReportManager:
         else:
             filename = path + "/Report_" + label + "_1"
             filename = self.check_filename(filename)
+            self.cell_data_filename = filename
 
             if not os.path.exists(filename + "/_images"):
                 os.makedirs(filename + "/_images")
@@ -268,26 +272,26 @@ class ReportManager:
         self.csv_report(filename, label, cell_manager)
         self.html_report(filename, label, cell_manager)
         self.linescan_report(filename, label, linescan_manager)
-        imsave(filename + "selected_cells.png", cell_manager.fluor_w_cells)
-        params.save_parameters(filename + "params")
-        open(filename + "selected_cells.txt", "w").writelines(selected_cells)
+        imsave(filename + "/selected_cells.png", cell_manager.fluor_w_cells)
+        params.save_parameters(filename + "/params")
+        open(filename + "/selected_cells.txt", "w").writelines(selected_cells)
 
     def get_cell_images(self, path, label, image_manager, cell_manager, params):
         if label is None:
-            filename = path + "/Report/"
-            if not os.path.exists(filename + "_cell_data/fluor"):
+            filename = self.cell_data_filename
+            if not os.path.exists(filename + "/_cell_data/fluor"):
                 os.makedirs(filename + "/_cell_data/fluor")
 
             if image_manager.optional_image is not None:
-                if not os.path.exists(filename + "_cell_data/optional"):
+                if not os.path.exists(filename + "/_cell_data/optional"):
                     os.makedirs(filename + "/_cell_data/optional")
         else:
-            filename = path + "/Report_" + label + "/"
-            if not os.path.exists(filename + "_cell_data/fluor"):
+            filename = self.cell_data_filename
+            if not os.path.exists(filename + "/_cell_data/fluor"):
                 os.makedirs(filename + "/_cell_data/fluor")
 
             if image_manager.optional_image is not None:
-                if not os.path.exists(filename + "_cell_data/optional"):
+                if not os.path.exists(filename + "/_cell_data/optional"):
                     os.makedirs(filename + "/_cell_data/optional")
 
         x_align, y_align = params.imageloaderparams.x_align, params.imageloaderparams.y_align
@@ -300,10 +304,10 @@ class ReportManager:
         for key in cell_manager.cells.keys():
             x0, y0, x1, y1 = cell_manager.cells[key].box
             fluor_cell = np.concatenate((fluor_img[x0:x1+1, y0:y1+1], fluor_img[x0:x1+1, y0:y1+1] * cell_manager.cells[key].cell_mask), axis=1)
-            imsave(filename + "_cell_data/fluor/" + key + ".png",
+            imsave(filename + "/_cell_data/fluor/" + key + ".png",
                    img_as_uint(fluor_cell))
 
             if optional_image is not None:
                 optional_cell = np.concatenate((optional_image[x0:x1+1, y0:y1+1], optional_image[x0:x1+1, y0:y1+1] * cell_manager.cells[key].cell_mask), axis=1)
-                imsave(filename + "_cell_data/optional/" + key + ".png",
+                imsave(filename + "/_cell_data/optional/" + key + ".png",
                        img_as_uint(optional_cell))
