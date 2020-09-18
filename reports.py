@@ -223,30 +223,41 @@ class ReportManager:
 
             open(filename + '/linescan_report_' + label + '.html', 'w').writelines(report)
 
+    def check_filename(self, filename):
+        if os.path.exists(filename):
+            tmp = ""
+            split_path = filename.split("_")
+            tmp = "_".join(split_path[:len(split_path)-1])
+            tmp += "_" + str(int(split_path[-1])+1)
+            return self.check_filename(tmp)
+
+        else:
+            return filename
+
     def generate_report(self, path, label, cell_manager, linescan_manager, params):
         if label is None:
-            filename = path + "/Report/"
-            if os.path.exists(filename):
-                pass
-            if not os.path.exists(filename + "_images"):
+            filename = path + "/Report_1"
+            filename = self.check_filename(filename)
+
+            if not os.path.exists(filename + "/_images"):
                 os.makedirs(filename + "/_images")
-            if not os.path.exists(filename + "_rejected_images"):
+            if not os.path.exists(filename + "/_rejected_images"):
                 os.makedirs(filename + "/_rejected_images")
             if not os.path.exists(filename + "_noise_images"):
                 os.makedirs(filename + "/_noise_images")
-            if not os.path.exists(filename + "_linescan_images"):
+            if not os.path.exists(filename + "/_linescan_images"):
                 os.makedirs(filename + "/_linescan_images")
         else:
-            filename = path + "/Report_" + label + "/"
-            if os.path.exists(filename):
-                pass
-            if not os.path.exists(filename + "_images"):
+            filename = path + "/Report_" + label + "_1"
+            filename = self.check_filename(filename)
+
+            if not os.path.exists(filename + "/_images"):
                 os.makedirs(filename + "/_images")
-            if not os.path.exists(filename + "_rejected_images"):
+            if not os.path.exists(filename + "/_rejected_images"):
                 os.makedirs(filename + "/_rejected_images")
-            if not os.path.exists(filename + "_noise_images"):
+            if not os.path.exists(filename + "/_noise_images"):
                 os.makedirs(filename + "/_noise_images")
-            if not os.path.exists(filename + "_linescan_images"):
+            if not os.path.exists(filename + "/_linescan_images"):
                 os.makedirs(filename + "/_linescan_images")
 
         selected_cells = ""
