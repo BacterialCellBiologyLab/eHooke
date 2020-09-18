@@ -14,7 +14,7 @@ class ReportManager:
     def __init__(self, parameters):
         self.keys = cp.stats_format(parameters.cellprocessingparams)
 
-    def csv_report(self, filename, label, cell_manager):
+    def csv_report(self, filename, lbl, cell_manager):
 
         cells = cell_manager.cells
 
@@ -57,15 +57,15 @@ class ReportManager:
                     noise.append(lin + "\n")
 
             if len(selects) > 1:
-                open(filename + "csv_selected_" + label + ".csv", 'w').writelines(selects)
+                open(filename + "csv_selected_" + lbl + ".csv", 'w').writelines(selects)
 
             if len(rejects) > 1:
-                open(filename + "csv_rejected_" + label + ".csv", "w").writelines(rejects)
+                open(filename + "csv_rejected_" + lbl + ".csv", "w").writelines(rejects)
 
             if len(noise) > 1:
-                open(filename + "csv_noise_" + label + ".csv", "w").writelines(noise)
+                open(filename + "csv_noise_" + lbl + ".csv", "w").writelines(noise)
 
-    def html_report(self, filename, label, cell_manager):
+    def html_report(self, filename, lbl, cell_manager):
         """generates an html report with the all the cell stats from the
         selected cells"""
 
@@ -183,7 +183,7 @@ class ReportManager:
 
             report.append('</body>\n</html>')
 
-        open(filename + 'html_report_' + label + '.html', 'w').writelines(report)
+        open(filename + 'html_report_' + lbl + '.html', 'w').writelines(report)
 
     def linescan_report(self, filename, label, linescan_manager):
         if len(linescan_manager.lines.keys()) > 0:
