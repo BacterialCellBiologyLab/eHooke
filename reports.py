@@ -14,7 +14,7 @@ class ReportManager:
     def __init__(self, parameters):
         self.keys = cp.stats_format(parameters.cellprocessingparams)
 
-    def csv_report(self, filename, cell_manager):
+    def csv_report(self, filename, label, cell_manager):
 
         cells = cell_manager.cells
 
@@ -57,15 +57,15 @@ class ReportManager:
                     noise.append(lin + "\n")
 
             if len(selects) > 1:
-                open(filename + "csv_selected.csv", 'w').writelines(selects)
+                open(filename + "csv_selected_" + label + ".csv", 'w').writelines(selects)
 
             if len(rejects) > 1:
-                open(filename + "csv_rejected.csv", "w").writelines(rejects)
+                open(filename + "csv_rejected_" + label + ".csv", "w").writelines(rejects)
 
             if len(noise) > 1:
-                open(filename + "csv_noise.csv", "w").writelines(noise)
+                open(filename + "csv_noise_" + label + ".csv", "w").writelines(noise)
 
-    def html_report(self, filename, cell_manager):
+    def html_report(self, filename, label, cell_manager):
         """generates an html report with the all the cell stats from the
         selected cells"""
 
@@ -183,9 +183,9 @@ class ReportManager:
 
             report.append('</body>\n</html>')
 
-        open(filename + 'html_report.html', 'w').writelines(report)
+        open(filename + 'html_report_' + label + '.html', 'w').writelines(report)
 
-    def linescan_report(self, filename, linescan_manager):
+    def linescan_report(self, filename, label, linescan_manager):
         if len(linescan_manager.lines.keys()) > 0:
             HTML_HEADER = """<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
                             "http://www.w3.org/TR/html4/strict.dtd">
@@ -221,11 +221,13 @@ class ReportManager:
             report += table
             report += "</table></body></html>"
 
-            open(filename + '/linescan_report.html', 'w').writelines(report)
+            open(filename + '/linescan_report_' + label + '.html', 'w').writelines(report)
 
     def generate_report(self, path, label, cell_manager, linescan_manager, params):
         if label is None:
             filename = path + "/Report/"
+            if os.path.exists(filename):
+                pass
             if not os.path.exists(filename + "_images"):
                 os.makedirs(filename + "/_images")
             if not os.path.exists(filename + "_rejected_images"):
@@ -236,6 +238,8 @@ class ReportManager:
                 os.makedirs(filename + "/_linescan_images")
         else:
             filename = path + "/Report_" + label + "/"
+            if os.path.exists(filename):
+                pass
             if not os.path.exists(filename + "_images"):
                 os.makedirs(filename + "/_images")
             if not os.path.exists(filename + "_rejected_images"):
@@ -250,9 +254,9 @@ class ReportManager:
             if cell_manager.cells[cell].selection_state == CELL_SELECTED:
                 selected_cells += cell + ";"
 
-        self.csv_report(filename, cell_manager)
-        self.html_report(filename, cell_manager)
-        self.linescan_report(filename, linescan_manager)
+        self.csv_report(filename, label, cell_manager)
+        self.html_report(filename, label, cell_manager)
+        self.linescan_report(filename, label, linescan_manager)
         imsave(filename + "selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename + "params")
         open(filename + "selected_cells.txt", "w").writelines(selected_cells)
