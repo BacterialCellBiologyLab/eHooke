@@ -209,10 +209,18 @@ class EHooke(object):
 
         print("Finished Filtering Cells")
 
-    def compute_coloc(self):
+    def compute_coloc(self, label=None):
+        if label is None:
+            label = self.fluor_path.split("/")
+            label = label[len(label) - 1].split(".")
+            if len(label) > 2:
+                label = label[len(label)-3] + "." + label[len(label)-2]
+            else:
+                label = label[len(label)-2]
+
         if self.image_manager.optional_image is not None:
             self.coloc_manager = ColocManager()
-            self.coloc_manager.compute_pcc(self.cell_manager, self.image_manager, self.parameters)
+            self.coloc_manager.compute_pcc(self.cell_manager, self.image_manager, self.parameters, label)
 
         else:
             print("Optional Image not loaded")

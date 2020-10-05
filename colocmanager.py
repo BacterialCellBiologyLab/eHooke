@@ -8,7 +8,7 @@ class ColocManager(object):
     def __int__(self):
         self.report = {}
 
-    def save_report(self, sept=False):
+    def save_report(self, label, sept=False):
 
         sorted_keys = sorted(self.report.keys())
 
@@ -28,19 +28,19 @@ class ColocManager(object):
             results += "\n"
 
         save_directory = fd.askdirectory()
-        open(save_directory + os.sep + "pcc_report.csv", "w").writelines(results)
+        open(save_directory + os.sep + label + "_pcc_report.csv", "w").writelines(results)
 
 
     def pearsons_score(self, channel_1, channel_2, mask):
 
         filtered_1 = (channel_1 * mask).flatten()
-        filtered_1 = filtered_1[filtered_1 > 0.0]
+        filtered_1 = filtered_1[filtered_1 > 0.0] # removes 0s from entering pcc calculation
         filtered_2 = (channel_2 * mask).flatten()
-        filtered_2 = filtered_2[filtered_2 > 0.0]
+        filtered_2 = filtered_2[filtered_2 > 0.0] # removes 0s from entering pcc calculation
 
         return pearsonr(filtered_1, filtered_2)
 
-    def compute_pcc(self, cell_manager, image_manager, parameters):
+    def compute_pcc(self, cell_manager, image_manager, parameters, label):
         self.report = {}
 
         fluor_image = image_manager.original_fluor_image
@@ -59,16 +59,19 @@ class ColocManager(object):
                 fluor_box = fluor_image[x0:x1+1, y0:y1+1]
                 optional_box = optional_image[x0:x1+1, y0:y1+1]
 
-                self.report[key]["Channel 1"] = fluor_box
-                self.report[key]["Channel 2"] = optional_box
+                try:
+                    self.report[key]["Channel 1"] = fluor_box
+                    self.report[key]["Channel 2"] = optional_box
 
-                self.report[key]["Whole Cell"] = self.pearsons_score(fluor_box, optional_box, cell.cell_mask)[0]
-                self.report[key]["Membrane"] = self.pearsons_score(fluor_box, optional_box, cell.perim_mask)[0]
-                self.report[key]["Cytoplasm"] = self.pearsons_score(fluor_box, optional_box, cell.cyto_mask)[0]
+                    self.report[key]["Whole Cell"] = self.pearsons_score(fluor_box, optional_box, cell.cell_mask)[0]
+                    self.report[key]["Membrane"] = self.pearsons_score(fluor_box, optional_box, cell.perim_mask)[0]
+                    self.report[key]["Cytoplasm"] = self.pearsons_score(fluor_box, optional_box, cell.cyto_mask)[0]
 
-                if parameters.cellprocessingparams.find_septum:
-                    self.report[key]["Septum"] = self.pearsons_score(fluor_box, optional_box, cell.sept_mask)[0]
-                    self.report[key]["MembSept"] = self.pearsons_score(fluor_box, optional_box, cell.membsept_mask)[0]
+                    if parameters.cellprocessingparams.find_septum:
+                        self.report[key]["Septum"] = self.pearsons_score(fluor_box, optional_box, cell.sept_mask)[0]
+                        self.report[key]["MembSept"] = self.pearsons_score(fluor_box, optional_box, cell.membsept_mask)[0]
+                except ValueError:
+                    del self.report[key]
 
-        self.save_report(sept=parameters.cellprocessingparams.find_septum)
+        self.save_report(label, sept=parameters.cellprocessingparams.find_septum)
 
