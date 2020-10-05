@@ -301,6 +301,7 @@ class Interface(object):
             self.ax.set_ylim(ylim)
 
         self.current_image = image
+        print(image)
 
         if image == "Base":
             x1, y1, x2, y2 = self.ehooke.image_manager.clip
@@ -322,14 +323,14 @@ class Interface(object):
             img[places] = 1
             self.min_scale.set(int(self.base_min*100))
             self.max_scale.set(int(self.base_max*100))
-            self.current_image_label.configure(text="Base with features")
+            self.current_image_label.configure(text="Base with Features")
         elif image == "Base_cells_outlined":
             x1, y1, x2, y2 = self.ehooke.image_manager.clip
             img = rescale_intensity(self.images["Base"][x1:x2, y1:y2], in_range=(self.base_min, self.base_max))
             img = cp.overlay_cells(self.ehooke.cell_manager.cells, img, self.ehooke.cell_manager.cell_colors)
             self.min_scale.set(int(self.base_min*100))
             self.max_scale.set(int(self.base_max*100))
-            self.current_image_label.configure(text="Base with cells")
+            self.current_image_label.configure(text="Base Outlined")
 
         elif image == "Mask":
             img = self.images[image]
@@ -339,7 +340,7 @@ class Interface(object):
             img = rescale_intensity(self.images[image], in_range=(self.fluor_min, self.fluor_max))
             self.min_scale.set(int(self.fluor_min*100))
             self.max_scale.set(int(self.fluor_max*100))
-            self.current_image_label.configure(text="Fluor")
+            self.current_image_label.configure(text="Fluorescence")
         elif image == "Fluor_mask":
             img = rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max))
             img = mark_boundaries(img, img_as_uint(self.images["Mask"]), color=(0, 1, 1), outline_color=None)
@@ -352,13 +353,13 @@ class Interface(object):
             img[places] = 0
             self.min_scale.set(int(self.fluor_min*100))
             self.max_scale.set(int(self.fluor_max*100))
-            self.current_image_label.configure(text="Fluor with features")
+            self.current_image_label.configure(text="Fluor with Features")
         elif image == "Fluor_cells_outlined":
             img = rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max))
             img = cp.overlay_cells(self.ehooke.cell_manager.cells, img, self.ehooke.cell_manager.cell_colors)
             self.min_scale.set(int(self.fluor_min*100))
             self.max_scale.set(int(self.fluor_max*100))
-            self.current_image_label.configure(text="Fluor with cells")
+            self.current_image_label.configure(text="Fluor Outlined")
         elif image == "Fluor_with_lines":
             color = (0, 1, 1)
             img = gray2rgb(rescale_intensity(self.images["Fluor"], in_range=(self.fluor_min, self.fluor_max)))
@@ -378,13 +379,13 @@ class Interface(object):
             img = rescale_intensity(self.images[image], in_range=(self.optional_min, self.optional_max))
             self.min_scale.set(int(self.optional_min*100))
             self.max_scale.set(int(self.optional_max*100))
-            self.current_image_label.configure(text="Optional")
+            self.current_image_label.configure(text="Secondary")
         elif image == "Optional_cells_outlined":
             img = rescale_intensity(self.images[image], in_range=(self.optional_min, self.optional_max))
             img = cp.overlay_cells(self.ehooke.cell_manager.cells, img, self.ehooke.cell_manager.cell_colors)
             self.min_scale.set(int(self.optional_min*100))
             self.max_scale.set(int(self.optional_max*100))
-            self.current_image_label.configure(text="Optional with cells")
+            self.current_image_label.configure(text="Secondary Outlined")
 
         self.ax.imshow(img, cmap=cm.Greys_r)
 
@@ -508,7 +509,7 @@ class Interface(object):
         self.load_fluorescence_button.config(state="disabled")
 
         self.load_optional_button = tk.Button(self.top_frame,
-                                              text="Load Optional",
+                                              text="Load Secondary Channel",
                                               command=self.load_optional)
         self.load_optional_button.pack(side="left")
         self.load_optional_button.config(state="disabled")
@@ -699,7 +700,7 @@ class Interface(object):
         self.fluor_with_mask_button.pack(side="top", fill="x")
         self.fluor_with_mask_button.config(state="disabled")
 
-        self.optional_button = tk.Button(self.images_frame, text="Optional",
+        self.optional_button = tk.Button(self.images_frame, text="Secondary Channel",
                                          command=lambda: self.show_image(
                                              "Optional"),
                                          width=self.image_buttons_width)
@@ -867,7 +868,7 @@ class Interface(object):
                                                 width=self.image_buttons_width)
         self.fluor_with_mask_button.pack(side="top", fill="x")
 
-        self.optional_button = tk.Button(self.images_frame, text="Optional",
+        self.optional_button = tk.Button(self.images_frame, text="Secondary Channel",
                                          command=lambda: self.show_image(
                                              "Optional"),
                                          width=self.image_buttons_width)
@@ -1365,7 +1366,7 @@ class Interface(object):
         self.fluor_cells_out_button.pack(side="top", fill="x")
         self.fluor_cells_out_button.config(state="disabled")
 
-        self.optional_button = tk.Button(self.images_frame, text="Optional",
+        self.optional_button = tk.Button(self.images_frame, text="Secondary Channel",
                                          command=lambda: self.show_image(
                                              "Optional"),
                                          width=self.image_buttons_width)
@@ -1794,6 +1795,11 @@ class Interface(object):
             self.top_frame, text="Process", command=self.process_cells)
         self.process_cells_button.pack(side="left")
 
+        self.compute_coloc_button = tk.Button(
+            self.top_frame, text="PCC", command=self.compute_pcc)
+        self.compute_coloc_button.pack(side="left")
+        self.compute_coloc_button.config(state="disabled")
+
         self.select_all_button = tk.Button(self.top_frame, text="Select All",
                                            command=self.select_all_cells)
         self.select_all_button.pack(side="left", fill="x")
@@ -1819,10 +1825,13 @@ class Interface(object):
         self.select_from_file_button.pack(side="left", fill="x")
         self.select_from_file_button.config(state="disabled")
 
-        self.select_optional_button = tk.Button(self.top_frame, text="Select Optional Signal Ratio:",
+        self.select_optional_button = tk.Button(self.top_frame, text="Select Cells with Secondary Signal",
                                                 command=self.select_optional_signal)
         self.select_optional_button.pack(side="left", fill="x")
         self.select_optional_button.config(state="disabled")
+
+        self.optional_ratio_label = tk.Label(self.top_frame, text="Secondary Signal Ratio:")
+        self.optional_ratio_label.pack(side="left", fill="x")
 
         self.optional_signal_ratio_value = tk.DoubleVar()
         self.optionalfilter_min_entry = tk.Entry(
@@ -1835,10 +1844,7 @@ class Interface(object):
         self.generate_report_button.pack(side="right")
         self.generate_report_button.config(state="disabled")
 
-        self.compute_coloc_button = tk.Button(
-            self.top_frame, text="PCC", command=self.compute_pcc)
-        self.compute_coloc_button.pack(side="right")
-        self.compute_coloc_button.config(state="disabled")
+
 
         self.back_button = tk.Button(
             self.top_frame, text="Back", command=self.set_cellcomputation_from_cellprocessing)
@@ -2307,7 +2313,7 @@ class Interface(object):
         self.fluor_cells_out_button.pack(side="top", fill="x")
         self.fluor_cells_out_button.config(state="active")
 
-        self.optional_button = tk.Button(self.images_frame, text="Optional",
+        self.optional_button = tk.Button(self.images_frame, text="Secondary Channel",
                                          command=lambda: self.show_image(
                                              "Optional"),
                                          width=self.image_buttons_width)
@@ -2317,7 +2323,7 @@ class Interface(object):
         else:
             self.optional_button.config(state="active")
 
-        self.optional_w_cells_button = tk.Button(self.images_frame, text="Optional Outlined",
+        self.optional_w_cells_button = tk.Button(self.images_frame, text="Secondary Outlined",
                                                 command = lambda: self.show_image("Optional_cells_outlined"),
                                                 width=self.image_buttons_width)
         self.optional_w_cells_button.pack(side="top", fill="x")
