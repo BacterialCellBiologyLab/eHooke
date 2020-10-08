@@ -43,9 +43,7 @@ class CellCycleClassifier(object):
                 cutsize = int((lines_to_add * -1)/2)
                 image = image[cutsize:h-cutsize, :]
             else:
-                print(lines_to_add)
                 cutsize = int((lines_to_add * -1)/2)
-                print(cutsize)
                 image = image[cutsize:h-cutsize-1, :]
 
 
@@ -102,8 +100,6 @@ class CellCycleClassifier(object):
 
         for k in cell_manager.cells.keys():
             cell = cell_manager.cells[k]
-
-            print(k)
 
             x0, y0, x1, y1 = cell.box
 
