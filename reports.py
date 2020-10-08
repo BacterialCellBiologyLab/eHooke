@@ -1,6 +1,7 @@
 ﻿"""Module used to create the report of the cell identification"""
 from skimage.io import imsave
 from skimage.util import img_as_float, img_as_uint
+from decimal import Decimal
 import cellprocessing as cp
 import numpy as np
 import os
@@ -67,7 +68,7 @@ class ReportManager:
             if len(noise) > 1:
                 open(filename + "/csv_noise_" + image_name + ".csv", "w").writelines(noise)
 
-    def html_report(self, filename, image_name, cell_manager):
+    def html_report(self, filename, image_name, cell_manager, params):
         """generates an html report with the all the cell stats from the
         selected cells"""
 
@@ -122,9 +123,10 @@ class ReportManager:
 
                     for stat in self.keys:
                         lbl, digits = stat
-                        lin = lin + '</td><td>' + \
-                            ("{0:." + str(digits) +
-                             "f}").format(cell.stats[lbl])
+                        number = ("{0:." + str(digits) + "f}").format(cell.stats[lbl])
+                        number = str(Decimal(number))
+                        number = number.rstrip("0").rstrip(".") if "." in number else number
+                        lin = lin + '</td><td>' + number
 
                     lin += '</td></tr>\n'
                     selects.append(lin)
@@ -141,9 +143,10 @@ class ReportManager:
 
                     for stat in self.keys:
                         lbl, digits = stat
-                        lin = lin + '</td><td>' + \
-                            ("{0:." + str(digits) +
-                             "f}").format(cell.stats[lbl])
+                        number = ("{0:." + str(digits) + "f}").format(cell.stats[lbl])
+                        number = str(Decimal(number))
+                        number = number.rstrip("0").rstrip(".") if "." in number else number
+                        lin = lin + '</td><td>' + number
 
                     lin += '</td></tr>\n'
                     rejects.append(lin)
@@ -160,9 +163,11 @@ class ReportManager:
 
                     for stat in self.keys:
                         lbl, digits = stat
-                        lin = lin + '</td><td>' + \
-                            ("{0:." + str(digits) +
-                             "f}").format(cell.stats[lbl])
+                        number = ("{0:." + str(digits) + "f}").format(cell.stats[lbl])
+                        number = str(Decimal(number))
+                        number = number.rstrip("0").rstrip(".") if "." in number else number
+                        lin = lin + '</td><td>' + number
+
 
                     lin += '</td></tr>\n'
                     noise.append(lin)
@@ -170,6 +175,37 @@ class ReportManager:
             print("Selected Cells: " + str(count))
             print("Rejected Cells: " + str(count2))
             print("Noise objects: " + str(count3))
+
+            report.append("\n<h1>eHooke Report - <a href='https://github.com/BacterialCellBiologyLab/eHooke/wiki' target='_blank'>wiki</a></h1>")
+
+            report.append("\n<h3>Total cells: " + str(count+count2) +"</h3>")
+            report.append("\n<h3>Selected cells: " + str(count) +"</h3>")
+            report.append("\n<h3>Rejected cells: " + str(count2) +"</h3>")
+
+            if params.cellprocessingparams.classify_cells:
+                p1count = 0
+                p2count = 0
+                p3count = 0
+
+                for k in sorted_keys:
+                    cell = cells[str(k)]
+
+                    if cell.stats["Cell Cycle Phase"] == 1:
+                        p1count += 1
+                    elif cell.stats["Cell Cycle Phase"] == 2:
+                        p2count += 1
+                    elif cell.stats["Cell Cycle Phase"] == 3:
+                        p3count += 1
+
+                report.append("\n<h3>Phase 1 cells: " + str(p1count) +"</h3>")
+                report.append("\n<h3>Phase 2 cells: " + str(p2count) +"</h3>")
+                report.append("\n<h3>Phase 3 cells: " + str(p3count) +"</h3>")
+
+            if params.imageloaderparams.units == "um":
+                report.append("\n<h3>Pixel size: " + params.imageloaderparams.pixel_size + " x " + params.imageloaderparams.pixel_size + " " + "\u03BC" + "m" +"</h3>")
+            else:
+                report.append("\n<h3>Pixel size: " + params.imageloaderparams.pixel_size + " x " + params.imageloaderparams.pixel_size + " " + params.imageloaderparams.units +"</h3>")
+
 
             if len(selects) > 1:
                 report.extend(selects)
@@ -185,7 +221,7 @@ class ReportManager:
 
             report.append('</body>\n</html>')
 
-        open(filename + '/html_report_' + image_name + '.html', 'w').writelines(report)
+        open(filename + '/html_report_' + image_name + '.html', 'w', encoding="utf-16").writelines(report)
 
     def linescan_report(self, filename, image_name, linescan_manager):
         if len(linescan_manager.lines.keys()) > 0:
@@ -270,7 +306,7 @@ class ReportManager:
                 selected_cells += cell + ";"
 
         self.csv_report(filename, label, cell_manager)
-        self.html_report(filename, label, cell_manager)
+        self.html_report(filename, label, cell_manager, params)
         self.linescan_report(filename, label, linescan_manager)
         imsave(filename + "/selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename + "/params")
