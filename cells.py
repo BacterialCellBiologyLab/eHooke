@@ -226,7 +226,7 @@ class Cell(object):
         self.stats["Eccentricity"] = \
             ((1 - ((self.stats["Width"]/2.0)**2/(self.stats["Length"]/2.0)**2))**0.5)
         self.stats["Irregularity"] = \
-            (len(self.outline) / (self.stats["Area"] ** 0.5))
+            (len(self.outline) * float(pixel_size) / (self.stats["Area"] ** 0.5))
 
     def fluor_box(self, fluor):
         """ returns box of flurescence from fluor image """
