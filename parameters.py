@@ -28,7 +28,7 @@ class ParametersManager(object):
             filename = tkFileDialog.askopenfilename()
 
         parser = cp.ConfigParser()
-        parser.read(filename)
+        parser.read(filename, encoding="utf-8")
 
         self.imageloaderparams.load_from_parser(parser, "ImageLoader")
         self.imageprocessingparams.load_from_parser(parser,
@@ -48,7 +48,7 @@ class ParametersManager(object):
         self.imageprocessingparams.save_to_parser(parser, "ImageProcessing")
         self.cellprocessingparams.save_to_parser(parser, "CellProcessing")
 
-        cfgfile = open(filename, 'w')
+        cfgfile = open(filename, 'w', encoding="utf-8")
         parser.write(cfgfile)
         cfgfile.close()
 
@@ -85,8 +85,8 @@ class MaskParameters(object):
         self.x_align = 0
         self.y_align = 0
 
-        self.pixel_size = "1"
-        self.units = "px"
+        self.pixel_size = "0.0645"
+        self.units = "\u03BC" + "m"
 
     def load_from_parser(self, parser, section):
         """Loads frame parameters from a ConfigParser object of the
@@ -198,7 +198,7 @@ class CellParameters(object):
         self.cell_filters = []
 
         # cell merging parameters
-        self.cell_force_merge_below = 150.0
+        self.cell_force_merge_below = 0.65
         self.merge_dividing_cells = False
         self.merge_length_tolerance = 1.1
         self.merge_min_interface = 15
