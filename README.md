@@ -43,5 +43,5 @@
 #### Enjoy!
 ## ---------------------------------------------------------
 #### Instructions Manual
-###### https://docs.google.com/presentation/d/1-912PTSLvMj1qKhAutRRhTlz-6g5wX19nYxmqs0UVIs/edit#slide=id.g760ea0aa2d_1_23
+###### https://github.com/BacterialCellBiologyLab/eHooke/wiki
 
