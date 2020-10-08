@@ -99,7 +99,7 @@ class EHooke(object):
         compute_cells_method to create a list of cells based on the labels
         computed by the SegmentsManager instance."""
         self.cell_manager = CellManager(self.parameters)
-        self.cell_manager.compute_cells(self.parameters.cellprocessingparams,
+        self.cell_manager.compute_cells(self.parameters,
                                         self.image_manager,
                                         self.segments_manager)
 
@@ -110,7 +110,7 @@ class EHooke(object):
         instance and the compute_merged_cells to create a new list of cells,
         containing a cell corresponding to the merge of the previous two."""
         self.cell_manager.merge_cells(label_c1, label_c2,
-                                      self.parameters.cellprocessingparams,
+                                      self.parameters,
                                       self.segments_manager,
                                       self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)
@@ -122,7 +122,7 @@ class EHooke(object):
         splitted.
         Calls the split_cells method from the cell_manager instance"""
         self.cell_manager.split_cells(int(label_c1),
-                                      self.parameters.cellprocessingparams,
+                                      self.parameters,
                                       self.segments_manager,
                                       self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)

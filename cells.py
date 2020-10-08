@@ -106,13 +106,13 @@ class Cell(object):
 
         self.selection_state = 1
 
-    def add_line(self, y, x1, x2):
+    def add_line(self, y, x1, x2, pixel_size):
         """
         Adds a line to the cell region and updates area
         """
 
         self.lines.append((y, x1, x2))
-        self.stats["Area"] = self.stats["Area"] + x2 - x1 + 1
+        self.stats["Area"] = self.stats["Area"] + (x2 - x1 + 1) * float(pixel_size) * float(pixel_size)
 
     def add_frontier_point(self, x, y, neighs):
         """
@@ -153,7 +153,7 @@ class Cell(object):
                     min(max(points[:, 0]) + bm, w - 1),
                     min(max(points[:, 1]) + bm, h - 1))
 
-    def axes_from_rotation(self, x0, y0, x1, y1, rotation):
+    def axes_from_rotation(self, x0, y0, x1, y1, rotation, pixel_size):
         """ sets the cell axes from the box and the rotation
         """
 
@@ -182,11 +182,11 @@ class Cell(object):
             cp.bounded_point(bx0, bx1, by0, by1, self.long_axis[1])
 
         self.stats["Length"] = \
-            np.linalg.norm(self.long_axis[1] - self.long_axis[0])
+            np.linalg.norm(self.long_axis[1] - self.long_axis[0]) * float(pixel_size)
         self.stats["Width"] = \
-            np.linalg.norm(self.short_axis[1] - self.short_axis[0])
+            np.linalg.norm(self.short_axis[1] - self.short_axis[0]) * float(pixel_size)
 
-    def compute_axes(self, rotations, maskshape):
+    def compute_axes(self, rotations, maskshape, pixel_size):
         """ scans rotation matrices for the narrowest rectangle
         stores the result in self.long_axis and self.short_axis, each a 2,2 array
         with one point per line (coords axes in columns)
@@ -213,7 +213,7 @@ class Cell(object):
                 y1 = ny1
                 angle = rix
 
-        self.axes_from_rotation(x0, y0, x1, y1, rotations[angle])
+        self.axes_from_rotation(x0, y0, x1, y1, rotations[angle], pixel_size)
 
         if self.stats["Length"] < self.stats["Width"]:
             dum = self.stats["Length"]
@@ -224,8 +224,7 @@ class Cell(object):
             self.long_axis = dum
 
         self.stats["Eccentricity"] = \
-            ((self.stats["Length"] - self.stats["Width"]) / (self.stats["Length"] +
-                                                             self.stats["Width"]))
+            ((1 - ((self.stats["Width"]/2.0)**2/(self.stats["Length"]/2.0)**2))**0.5)
         self.stats["Irregularity"] = \
             (len(self.outline) / (self.stats["Area"] ** 0.5))
 
@@ -769,7 +768,7 @@ class CellManager(object):
 
         self.cells = newcells
 
-    def cell_regions_from_labels(self, labels):
+    def cell_regions_from_labels(self, labels, pixel_size):
         """creates a list of N cells assuming self.labels has consecutive
         values from 1 to N create cell regions, frontiers and neighbours from
         labeled regions presumes that cell list is created and has enough
@@ -798,7 +797,7 @@ class CellManager(object):
                 if l != old_label:
                     if x1 > 0:
                         x2 = x - 1
-                        cells[str(old_label)].add_line(y, x1, x2)
+                        cells[str(old_label)].add_line(y, x1, x2, pixel_size)
                         x1 = -1
                     if l > 0:
                         x1 = x
@@ -810,7 +809,7 @@ class CellManager(object):
                     cells[str(l)].add_frontier_point(x, y, square)
 
         for key in cells.keys():
-            cells[key].stats["Perimeter"] = len(cells[key].outline)
+            cells[key].stats["Perimeter"] = len(cells[key].outline) * float(pixel_size)
             cells[key].stats["Neighbours"] = len(cells[key].neighbours)
 
         self.cells = cells
@@ -856,10 +855,10 @@ class CellManager(object):
         if image_manager.optional_image is not None:
             self.overlay_cells_w_optional(image_manager.optional_image)
 
-    def compute_box_axes(self, rotations, maskshape):
+    def compute_box_axes(self, rotations, maskshape, pixel_size):
         for k in self.cells.keys():
             if self.cells[k].stats["Area"] > 0:
-                self.cells[k].compute_axes(rotations, maskshape)
+                self.cells[k].compute_axes(rotations, maskshape, pixel_size)
 
     def compute_cells(self, params, image_manager, segments_manager):
         """Creates a cell list that is stored on self.cells as a dict, where
@@ -869,10 +868,10 @@ class CellManager(object):
         Requires the loading of the images and the computation of the
         segments"""
 
-        self.cell_regions_from_labels(segments_manager.labels)
-        rotations = cp.rotation_matrices(params.axial_step)
+        self.cell_regions_from_labels(segments_manager.labels, params.imageloaderparams.pixel_size)
+        rotations = cp.rotation_matrices(params.cellprocessingparams.axial_step)
 
-        self.compute_box_axes(rotations, image_manager.mask.shape)
+        self.compute_box_axes(rotations, image_manager.mask.shape, params.imageloaderparams.pixel_size)
 
         self.original_cells = deepcopy(self.cells)
 
@@ -887,16 +886,16 @@ class CellManager(object):
                     cn = self.cells[str(int(bestneigh))]
 
                     if cp.check_merge(c, cn, rotations, bestinterface,
-                                      image_manager.mask, params):
+                                      image_manager.mask, params.cellprocessingparams):
                         self.merge_cells(c.label, cn.label, params, segments_manager, image_manager)
             except KeyError:
                 print("Cell was already merged and deleted")
 
         for k in self.cells.keys():
             cp.assign_cell_color(self.cells[k], self.cells,
-                                 self.cell_colors)
-
+                                 self.cell_colors, params.imageloaderparams.pixel_size)
         self.overlay_cells(image_manager)
+
 
     def merge_cells(self, label_c1, label_c2, params, segments_manager, image_manager):
         """merges two cells"""
@@ -910,15 +909,16 @@ class CellManager(object):
         self.cells[str(label_c2)].merged_list.append(label_c1)
 
         self.cells[str(label_c2)].outline.extend(self.cells[str(label_c1)].outline)
-
         self.cells[str(label_c2)].stats["Neighbours"] = self.cells[str(label_c2)].stats["Neighbours"] + self.cells[str(label_c1)].stats["Neighbours"] - 2
 
         del self.cells[str(label_c1)]
 
-        rotations = cp.rotation_matrices(params.axial_step)
-        self.cells[str(label_c2)].compute_axes(rotations, image_manager.mask.shape)
+        rotations = cp.rotation_matrices(params.cellprocessingparams.axial_step)
+        self.cells[str(label_c2)].compute_axes(rotations, image_manager.mask.shape, params.imageloaderparams.pixel_size)
 
         self.cells[str(label_c2)].recompute_outline(segments_manager.labels)
+        self.cells[str(label_c2)].stats["Perimeter"] = len(self.cells[str(label_c2)].outline) * float(params.imageloaderparams.pixel_size)
+
 
         if len(self.cells[str(label_c2)].merged_list) > 0:
             self.cells[str(label_c2)].merged_with = "Yes"
@@ -929,13 +929,14 @@ class CellManager(object):
         merged_cells.append(label_c1)
         del self.cells[str(label_c1)]
 
-        rotations = cp.rotation_matrices(params.axial_step)
+        rotations = cp.rotation_matrices(params.cellprocessingparams.axial_step)
         for id in merged_cells:
             id = int(id)
             self.cells[str(id)] = deepcopy(self.original_cells[str(id)])
-            self.cells[str(id)].compute_axes(rotations, image_manager.mask.shape)
+            self.cells[str(id)].compute_axes(rotations, image_manager.mask.shape, params.imageloaderparams.pixel_size)
             self.cells[str(id)].recompute_outline(segments_manager.labels)
-            if len(self.cells[str(id)].merged_list) == 0:
+            self.cells[str(id)].stats["Perimeter"] = len(self.cells[str(id)].outline) * float(params.imageloaderparams.pixel_size)
+        if len(self.cells[str(id)].merged_list) == 0:
                 self.cells[str(id)].merged_with = "No"
 
         for k in self.cells.keys():

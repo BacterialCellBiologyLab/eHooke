@@ -116,7 +116,7 @@ def overlay_cells(cells, image, colors):
     return tmp
 
 
-def assign_cell_color(cell, cells, cell_colors):
+def assign_cell_color(cell, cells, cell_colors, pixel_size):
     """ assigns an index to cell.color that is different from the neighbours """
 
     neighcols = []
@@ -129,7 +129,7 @@ def assign_cell_color(cell, cells, cell_colors):
         except KeyError:
             print("Neighbour already merged")
 
-    cell.color_i = cell.stats["Area"] % len(cell_colors)  # each cell has a preferred color
+    cell.color_i = int(cell.stats["Area"] / float(pixel_size) / float(pixel_size) % len(cell_colors))  # each cell has a preferred color
 
     while len(neighcols) < len(cell_colors) and (cell.color_i in neighcols):
         cell.color_i += 1

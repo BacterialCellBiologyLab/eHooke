@@ -194,6 +194,8 @@ class Interface(object):
             self.default_params.imageloaderparams.mask_closing)
         self.mask_dilation_value.set(
             self.default_params.imageloaderparams.mask_dilation)
+        self.pixel_size_value.set(self.default_params.imageloaderparams.pixel_size)
+        self.units_value.set(self.default_params.imageloaderparams.units)
 
     def load_default_params_segments(self):
         """Loads the default params for the segments computation"""
@@ -301,7 +303,6 @@ class Interface(object):
             self.ax.set_ylim(ylim)
 
         self.current_image = image
-        print(image)
 
         if image == "Base":
             x1, y1, x2, y2 = self.ehooke.image_manager.clip
@@ -658,6 +659,31 @@ class Interface(object):
         self.y_align_value.set(
             self.ehooke.parameters.imageloaderparams.y_align)
 
+        self.pixel_size_section = tk.Label(self.parameters_panel, text="Pixel Size Parameters:")
+        self.pixel_size_section.pack(side="top", fill="x")
+
+        self.pixel_size_frame = tk.Frame(self.parameters_panel)
+        self.pixel_size_frame.pack(side="top", fill="x")
+        self.pixel_size_label = tk.Label(self.pixel_size_frame, text="Pixel size: ")
+        self.pixel_size_label.pack(side="left")
+        self.pixel_size_value = tk.StringVar()
+        self.pixel_size_entry = tk.Entry(
+            self.pixel_size_frame, textvariable=self.pixel_size_value, width=8)
+        self.pixel_size_entry.pack(side="left")
+        self.pixel_size_value.set(
+            self.ehooke.parameters.imageloaderparams.pixel_size)
+
+        self.units_frame = tk.Frame(self.parameters_panel)
+        self.units_frame.pack(side="top", fill="x")
+        self.units_label = tk.Label(self.units_frame, text="Units: ")
+        self.units_label.pack(side="left")
+        self.units_value = tk.StringVar()
+        self.units_entry = tk.Entry(
+            self.units_frame, textvariable=self.units_value, width=8)
+        self.units_entry.pack(side="left")
+        self.units_value.set(
+            self.ehooke.parameters.imageloaderparams.units)
+
         self.imgloader_params_default_button = tk.Button(self.parameters_panel, text="Default Parameters",
                                                          command=self.load_default_params_imgloader)
         self.imgloader_params_default_button.pack(side="top", fill="x")
@@ -721,6 +747,7 @@ class Interface(object):
         self.base_parameters_label.config(font=self.gui_font_bold)
         self.mask_parameters_label.config(font=self.gui_font_bold)
         self.load_fluor_label.config(font=self.gui_font_bold)
+        self.pixel_size_section.config(font=self.gui_font_bold)
 
     def compute_features(self):
         """Calls the compute_segments method from ehooke"""
@@ -751,6 +778,11 @@ class Interface(object):
     def set_segmentscomputation(self):
         """Method used to change the interface to the Segments Computation
         Step"""
+
+        self.ehooke.parameters.imageloaderparams.pixel_size = self.pixel_size_value.get()
+        self.ehooke.parameters.imageloaderparams.units = self.units_value.get()
+        self.ehooke.parameters.cellprocessingparams.cell_force_merge_below = self.ehooke.parameters.cellprocessingparams.cell_force_merge_below * float(self.pixel_size_value.get()) * float(self.pixel_size_value.get())
+
         self.ax.axis("off")
         self.show_image("Fluor_mask")
         self.ax.format_coord = self.remove_coord
@@ -921,12 +953,12 @@ class Interface(object):
                                        str(label)].merged_with)
             self.marked_as_noise_value.set(self.ehooke.cell_manager.cells[
                                            str(label)].marked_as_noise)
-            self.area_value.set(int(stats["Area"]))
-            self.perimeter_value.set(int(stats["Perimeter"]))
-            self.length_value.set(int(stats["Length"]))
-            self.width_value.set(int(stats["Width"]))
-            self.eccentricity_value.set(float(str(stats["Eccentricity"])[0:6]))
-            self.irregularity_value.set(float(str(stats["Irregularity"])[0:6]))
+            self.area_value.set(float(str(stats["Area"])[0:7]))
+            self.perimeter_value.set(float(str(stats["Perimeter"])[0:7]))
+            self.length_value.set(float(str(stats["Length"])[0:7]))
+            self.width_value.set(float(str(stats["Width"])[0:7]))
+            self.eccentricity_value.set(float(str(stats["Eccentricity"])[0:7]))
+            self.irregularity_value.set(float(str(stats["Irregularity"])[0:7]))
             self.neighbours_value.set(stats["Neighbours"])
 
         else:
@@ -1170,9 +1202,9 @@ class Interface(object):
         self.force_merge_below_label = tk.Label(
             self.force_merge_below_frame, text="Force Merge If Area Below: ")
         self.force_merge_below_label.pack(side="left")
-        self.force_merge_below_value = tk.IntVar()
+        self.force_merge_below_value = tk.DoubleVar()
         self.force_merge_below_entry = tk.Entry(self.force_merge_below_frame,
-                                                textvariable=self.force_merge_below_value, width=4)
+                                                textvariable=self.force_merge_below_value, width=10)
         self.force_merge_below_entry.pack(side="left")
         self.force_merge_below_value.set(
             self.ehooke.parameters.cellprocessingparams.cell_force_merge_below)
@@ -1269,11 +1301,13 @@ class Interface(object):
             self.marked_as_noise_frame, textvariable=self.marked_as_noise_value)
         self.marked_as_noise_value_label.pack(side="left")
 
+        units = self.ehooke.parameters.imageloaderparams.units
+
         self.area_frame = tk.Frame(self.cell_info_frame)
         self.area_frame.pack(side="top", fill="x")
-        self.area_label = tk.Label(self.area_frame, text="Area: ")
+        self.area_label = tk.Label(self.area_frame, text="Area (" + units + "\u00b2): ")
         self.area_label.pack(side="left")
-        self.area_value = tk.IntVar()
+        self.area_value = tk.DoubleVar()
         self.area_value_label = tk.Label(
             self.area_frame, textvariable=self.area_value)
         self.area_value_label.pack(side="left")
@@ -1281,27 +1315,27 @@ class Interface(object):
         self.perimeter_frame = tk.Frame(self.cell_info_frame)
         self.perimeter_frame.pack(side="top", fill="x")
         self.perimeter_label = tk.Label(
-            self.perimeter_frame, text="Perimeter: ")
+            self.perimeter_frame, text="Perimeter (" + units + "): ")
         self.perimeter_label.pack(side="left")
-        self.perimeter_value = tk.IntVar()
+        self.perimeter_value = tk.DoubleVar()
         self.perimeter_value_label = tk.Label(
             self.perimeter_frame, textvariable=self.perimeter_value)
         self.perimeter_value_label.pack(side="left")
 
         self.length_frame = tk.Frame(self.cell_info_frame)
         self.length_frame.pack(side="top", fill="x")
-        self.length_label = tk.Label(self.length_frame, text="Length: ")
+        self.length_label = tk.Label(self.length_frame, text="Length (" + units + "): ")
         self.length_label.pack(side="left")
-        self.length_value = tk.IntVar()
+        self.length_value = tk.DoubleVar()
         self.length_value_label = tk.Label(
             self.length_frame, textvariable=self.length_value)
         self.length_value_label.pack(side="left")
 
         self.width_frame = tk.Frame(self.cell_info_frame)
         self.width_frame.pack(side="top", fill="x")
-        self.width_label = tk.Label(self.width_frame, text="Width: ")
+        self.width_label = tk.Label(self.width_frame, text="Width (" + units + "): ")
         self.width_label.pack(side="left")
-        self.width_value = tk.IntVar()
+        self.width_value = tk.DoubleVar()
         self.width_value_label = tk.Label(
             self.width_frame, textvariable=self.width_value)
         self.width_value_label.pack(side="left")
@@ -1309,9 +1343,9 @@ class Interface(object):
         self.eccentricity_frame = tk.Frame(self.cell_info_frame)
         self.eccentricity_frame.pack(side="top", fill="x")
         self.eccentricity_label = tk.Label(
-            self.eccentricity_frame, text="Eccentricity: ")
+            self.eccentricity_frame, text="Eccentricity (" + units + "): ")
         self.eccentricity_label.pack(side="left")
-        self.eccentricity_value = tk.IntVar()
+        self.eccentricity_value = tk.DoubleVar()
         self.eccentricity_value_label = tk.Label(
             self.eccentricity_frame, textvariable=self.eccentricity_value)
         self.eccentricity_value_label.pack(side="left")
@@ -1319,9 +1353,9 @@ class Interface(object):
         self.irregularity_frame = tk.Frame(self.cell_info_frame)
         self.irregularity_frame.pack(side="top", fill="x")
         self.irregularity_label = tk.Label(
-            self.irregularity_frame, text="Irregularity: ")
+            self.irregularity_frame, text="Irregularity (" + units + "): ")
         self.irregularity_label.pack(side="left")
-        self.irregularity_value = tk.IntVar()
+        self.irregularity_value = tk.DoubleVar()
         self.irregularity_value_label = tk.Label(
             self.irregularity_frame, textvariable=self.irregularity_value)
         self.irregularity_value_label.pack(side="left")
@@ -1435,23 +1469,23 @@ class Interface(object):
             self.cell_cycle_phase_value.set(str(stats["Cell Cycle Phase"]))
             self.marked_as_noise_value.set(self.ehooke.cell_manager.cells[
                                            str(label)].marked_as_noise)
-            self.area_value.set(int(stats["Area"]))
-            self.perimeter_value.set(int(stats["Perimeter"]))
-            self.length_value.set(int(stats["Length"]))
-            self.width_value.set(int(stats["Width"]))
-            self.eccentricity_value.set(float(str(stats["Eccentricity"])[0:6]))
-            self.irregularity_value.set(float(str(stats["Irregularity"])[0:6]))
+            self.area_value.set(float(str(stats["Area"])[0:7]))
+            self.perimeter_value.set(float(str(stats["Perimeter"])[0:7]))
+            self.length_value.set(float(str(stats["Length"])[0:7]))
+            self.width_value.set(float(str(stats["Width"])[0:7]))
+            self.eccentricity_value.set(float(str(stats["Eccentricity"])[0:7]))
+            self.irregularity_value.set(float(str(stats["Irregularity"])[0:7]))
             self.neighbours_value.set(stats["Neighbours"])
-            self.baseline_value.set(float(str(stats["Baseline"])[0:6]))
-            self.cellmedian_value.set(float(str(stats["Cell Median"])[0:6]))
-            self.permedian_value.set(float(str(stats["Membrane Median"])[0:6]))
-            self.septmedian_value.set(float(str(stats["Septum Median"])[0:6]))
+            self.baseline_value.set(float(str(stats["Baseline"])[0:7]))
+            self.cellmedian_value.set(float(str(stats["Cell Median"])[0:7]))
+            self.permedian_value.set(float(str(stats["Membrane Median"])[0:7]))
+            self.septmedian_value.set(float(str(stats["Septum Median"])[0:7]))
             self.cytomedian_value.set(
-                float(str(stats["Cytoplasm Median"])[0:6]))
-            self.fr_value.set(float(str(stats["Fluor Ratio"])[0:6]))
-            self.fr75_value.set(float(str(stats["Fluor Ratio 75%"])[0:6]))
-            self.fr25_value.set(float(str(stats["Fluor Ratio 25%"])[0:6]))
-            self.fr10_value.set(float(str(stats["Fluor Ratio 10%"])[0:6]))
+                float(str(stats["Cytoplasm Median"])[0:7]))
+            self.fr_value.set(float(str(stats["Fluor Ratio"])[0:7]))
+            self.fr75_value.set(float(str(stats["Fluor Ratio 75%"])[0:7]))
+            self.fr25_value.set(float(str(stats["Fluor Ratio 25%"])[0:7]))
+            self.fr10_value.set(float(str(stats["Fluor Ratio 10%"])[0:7]))
 
         else:
             self.cellid_value.set(0)
@@ -2131,9 +2165,11 @@ class Interface(object):
             self.cell_cycle_phase_frame, textvariable=self.cell_cycle_phase_value)
         self.cell_cycle_phase_value_label.pack(side="left")
 
+        units = self.ehooke.parameters.imageloaderparams.units
+
         self.area_frame = tk.Frame(self.cell_info_frame)
         self.area_frame.pack(side="top", fill="x")
-        self.area_label = tk.Label(self.area_frame, text="Area: ")
+        self.area_label = tk.Label(self.area_frame, text="Area (" + units + "\u00b2): ")
         self.area_label.pack(side="left")
         self.area_value = tk.IntVar()
         self.area_value_label = tk.Label(
@@ -2143,7 +2179,7 @@ class Interface(object):
         self.perimeter_frame = tk.Frame(self.cell_info_frame)
         self.perimeter_frame.pack(side="top", fill="x")
         self.perimeter_label = tk.Label(
-            self.perimeter_frame, text="Perimeter: ")
+            self.perimeter_frame, text="Perimeter (" + units + "): ")
         self.perimeter_label.pack(side="left")
         self.perimeter_value = tk.IntVar()
         self.perimeter_value_label = tk.Label(
@@ -2152,7 +2188,7 @@ class Interface(object):
 
         self.length_frame = tk.Frame(self.cell_info_frame)
         self.length_frame.pack(side="top", fill="x")
-        self.length_label = tk.Label(self.length_frame, text="Length: ")
+        self.length_label = tk.Label(self.length_frame, text="Length (" + units + "): ")
         self.length_label.pack(side="left")
         self.length_value = tk.IntVar()
         self.length_value_label = tk.Label(
@@ -2161,7 +2197,7 @@ class Interface(object):
 
         self.width_frame = tk.Frame(self.cell_info_frame)
         self.width_frame.pack(side="top", fill="x")
-        self.width_label = tk.Label(self.width_frame, text="Width: ")
+        self.width_label = tk.Label(self.width_frame, text="Width (" + units + "): ")
         self.width_label.pack(side="left")
         self.width_value = tk.IntVar()
         self.width_value_label = tk.Label(
@@ -2171,7 +2207,7 @@ class Interface(object):
         self.eccentricity_frame = tk.Frame(self.cell_info_frame)
         self.eccentricity_frame.pack(side="top", fill="x")
         self.eccentricity_label = tk.Label(
-            self.eccentricity_frame, text="Eccentricity: ")
+            self.eccentricity_frame, text="Eccentricity (" + units + "): ")
         self.eccentricity_label.pack(side="left")
         self.eccentricity_value = tk.IntVar()
         self.eccentricity_value_label = tk.Label(
@@ -2181,7 +2217,7 @@ class Interface(object):
         self.irregularity_frame = tk.Frame(self.cell_info_frame)
         self.irregularity_frame.pack(side="top", fill="x")
         self.irregularity_label = tk.Label(
-            self.irregularity_frame, text="Irregularity: ")
+            self.irregularity_frame, text="Irregularity (" + units + "): ")
         self.irregularity_label.pack(side="left")
         self.irregularity_value = tk.IntVar()
         self.irregularity_value_label = tk.Label(

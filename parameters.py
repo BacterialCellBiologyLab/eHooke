@@ -85,6 +85,9 @@ class MaskParameters(object):
         self.x_align = 0
         self.y_align = 0
 
+        self.pixel_size = "1"
+        self.units = "px"
+
     def load_from_parser(self, parser, section):
         """Loads frame parameters from a ConfigParser object of the
         configuration file. The section parameters specifies the configuration
@@ -101,6 +104,8 @@ class MaskParameters(object):
         self.auto_align = check_bool(parser.get(section, "auto align"))
         self.x_align = int(parser.get(section, "x align"))
         self.y_align = int(parser.get(section, "y align"))
+        self.pixel_size = str(parser.get(section, "pixel size"))
+        self.units = str(parser.get(section, "units"))
 
     def save_to_parser(self, parser, section):
         """Saves mask parameters to a ConfigParser object of the
@@ -122,6 +127,8 @@ class MaskParameters(object):
         parser.set(section, "auto align", str(self.auto_align))
         parser.set(section, "x align", str(self.x_align))
         parser.set(section, "y align", str(self.y_align))
+        parser.set(section, "pixel size", str(self.pixel_size))
+        parser.set(section, "units", str(self.units))
 
 
 class RegionParameters(object):
@@ -191,7 +198,7 @@ class CellParameters(object):
         self.cell_filters = []
 
         # cell merging parameters
-        self.cell_force_merge_below = 150
+        self.cell_force_merge_below = 150.0
         self.merge_dividing_cells = False
         self.merge_length_tolerance = 1.1
         self.merge_min_interface = 15
@@ -237,7 +244,7 @@ class CellParameters(object):
         self.look_for_septum_in_base = check_bool(parser.get(section,
                                                   "look for septum in base"))
         self.cell_filters = self.process_filters(parser.get(section, "cell filters"))
-        self.cell_force_merge_below = int(parser.get(section,
+        self.cell_force_merge_below = float(parser.get(section,
                                                  "cell force merge below"))
         self.merge_dividing_cells = check_bool(parser.get(section, "merge dividing cells"))
         self.merge_length_tolerance = float(parser.get(section,
