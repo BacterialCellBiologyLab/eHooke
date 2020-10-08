@@ -781,7 +781,6 @@ class Interface(object):
 
         self.ehooke.parameters.imageloaderparams.pixel_size = self.pixel_size_value.get()
         self.ehooke.parameters.imageloaderparams.units = self.units_value.get()
-        self.ehooke.parameters.cellprocessingparams.cell_force_merge_below = self.ehooke.parameters.cellprocessingparams.cell_force_merge_below * float(self.pixel_size_value.get()) * float(self.pixel_size_value.get())
 
         self.ax.axis("off")
         self.show_image("Fluor_mask")
