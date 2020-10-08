@@ -941,7 +941,7 @@ class CellManager(object):
 
         for k in self.cells.keys():
             cp.assign_cell_color(self.cells[k], self.cells,
-                                 self.cell_colors)
+                                 self.cell_colors, params.imageloaderparams.pixel_size)
 
     def mark_cell_as_noise(self, label_c1, image_manager, is_noise):
         """Used to change the selection_state of a cell to 0 (noise)
