@@ -85,8 +85,8 @@ class MaskParameters(object):
         self.x_align = 0
         self.y_align = 0
 
-        self.pixel_size = "0.0645"
-        self.units = "\u03BC" + "m"
+        self.pixel_size = "1"
+        self.units = "px"
 
     def load_from_parser(self, parser, section):
         """Loads frame parameters from a ConfigParser object of the
@@ -198,7 +198,7 @@ class CellParameters(object):
         self.cell_filters = []
 
         # cell merging parameters
-        self.cell_force_merge_below = 0.65
+        self.cell_force_merge_below = 150
         self.merge_dividing_cells = False
         self.merge_length_tolerance = 1.1
         self.merge_min_interface = 15

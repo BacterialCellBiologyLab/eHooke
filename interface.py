@@ -782,6 +782,10 @@ class Interface(object):
         self.ehooke.parameters.imageloaderparams.pixel_size = self.pixel_size_value.get()
         self.ehooke.parameters.imageloaderparams.units = self.units_value.get()
 
+        if self.ehooke.parameters.imageloaderparams.units == "um":
+            self.ehooke.parameters.imageloaderparams.units = "\u03BC" + "m"
+            self.ehooke.parameters.cellprocessingparams.cell_force_merge_below = 0.065
+
         self.ax.axis("off")
         self.show_image("Fluor_mask")
         self.ax.format_coord = self.remove_coord
