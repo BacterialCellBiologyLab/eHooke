@@ -2024,8 +2024,8 @@ class Interface(object):
         self.eccentricityfilter_max_entry = tk.Entry(self.eccentricityfilter_frame,
                                                      textvariable=self.eccentricityfilter_max_value, width=5)
         self.eccentricityfilter_max_entry.pack(side="left")
-        self.eccentricityfilter_min_value.set(-10)
-        self.eccentricityfilter_max_value.set(10)
+        self.eccentricityfilter_min_value.set(0)
+        self.eccentricityfilter_max_value.set(1)
 
         self.irregularityfilter_frame = tk.Frame(self.parameters_panel)
         self.irregularityfilter_frame.pack(side="top", fill="x")
