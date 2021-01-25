@@ -31,6 +31,7 @@ class EHooke(object):
         self.base_path = None
         self.fluor_path = None
         self.get_cell_images = cell_data
+        self.merged_pairs = []
 
     def load_base_image(self, filename=None):
         """Calls the load_base_image method from the ImageManager
@@ -115,7 +116,28 @@ class EHooke(object):
                                       self.image_manager)
         self.cell_manager.overlay_cells(self.image_manager)
 
+        self.merged_pairs.append((label_c1, label_c2))
+
         print("Merge Finished")
+
+    def merge_from_file(self, filename=None):
+        if filename is None:
+            filename = tkFileDialog.askopenfilename(initialdir=self.working_dir)
+
+        cells_list = open(filename, "r").readlines()
+
+        for pair in cells_list:
+            tmp = pair.split(";")
+            self.cell_manager.merge_cells(tmp[0], tmp[1],
+                                          self.parameters,
+                                          self.segments_manager,
+                                          self.image_manager)
+
+            self.merged_pairs.append((tmp[0], tmp[1]))
+
+        self.cell_manager.overlay_cells(self.image_manager)
+
+        print("Merge from list finished")
 
     def split_cells(self, label_c1):
         """Splits a previously merged cell, requires the label of cell to be
@@ -250,6 +272,7 @@ class EHooke(object):
         if label is None:
             label = self.fluor_path.split("/")
             label = label[len(label) - 1].split(".")
+
             if len(label) > 2:
                 label = label[len(label)-3] + "." + label[len(label)-2]
             else:
@@ -263,7 +286,8 @@ class EHooke(object):
         self.report_manager.generate_report(filename, label,
                                             self.cell_manager,
                                             self.linescan_manager,
-                                            self.parameters)
+                                            self.parameters,
+                                            self.merged_pairs)
         if self.get_cell_images:
             self.report_manager.get_cell_images(filename, label,
                                                 self.image_manager,
