@@ -272,7 +272,7 @@ class ReportManager:
         else:
             return filename
 
-    def generate_report(self, path, label, cell_manager, linescan_manager, params):
+    def generate_report(self, path, label, cell_manager, linescan_manager, params, merged_pairs):
         if label is None:
             filename = path + "/Report_1"
             filename = self.check_filename(filename)
@@ -311,6 +311,13 @@ class ReportManager:
         imsave(filename + "/selected_cells.png", cell_manager.fluor_w_cells)
         params.save_parameters(filename + "/params")
         open(filename + "/selected_cells.txt", "w").writelines(selected_cells)
+
+        if len(merged_pairs) > 0:
+            pairs_list = ""
+            for pair in merged_pairs:
+                pairs_list += str(pair[0]) + ";" + str(pair[1]) + ";\n"
+
+            open(filename + "\\merged_cells.txt", "w").writelines(pairs_list)
 
     def get_cell_images(self, path, label, image_manager, cell_manager, params):
         if label is None:
