@@ -999,6 +999,7 @@ class Interface(object):
         self.show_image("Fluor_cells_outlined")
 
         self.next_button.config(state="active")
+        self.merge_from_file_button.config(state="active")
         self.force_merge_button.config(state="active")
         self.split_cell_button.config(state="active")
         self.declare_as_noise_button.config(state="active")
@@ -1145,6 +1146,17 @@ class Interface(object):
             'button_release_event', self.undo_noise_on_press)
         self.event_connected = True
 
+    def merge_from_file(self):
+
+        self.ehooke.merge_from_file()
+        self.images[
+            "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
+        self.images[
+            "Base_cells_outlined"] = self.ehooke.cell_manager.base_w_cells
+
+        self.show_image(self.current_image)
+
+
     def set_cellcomputation(self):
         """Method used to change the interface to the Cell Computation
         Step"""
@@ -1247,6 +1259,10 @@ class Interface(object):
         self.merge_min_interface_entry.pack(side="left")
         self.merge_min_interface_value.set(
             self.ehooke.parameters.cellprocessingparams.merge_min_interface)
+
+        self.merge_from_file_button = tk.Button(self.parameters_panel, text="Load Merge List", command=self.merge_from_file)
+        self.merge_from_file_button.pack(side="top", fill="x")
+        self.merge_from_file_button.config(state="disabled")
 
         self.force_merge_button = tk.Button(self.parameters_panel, text="Force Merge",
                                             command=self.force_merge)
