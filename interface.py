@@ -5,8 +5,6 @@ import matplotlib
 
 if sys.platform == "darwin":
     matplotlib.use("MACOSX")
-else:
-    matplotlib.use("TkAgg")
 
 from tkinter import messagebox as tkMessageBox
 import tkinter as tk
