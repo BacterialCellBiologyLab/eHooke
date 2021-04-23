@@ -183,6 +183,7 @@ class CellParameters(object):
         self.axial_step = 5
 
         self.find_septum = False
+        self.find_openseptum = False
         self.look_for_septum_in_base = False
         self.septum_algorithms = ["Box", "Isodata"]
         self.septum_algorithm = "Isodata"
@@ -239,6 +240,7 @@ class CellParameters(object):
 
         self.axial_step = int(parser.get(section, "axial step"))
         self.find_septum = check_bool(parser.get(section, "find septum"))
+        self.find_openseptum = check_bool(parser.get(section, "find open septum"))
         self.classify_cells = check_bool(parser.get(section, "classify cells"))
         self.microscope = str(parser.get(section, "microscope"))
         self.look_for_septum_in_base = check_bool(parser.get(section,
@@ -264,6 +266,7 @@ class CellParameters(object):
 
         parser.set(section, "axial step", str(self.axial_step))
         parser.set(section, "find septum", str(self.find_septum))
+        parser.set(section, "find open septum", str(self.find_openseptum))
         parser.set(section, "classify cells", str(self.classify_cells))
         parser.set(section, "microscope", str(self.microscope))
         parser.set(section, "look for septum in base",

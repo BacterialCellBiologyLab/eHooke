@@ -21,6 +21,7 @@ outline use base mask = False
 [CellProcessing]
 axial step = 5
 find septum = False
+find open septum = False
 look for septum in base = False
 cell filters = []
 cell force merge below = 150

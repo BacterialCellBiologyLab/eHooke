@@ -269,6 +269,20 @@ class Cell(object):
         else:
             print("Not a a valid algorithm")
 
+    def compute_opensept_mask(self, mask, thick, septum_base, algorithm):
+        """ returns mask for axis.
+        needs cell mask
+        """
+
+        if algorithm == "Isodata":
+            return self.compute_opensept_isodata(mask, thick, septum_base)
+
+        elif algorithm == "Box":
+            return self.compute_sept_box(mask, thick)
+
+        else:
+            print("Not a a valid algorithm")
+
     def compute_sept_isodata(self, mask, thick, septum_base):
         """Method used to create the cell sept_mask using the threshold_isodata
         to separate the cytoplasm from the septum"""
@@ -295,6 +309,51 @@ class Cell(object):
                     img_as_float(label_matrix == l + 1))
 
         return img_as_float(label_matrix == interest_label)
+
+    def compute_opensept_isodata(self, mask, thick, septum_base):
+        """Method used to create the cell sept_mask using the threshold_isodata
+        to separate the cytoplasm from the septum"""
+        cell_mask = mask
+        if septum_base:
+            fluor_box = 1 - self.base_box
+        else:
+            fluor_box = self.fluor
+        perim_mask = self.compute_perim_mask(cell_mask, thick)
+        inner_mask = cell_mask - perim_mask
+        inner_fluor = (inner_mask > 0) * fluor_box
+
+        threshold = threshold_isodata(inner_fluor[inner_fluor > 0])
+        interest_matrix = inner_mask * (inner_fluor > threshold)
+
+        label_matrix = label(interest_matrix, connectivity=2)
+        label_sums = []
+
+        for l in range(np.max(label_matrix)):
+            label_sums.append(np.sum(img_as_float(label_matrix == l + 1)))
+
+        print(label_sums)
+
+        sorted_label_sums = sorted(label_sums)
+
+        first_label = 0
+        second_label = 0
+
+        for i in range(len(label_sums)):
+            if label_sums[i] == sorted_label_sums[-1]:
+                first_label = i+1
+                label_sums.pop(i)
+                break
+
+        for i in range(len(label_sums)):
+            if label_sums[i] == sorted_label_sums[-2]:
+                second_label = i+2
+                label_sums.pop(i)
+                break
+
+        if second_label != 0:
+            return img_as_float((label_matrix == first_label) + (label_matrix == second_label))
+        else:
+            return img_as_float((label_matrix == first_label))
 
     def compute_sept_box(self, mask, thick):
         """Method used to create a mask of the septum based on creating a box
@@ -531,6 +590,21 @@ class Cell(object):
             except RuntimeError:
                     self.recursive_compute_sept(cell_mask, inner_mask_thickness-1, septum_base, "Box")
 
+    def recursive_compute_opensept(self, cell_mask, inner_mask_thickness,
+                                   septum_base, algorithm):
+        try:
+            self.sept_mask = self.compute_opensept_mask(cell_mask,
+                                                        inner_mask_thickness,
+                                                        septum_base,
+                                                        algorithm)
+        except IndexError:
+            try:
+                self.recursive_compute_opensept(cell_mask, inner_mask_thickness - 1,
+                                                septum_base,
+                                                algorithm)
+            except RuntimeError:
+                self.recursive_compute_opensept(cell_mask, inner_mask_thickness-1, septum_base, "Box")
+
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
         septum, cytoplasm) and creates their respectives masks."""
@@ -557,6 +631,31 @@ class Cell(object):
                     image_manager.mask.shape)
                 self.cyto_mask = (self.cell_mask - self.perim_mask -
                                       self.sept_mask) > 0
+                if linmask is not None:
+                    old_membrane = self.perim_mask
+                    self.perim_mask = (old_membrane - linmask) > 0
+            else:
+                self.perim_mask = (self.compute_perim_mask(self.cell_mask,
+                                                           params.inner_mask_thickness) -
+                                   self.sept_mask) > 0
+                self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
+                self.cyto_mask = (self.cell_mask - self.perim_mask -
+                                  self.sept_mask) > 0
+        elif params.find_openseptum:
+            self.recursive_compute_opensept(self.cell_mask,
+                                            params.inner_mask_thickness,
+                                            params.look_for_septum_in_base,
+                                            params.septum_algorithm)
+
+            if params.septum_algorithm == "Isodata":
+                self.perim_mask = self.compute_perim_mask(self.cell_mask,
+                                                          params.inner_mask_thickness)
+
+                self.membsept_mask = (self.perim_mask + self.sept_mask) > 0
+                linmask = self.remove_sept_from_membrane(
+                    image_manager.mask.shape)
+                self.cyto_mask = (self.cell_mask - self.perim_mask -
+                                  self.sept_mask) > 0
                 if linmask is not None:
                     old_membrane = self.perim_mask
                     self.perim_mask = (old_membrane - linmask) > 0

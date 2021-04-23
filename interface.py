@@ -5,6 +5,10 @@ import matplotlib
 
 if sys.platform == "darwin":
     matplotlib.use("MACOSX")
+elif sys.platform == "linux":
+    matplotlib.use("Agg")
+else:
+    matplotlib.use("TkAgg")
 
 from tkinter import messagebox as tkMessageBox
 import tkinter as tk
@@ -226,6 +230,8 @@ class Interface(object):
         """Loads the default params for cell processing"""
         self.find_septum_checkbox_value.set(
             self.default_params.cellprocessingparams.find_septum)
+        self.find_openseptum_checkbox_value.set(
+            self.default_params.cellprocessingparams.find_openseptum)
         self.look_for_septum_in_base_checkbox_value.set(
             self.default_params.cellprocessingparams.look_for_septum_in_base)
         self.optional_signal_ratio_value.set(
@@ -1535,6 +1541,7 @@ class Interface(object):
         self.ehooke.parameters.cellprocessingparams.classify_cells = self.classify_cells_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.microscope = self.microscope_value.get()
         self.ehooke.parameters.cellprocessingparams.find_septum = self.find_septum_checkbox_value.get()
+        self.ehooke.parameters.cellprocessingparams.find_openseptum = self.find_openseptum_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = self.look_for_septum_in_base_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.septum_algorithm = self.septum_algorithm_value.get()
         self.ehooke.parameters.cellprocessingparams.inner_mask_thickness = self.membrane_thickness_value.get()
@@ -1941,6 +1948,17 @@ class Interface(object):
                                                    onvalue=True, offvalue=False)
         self.find_septum_checkbox_value.set(False)
         self.find_septum_checkbox.pack(side="left")
+
+        self.find_openseptum_frame = tk.Frame(self.parameters_panel)
+        self.find_openseptum_frame.pack(side="top", fill="x")
+        self.find_openseptum_label = tk.Label(
+            self.find_openseptum_frame, text="Find Open Septum: ")
+        self.find_openseptum_label.pack(side="left")
+        self.find_openseptum_checkbox_value = tk.BooleanVar()
+        self.find_openseptum_checkbox = tk.Checkbutton(self.find_openseptum_frame, variable=self.find_openseptum_checkbox_value,
+                                                   onvalue=True, offvalue=False)
+        self.find_openseptum_checkbox_value.set(False)
+        self.find_openseptum_checkbox.pack(side="left")
 
         self.look_for_septum_in_base_frame = tk.Frame(self.parameters_panel)
         self.look_for_septum_in_base_frame.pack(side="top", fill="x")
