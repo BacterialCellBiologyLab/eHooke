@@ -255,13 +255,13 @@ class Cell(object):
 
         return perim
 
-    def compute_sept_mask(self, mask, thick, septum_base, algorithm):
+    def compute_sept_mask(self, mask, thick, septum_base, septum_opt, algorithm):
         """ returns mask for axis.
         needs cell mask
         """
 
         if algorithm == "Isodata":
-            return self.compute_sept_isodata(mask, thick, septum_base)
+            return self.compute_sept_isodata(mask, thick, septum_base, septum_opt)
 
         elif algorithm == "Box":
             return self.compute_sept_box(mask, thick)
@@ -269,13 +269,13 @@ class Cell(object):
         else:
             print("Not a a valid algorithm")
 
-    def compute_opensept_mask(self, mask, thick, septum_base, algorithm):
+    def compute_opensept_mask(self, mask, thick, septum_base, septum_opt, algorithm):
         """ returns mask for axis.
         needs cell mask
         """
 
         if algorithm == "Isodata":
-            return self.compute_opensept_isodata(mask, thick, septum_base)
+            return self.compute_opensept_isodata(mask, thick, septum_base, septum_opt)
 
         elif algorithm == "Box":
             return self.compute_sept_box(mask, thick)
@@ -283,12 +283,14 @@ class Cell(object):
         else:
             print("Not a a valid algorithm")
 
-    def compute_sept_isodata(self, mask, thick, septum_base):
+    def compute_sept_isodata(self, mask, thick, septum_base, septum_opt):
         """Method used to create the cell sept_mask using the threshold_isodata
         to separate the cytoplasm from the septum"""
         cell_mask = mask
         if septum_base:
             fluor_box = 1 - self.base_box
+        elif septum_opt:
+            fluor_box = self.optional_box
         else:
             fluor_box = self.fluor
         perim_mask = self.compute_perim_mask(cell_mask, thick)
@@ -310,12 +312,14 @@ class Cell(object):
 
         return img_as_float(label_matrix == interest_label)
 
-    def compute_opensept_isodata(self, mask, thick, septum_base):
+    def compute_opensept_isodata(self, mask, thick, septum_base, septum_opt):
         """Method used to create the cell sept_mask using the threshold_isodata
         to separate the cytoplasm from the septum"""
         cell_mask = mask
         if septum_base:
             fluor_box = 1 - self.base_box
+        elif septum_opt:
+            fluor_box = self.optional_box
         else:
             fluor_box = self.fluor
         perim_mask = self.compute_perim_mask(cell_mask, thick)
@@ -576,34 +580,34 @@ class Cell(object):
         return img_as_float(linmask)
 
     def recursive_compute_sept(self, cell_mask, inner_mask_thickness,
-                               septum_base, algorithm):
+                               septum_base, septum_opt, algorithm):
         try:
             self.sept_mask = self.compute_sept_mask(cell_mask,
                                                     inner_mask_thickness,
                                                     septum_base,
+                                                    septum_opt,
                                                     algorithm)
         except IndexError:
             try:
-                self.recursive_compute_sept(cell_mask, inner_mask_thickness - 1,
-                                        septum_base,
-                                        algorithm)
+                self.recursive_compute_sept(cell_mask, inner_mask_thickness - 1, septum_base, septum_opt, algorithm)
             except RuntimeError:
-                    self.recursive_compute_sept(cell_mask, inner_mask_thickness-1, septum_base, "Box")
+                    self.recursive_compute_sept(cell_mask, inner_mask_thickness-1, septum_base, septum_opt, "Box")
 
     def recursive_compute_opensept(self, cell_mask, inner_mask_thickness,
-                                   septum_base, algorithm):
+                                   septum_base, septum_opt, algorithm):
         try:
             self.sept_mask = self.compute_opensept_mask(cell_mask,
                                                         inner_mask_thickness,
                                                         septum_base,
+                                                        septum_opt,
                                                         algorithm)
         except IndexError:
             try:
                 self.recursive_compute_opensept(cell_mask, inner_mask_thickness - 1,
-                                                septum_base,
+                                                septum_base, septum_opt,
                                                 algorithm)
             except RuntimeError:
-                self.recursive_compute_opensept(cell_mask, inner_mask_thickness-1, septum_base, "Box")
+                self.recursive_compute_opensept(cell_mask, inner_mask_thickness-1, septum_base, septum_opt, "Box")
 
     def compute_regions(self, params, image_manager):
         """Computes each different region of the cell (whole cell, membrane,
@@ -612,6 +616,8 @@ class Cell(object):
             x0, y0, x1, y1 = image_manager.clip
             self.base_box = self.fluor_box(
                 image_manager.base_image[x0:x1, y0:y1])
+        elif params.look_for_septum_in_optional:
+            self.optional_box = self.fluor_box(image_manager.optional_image)
         self.fluor = self.fluor_box(image_manager.fluor_image)
 
         self.cell_mask = self.compute_cell_mask()
@@ -620,6 +626,7 @@ class Cell(object):
             self.recursive_compute_sept(self.cell_mask,
                                         params.inner_mask_thickness,
                                         params.look_for_septum_in_base,
+                                        params.look_for_septum_in_optional,
                                         params.septum_algorithm)
 
             if params.septum_algorithm == "Isodata":
@@ -645,6 +652,7 @@ class Cell(object):
             self.recursive_compute_opensept(self.cell_mask,
                                             params.inner_mask_thickness,
                                             params.look_for_septum_in_base,
+                                            params.look_for_septum_in_optional,
                                             params.septum_algorithm)
 
             if params.septum_algorithm == "Isodata":

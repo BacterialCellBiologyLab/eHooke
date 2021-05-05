@@ -185,6 +185,7 @@ class CellParameters(object):
         self.find_septum = False
         self.find_openseptum = False
         self.look_for_septum_in_base = False
+        self.look_for_septum_in_optional = False
         self.septum_algorithms = ["Box", "Isodata"]
         self.septum_algorithm = "Isodata"
 
@@ -245,6 +246,8 @@ class CellParameters(object):
         self.microscope = str(parser.get(section, "microscope"))
         self.look_for_septum_in_base = check_bool(parser.get(section,
                                                   "look for septum in base"))
+        self.look_for_septum_in_optional = check_bool(parser.get(section,
+                                                             "look for septum in optional"))
         self.cell_filters = self.process_filters(parser.get(section, "cell filters"))
         self.cell_force_merge_below = float(parser.get(section,
                                                  "cell force merge below"))
@@ -271,6 +274,8 @@ class CellParameters(object):
         parser.set(section, "microscope", str(self.microscope))
         parser.set(section, "look for septum in base",
                    str(self.look_for_septum_in_base))
+        parser.set(section, "look for septum in optional",
+                   str(self.look_for_septum_in_optional))
         parser.set(section, "cell filters", str(self.cell_filters))
         parser.set(section, "cell force merge below",
                    str(self.cell_force_merge_below))

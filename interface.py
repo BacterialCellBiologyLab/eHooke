@@ -234,6 +234,8 @@ class Interface(object):
             self.default_params.cellprocessingparams.find_openseptum)
         self.look_for_septum_in_base_checkbox_value.set(
             self.default_params.cellprocessingparams.look_for_septum_in_base)
+        self.look_for_septum_in_opt_checkbox_value.set(
+            self.default_params.cellprocessingparams.look_for_septum_in_optional)
         self.optional_signal_ratio_value.set(
             self.default_params.cellprocessingparams.signal_ratio)
         self.classify_cells_checkbox_value.set(
@@ -1543,6 +1545,7 @@ class Interface(object):
         self.ehooke.parameters.cellprocessingparams.find_septum = self.find_septum_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.find_openseptum = self.find_openseptum_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = self.look_for_septum_in_base_checkbox_value.get()
+        self.ehooke.parameters.cellprocessingparams.look_for_septum_in_optional = self.look_for_septum_in_opt_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.septum_algorithm = self.septum_algorithm_value.get()
         self.ehooke.parameters.cellprocessingparams.inner_mask_thickness = self.membrane_thickness_value.get()
         self.ehooke.parameters.cellprocessingparams.signal_ratio = self.optional_signal_ratio_value.get()
@@ -1970,6 +1973,17 @@ class Interface(object):
                                                                onvalue=True, offvalue=False)
         self.look_for_septum_in_base_checkbox_value.set(False)
         self.look_for_septum_in_base_checkbox.pack(side="left")
+
+        self.look_for_septum_in_opt_frame = tk.Frame(self.parameters_panel)
+        self.look_for_septum_in_opt_frame.pack(side="top", fill="x")
+        self.look_for_septum_in_opt_label = tk.Label(
+            self.look_for_septum_in_opt_frame, text="Look for Septum in Optional: ")
+        self.look_for_septum_in_opt_label.pack(side="left")
+        self.look_for_septum_in_opt_checkbox_value = tk.BooleanVar()
+        self.look_for_septum_in_opt_checkbox = tk.Checkbutton(self.look_for_septum_in_opt_frame, variable=self.look_for_septum_in_opt_checkbox_value,
+                                                               onvalue=True, offvalue=False)
+        self.look_for_septum_in_opt_checkbox_value.set(False)
+        self.look_for_septum_in_opt_checkbox.pack(side="left")
 
         self.septum_algorithm_frame = tk.Frame(self.parameters_panel)
         self.septum_algorithm_frame.pack(side="top", fill="x")
