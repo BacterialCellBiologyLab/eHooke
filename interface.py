@@ -1977,7 +1977,7 @@ class Interface(object):
         self.look_for_septum_in_opt_frame = tk.Frame(self.parameters_panel)
         self.look_for_septum_in_opt_frame.pack(side="top", fill="x")
         self.look_for_septum_in_opt_label = tk.Label(
-            self.look_for_septum_in_opt_frame, text="Look for Septum in Optional: ")
+            self.look_for_septum_in_opt_frame, text="Look for Septum in Secondary: ")
         self.look_for_septum_in_opt_label.pack(side="left")
         self.look_for_septum_in_opt_checkbox_value = tk.BooleanVar()
         self.look_for_septum_in_opt_checkbox = tk.Checkbutton(self.look_for_septum_in_opt_frame, variable=self.look_for_septum_in_opt_checkbox_value,
