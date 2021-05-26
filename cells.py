@@ -751,7 +751,7 @@ class Cell(object):
             self.measure_fluor(fluorbox, self.cyto_mask) - \
             self.stats["Baseline"]
 
-        if params.find_septum:
+        if params.find_septum or params.find_openseptum:
             self.stats["Septum Median"] = self.measure_fluor(
                 fluorbox, self.sept_mask) - self.stats["Baseline"]
 
@@ -813,7 +813,7 @@ class Cell(object):
         by1 = by1 + y1 - y0 + 1
         img[bx0:bx1, by0:by1] = color.gray2rgb(
             background[x0:x1 + 1, y0:y1 + 1] * cyto)
-        if params.find_septum:
+        if params.find_septum or params.find_openseptum:
             by0 = by0 + y1 - y0 + 1
             by1 = by1 + y1 - y0 + 1
             img[bx0:bx1, by0:by1] = color.gray2rgb(background[x0:x1 + 1,

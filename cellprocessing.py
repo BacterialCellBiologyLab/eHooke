@@ -75,7 +75,7 @@ def stats_format(params):
     result.append(('Membrane Median', 3))
     result.append(('Cytoplasm Median', 3))
 
-    if params.find_septum:
+    if params.find_septum or params.find_openseptum:
         result.append(('Septum Median', 3))
         result.append(("Fluor Ratio", 3))
         result.append(("Fluor Ratio 75%", 3))
