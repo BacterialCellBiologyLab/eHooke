@@ -190,12 +190,13 @@ class ReportManager:
                 for k in sorted_keys:
                     cell = cells[str(k)]
 
-                    if cell.stats["Cell Cycle Phase"] == 1:
-                        p1count += 1
-                    elif cell.stats["Cell Cycle Phase"] == 2:
-                        p2count += 1
-                    elif cell.stats["Cell Cycle Phase"] == 3:
-                        p3count += 1
+                    if cell.selection_state == 1:
+                        if cell.stats["Cell Cycle Phase"] == 1:
+                            p1count += 1
+                        elif cell.stats["Cell Cycle Phase"] == 2:
+                            p2count += 1
+                        elif cell.stats["Cell Cycle Phase"] == 3:
+                            p3count += 1
 
                 report.append("\n<h3>Phase 1 cells: " + str(p1count) +"</h3>")
                 report.append("\n<h3>Phase 2 cells: " + str(p2count) +"</h3>")
