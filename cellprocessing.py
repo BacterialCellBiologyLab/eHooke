@@ -166,24 +166,24 @@ def check_merge(cell1, cell2, rotations, interface, mask, params):
         return False
 
     # check if any cell is small enough for automatic merge
-    if cell1.stats["Area"] < params.cell_force_merge_below or \
-            cell2.stats["Area"] < params.cell_force_merge_below:
+    if cell1.stats["Area"] < params.cellprocessingparams.cell_force_merge_below or \
+            cell2.stats["Area"] < params.cellprocessingparams.cell_force_merge_below:
         return True
 
     # check if dividing cells
-    if params.merge_dividing_cells and \
-            interface >= params.merge_min_interface:
+    if params.cellprocessingparams.merge_dividing_cells and \
+            interface >= params.cellprocessingparams.merge_min_interface:
         tmp = cells.Cell(0)
         tmp.outline.extend(cell1.outline)
         tmp.outline.extend(cell2.outline)
         tmp.lines.extend(cell1.lines)
         tmp.lines.extend(cell2.lines)
         tmp.stats["Area"] = cell1.stats["Area"] + cell2.stats["Area"]
-        tmp.compute_axes(rotations, mask.shape)
+        tmp.compute_axes(rotations, mask.shape, params.imageloaderparams.pixel_size)
         tmpshort = tmp.stats["Width"]
         maxshort = max(cell1.stats["Width"], cell2.stats["Width"])
 
-        if tmpshort <= maxshort * params.merge_length_tolerance:
+        if tmpshort <= maxshort * params.cellprocessingparams.merge_length_tolerance:
             return True
 
         else:

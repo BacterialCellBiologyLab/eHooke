@@ -993,7 +993,7 @@ class CellManager(object):
                     cn = self.cells[str(int(bestneigh))]
 
                     if cp.check_merge(c, cn, rotations, bestinterface,
-                                      image_manager.mask, params.cellprocessingparams):
+                                      image_manager.mask, params):
                         self.merge_cells(c.label, cn.label, params, segments_manager, image_manager)
             except KeyError:
                 print("Cell was already merged and deleted")
