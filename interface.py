@@ -405,8 +405,6 @@ class Interface(object):
         """Loads the base image"""
         self.ehooke.parameters.imageloaderparams.border = \
             self.border_value.get()
-        self.ehooke.parameters.imageloaderparams.invert_base = \
-            self.fluor_as_base_value.get()
         self.ehooke.load_base_image()
         self.images["Base"] = self.ehooke.image_manager.base_image
 
@@ -419,6 +417,8 @@ class Interface(object):
 
     def compute_mask(self):
         """Computes the mask of the cell regions"""
+        self.ehooke.parameters.imageloaderparams.invert_base = \
+            self.fluor_as_base_value.get()
         self.ehooke.parameters.imageloaderparams.mask_algorithm = \
             self.mask_algorithm_value.get()
         self.ehooke.parameters.imageloaderparams.mask_blocksize = \
