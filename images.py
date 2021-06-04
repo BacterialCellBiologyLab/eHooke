@@ -84,9 +84,6 @@ class ImageManager(object):
         image = color.rgb2gray(image)
         image = exposure.rescale_intensity(image)
 
-        if params.invert_base:
-            image = 1 - image
-
         self.base_image = image
         self.set_clip(params.border)
 
@@ -100,7 +97,10 @@ class ImageManager(object):
         of the scikit-image.threshold module.
         """
         x0, y0, x1, y1 = self.clip
+
         base_mask = np.copy(self.base_image[x0:x1, y0:y1])
+        if params.invert_base:
+            base_mask = 1 - base_mask
 
         if params.mask_algorithm == "Isodata":
             isodata_threshold = threshold_isodata(base_mask)
