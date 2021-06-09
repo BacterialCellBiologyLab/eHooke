@@ -103,14 +103,16 @@ class Interface(object):
         self.min_label.pack(side="top")
 
         self.min_scale = tk.Scale(self.intensities_frame, from_=0, to=100, tickinterval=0,
-                                  length=150,  orient="horizontal", command=self.adjust_min, width=10, showvalue=0)
+                                  length=150,  orient="horizontal", width=10, showvalue=0)
+        self.min_scale.bind("<ButtonRelease-1>", self.adjust_min)
         self.min_scale.pack(side="top")
 
         self.max_label = tk.Label(self.intensities_frame, text="Max Intensity: ")
         self.max_label.pack(side="top")
 
         self.max_scale = tk.Scale(self.intensities_frame, from_=0, to=100, tickinterval=0,
-                                  length=150,  orient="horizontal", command=self.adjust_max, width=10, showvalue=0)
+                                  length=150,  orient="horizontal", width=10, showvalue=0)
+        self.max_scale.bind("<ButtonRelease-1>", self.adjust_max)
         self.max_scale.pack(side="top")
         self.max_scale.set(100)
 
@@ -122,8 +124,8 @@ class Interface(object):
 
         self.set_imageloader()
 
-    def adjust_min(self, value):
-        current_min = float(value)
+    def adjust_min(self, event):
+        current_min = float(self.min_scale.get())
 
         if self.current_image is None:
             pass
@@ -137,8 +139,8 @@ class Interface(object):
             self.optional_min = current_min / 100.0
             self.show_image(self.current_image)
 
-    def adjust_max(self, value):
-        current_max = float(value)
+    def adjust_max(self, event):
+        current_max = float(self.max_scale.get())
 
         if self.current_image is None:
             pass
@@ -394,7 +396,7 @@ class Interface(object):
             self.max_scale.set(int(self.optional_max*100))
             self.current_image_label.configure(text="Secondary Outlined")
 
-        self.ax.imshow(img, cmap=cm.Greys_r)
+        self.ax.imshow(img, interpolation="none", cmap=cm.Greys_r)
 
         plt.subplots_adjust(left=0.005, bottom=0.005, right=0.995, top=0.995)
         #figZoom = self.zoom_factory(self.ax)
