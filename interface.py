@@ -2007,7 +2007,7 @@ class Interface(object):
         self.look_for_septum_in_frame = tk.Frame(self.parameters_panel)
         self.look_for_septum_in_frame.pack(side="top", fill="x")
         self.look_for_septum_in_label = tk.Label(
-            self.look_for_septum_in_frame, text="Look for Septum in: ")
+            self.look_for_septum_in_frame, text="Look for Septa in: ")
         self.look_for_septum_in_label.pack(side="left")
         self.look_for_septum_in_menu_value = tk.StringVar()
         if self.ehooke.image_manager.optional_image is None:
