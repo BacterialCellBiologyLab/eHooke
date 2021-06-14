@@ -1757,7 +1757,7 @@ class Interface(object):
                     "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
                 self.show_image("Fluor_with_lines")
 
-    def add_line_linescan(self, event):
+    def add_line_linescan(self, event=None):
         # add line code
 
         self.points = []
@@ -1765,7 +1765,7 @@ class Interface(object):
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.draw_line)
 
-    def remove_line_linescan(self, event):
+    def remove_line_linescan(self, event=None):
         # remove line code
 
         self.ehooke.linescan_manager.remove_line()
