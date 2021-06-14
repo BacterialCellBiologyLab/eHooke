@@ -795,13 +795,10 @@ class Interface(object):
         """Method used to change the interface to the Segments Computation
         Step"""
 
-        try:
-            self.main_window.unbind("m", self.m_shortcut)
-            self.main_window.unbind("s", self.s_shortcut)
-            self.main_window.unbind("n", self.n_shortcut)
-            self.main_window.unbind("u", self.u_shortcut)
-        except AttributeError:
-            pass
+        self.main_window.unbind("m")
+        self.main_window.unbind("s")
+        self.main_window.unbind("n")
+        self.main_window.unbind("u")
 
         self.ehooke.parameters.imageloaderparams.pixel_size = self.pixel_size_value.get()
         self.ehooke.parameters.imageloaderparams.units = self.units_value.get()
@@ -1015,10 +1012,10 @@ class Interface(object):
         self.ehooke.compute_cells()
         self.ax.format_coord = self.show_cell_info_cellcomputation
 
-        self.m_shortcut = self.main_window.bind("m", self.force_merge)
-        self.s_shortcut = self.main_window.bind("s", self.split_cell)
-        self.n_shortcut = self.main_window.bind("n", self.declare_as_noise)
-        self.u_shortcut = self.main_window.bind("u", self.undo_as_noise)
+        self.main_window.bind("m", self.force_merge)
+        self.main_window.bind("s", self.split_cell)
+        self.main_window.bind("n", self.declare_as_noise)
+        self.main_window.bind("u", self.undo_as_noise)
 
         self.images[
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
@@ -1863,7 +1860,7 @@ class Interface(object):
                 self.neighboursfilter_checkbox_value.set(True)
                 self.neighboursfilter_min_value.set(int(flt[1]))
                 self.neighboursfilter_max_value.set(int(flt[2]))
-    
+
     def set_cellprocessing(self):
         """Method used to change the interface to the Cell Processing
         Step"""
@@ -1873,10 +1870,10 @@ class Interface(object):
         self.ax.format_coord = self.show_cell_info_cellprocessing
         self.canvas.draw()
 
-        self.main_window.unbind("m", self.m_shortcut)
-        self.main_window.unbind("s", self.s_shortcut)
-        self.main_window.unbind("n", self.n_shortcut)
-        self.main_window.unbind("u", self.u_shortcut)
+        self.main_window.unbind("m")
+        self.main_window.unbind("s")
+        self.main_window.unbind("n")
+        self.main_window.unbind("u")
 
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.on_press)
