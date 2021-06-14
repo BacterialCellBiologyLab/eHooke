@@ -795,6 +795,14 @@ class Interface(object):
         """Method used to change the interface to the Segments Computation
         Step"""
 
+        try:
+            self.main_window.unbind("m", self.m_shortcut)
+            self.main_window.unbind("s", self.s_shortcut)
+            self.main_window.unbind("n", self.n_shortcut)
+            self.main_window.unbind("u", self.u_shortcut)
+        except AttributeError:
+            pass
+
         self.ehooke.parameters.imageloaderparams.pixel_size = self.pixel_size_value.get()
         self.ehooke.parameters.imageloaderparams.units = self.units_value.get()
 
@@ -1007,6 +1015,11 @@ class Interface(object):
         self.ehooke.compute_cells()
         self.ax.format_coord = self.show_cell_info_cellcomputation
 
+        self.m_shortcut = self.main_window.bind("m", self.force_merge)
+        self.s_shortcut = self.main_window.bind("s", self.split_cell)
+        self.n_shortcut = self.main_window.bind("n", self.declare_as_noise)
+        self.u_shortcut = self.main_window.bind("u", self.undo_as_noise)
+
         self.images[
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
 
@@ -1064,7 +1077,7 @@ class Interface(object):
                 self.event_connected = False
                 self.status.set("Not a Cell. Repeat Merge")
 
-    def force_merge(self):
+    def force_merge(self, event=None):
         """Method used to force the merge of two cells"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
@@ -1095,7 +1108,7 @@ class Interface(object):
             self.event_connected = False
             self.status.set("Splitting Finished")
 
-    def split_cell(self):
+    def split_cell(self, event=None):
         """Method used to split a previously merged cell"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
@@ -1124,7 +1137,7 @@ class Interface(object):
             self.event_connected = False
             self.status.set("May Proceed to Cell Processing")
 
-    def declare_as_noise(self):
+    def declare_as_noise(self, event=None):
         """Method used to define a cell object as noise"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
@@ -1153,7 +1166,7 @@ class Interface(object):
             self.event_connected = False
             self.status.set("May Proceed to Cell Processing")
 
-    def undo_as_noise(self):
+    def undo_as_noise(self, event=None):
         """Method used to define a a cell from an object that was previously
         defined as noise"""
         if self.event_connected:
@@ -1190,6 +1203,12 @@ class Interface(object):
 
         for w in self.images_frame.winfo_children():
             w.destroy()
+
+        try:
+            self.main_window.unbind("l", self.l_shortcut)
+            self.main_window.unbind("k", self.k_shortcut)
+        except AttributeError:
+            pass
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(
@@ -1282,22 +1301,22 @@ class Interface(object):
         self.merge_from_file_button.pack(side="top", fill="x")
         self.merge_from_file_button.config(state="disabled")
 
-        self.force_merge_button = tk.Button(self.parameters_panel, text="Force Merge",
+        self.force_merge_button = tk.Button(self.parameters_panel, text="Force Merge (M)",
                                             command=self.force_merge)
         self.force_merge_button.pack(side="top", fill="x")
         self.force_merge_button.config(state="disabled")
 
         self.split_cell_button = tk.Button(
-            self.parameters_panel, text="Undo merge", command=self.split_cell)
+            self.parameters_panel, text="Undo merge (S)", command=self.split_cell)
         self.split_cell_button.pack(side="top", fill="x")
         self.split_cell_button.config(state="disabled")
 
-        self.declare_as_noise_button = tk.Button(self.parameters_panel, text="Define as Noise",
+        self.declare_as_noise_button = tk.Button(self.parameters_panel, text="Define as Noise (N)",
                                                  command=self.declare_as_noise)
         self.declare_as_noise_button.config(state="disabled")
         self.declare_as_noise_button.pack(side="top", fill="x")
 
-        self.undo_as_noise_button = tk.Button(self.parameters_panel, text="Undo as Noise",
+        self.undo_as_noise_button = tk.Button(self.parameters_panel, text="Undo as Noise (U)",
                                               command=self.undo_as_noise)
         self.undo_as_noise_button.config(state="disabled")
         self.undo_as_noise_button.pack(side="top", fill="x")
@@ -1612,6 +1631,9 @@ class Interface(object):
             self.assign_phase2_button.config(state="disabled")
             self.assign_phase3_button.config(state="disabled")
 
+        self.l_shortcut = self.main_window.bind("l", self.add_line_linescan)
+        self.k_shortcut = self.main_window.bind("k", self.remove_line_linescan)
+
     def select_all_cells(self):
         """Method used to mark all cells as selected"""
         self.ehooke.select_all_cells()
@@ -1738,7 +1760,7 @@ class Interface(object):
                     "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
                 self.show_image("Fluor_with_lines")
 
-    def add_line_linescan(self):
+    def add_line_linescan(self, event):
         # add line code
 
         self.points = []
@@ -1746,7 +1768,7 @@ class Interface(object):
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.draw_line)
 
-    def remove_line_linescan(self):
+    def remove_line_linescan(self, event):
         # remove line code
 
         self.ehooke.linescan_manager.remove_line()
@@ -1850,6 +1872,11 @@ class Interface(object):
         self.show_image("Fluor_cells_outlined")
         self.ax.format_coord = self.show_cell_info_cellprocessing
         self.canvas.draw()
+
+        self.main_window.unbind("m", self.m_shortcut)
+        self.main_window.unbind("s", self.s_shortcut)
+        self.main_window.unbind("n", self.n_shortcut)
+        self.main_window.unbind("u", self.u_shortcut)
 
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.on_press)
@@ -2176,12 +2203,12 @@ class Interface(object):
         self.linescan_label = tk.Label(self.parameters_panel, text="Linescan:")
         self.linescan_label.pack(side="top", pady=self.pady)
 
-        self.add_line_button = tk.Button(self.parameters_panel, text="Add Line",
+        self.add_line_button = tk.Button(self.parameters_panel, text="Add Line (L)",
                                          command=self.add_line_linescan)
         self.add_line_button.pack(side="top", fill="x")
         self.add_line_button.config(state="disabled")
 
-        self.remove_line_button = tk.Button(self.parameters_panel, text="Undo Last Line",
+        self.remove_line_button = tk.Button(self.parameters_panel, text="Undo Last Line (K)",
                                             command=self.remove_line_linescan)
         self.remove_line_button.pack(side="top", fill="x")
         self.remove_line_button.config(state="disabled")
