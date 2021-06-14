@@ -50,6 +50,7 @@ class Interface(object):
         self.gui_font_bold = ("Verdana", 9, "bold")
 
         self.pady = (9, 3)
+        self.parameters_panel_width = 32
 
         self.image_buttons_width = 20
         self.status_bar_width = 40
@@ -230,14 +231,20 @@ class Interface(object):
 
     def load_default_params_cell_processing(self):
         """Loads the default params for cell processing"""
-        self.find_septum_checkbox_value.set(
-            self.default_params.cellprocessingparams.find_septum)
-        self.find_openseptum_checkbox_value.set(
-            self.default_params.cellprocessingparams.find_openseptum)
-        self.look_for_septum_in_base_checkbox_value.set(
-            self.default_params.cellprocessingparams.look_for_septum_in_base)
-        self.look_for_septum_in_opt_checkbox_value.set(
-            self.default_params.cellprocessingparams.look_for_septum_in_optional)
+        if self.default_params.cellprocessingparams.find_septum:
+            self.find_septum_menu_value.set("Closed")
+        elif self.default_params.cellprocessingparams.find_openseptum:
+            self.find_septum_menu_value.set("Closed+Open")
+        else:
+            self.find_septum_menu_value.set("No")
+
+        if self.default_params.cellprocessingparams.look_for_septum_in_base:
+            self.look_for_septum_in_menu_value.set("Base")
+        elif self.default_params.cellprocessingparams.look_for_septum_in_optional:
+            self.look_for_septum_in_menu_value.set("Secondary")
+        else:
+            self.look_for_septum_in_menu_value.set("Fluorescence")
+
         self.optional_signal_ratio_value.set(
             self.default_params.cellprocessingparams.signal_ratio)
         self.classify_cells_checkbox_value.set(
@@ -530,6 +537,7 @@ class Interface(object):
 
         self.base_parameters_label = tk.Label(self.parameters_panel,
                                               text="Load Base Parameters:")
+        self.base_parameters_label.config(width=self.parameters_panel_width)
         self.base_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.border_frame = tk.Frame(self.parameters_panel)
@@ -567,7 +575,7 @@ class Interface(object):
         self.mask_algorithm_menu = tk.OptionMenu(self.mask_algorithm_frame, self.mask_algorithm_value,
                                                  'Local Average', 'Isodata')
         self.mask_algorithm_menu.pack(side="left")
-        self.mask_algorithm_value.set("Isodata")
+        self.mask_algorithm_value.set(self.ehooke.parameters.imageloaderparams.mask_algorithm)
 
         self.mask_blocksize_frame = tk.Frame(self.parameters_panel)
         self.mask_blocksize_frame.pack(side="top", fill="x")
@@ -839,6 +847,7 @@ class Interface(object):
 
         self.segments_parameters_label = tk.Label(self.parameters_panel,
                                                   text="Segments Computation Parameters:")
+        self.segments_parameters_label.config(width=self.parameters_panel_width)
         self.segments_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.peak_min_distance_frame = tk.Frame(self.parameters_panel)
@@ -1206,6 +1215,7 @@ class Interface(object):
 
         self.cellcomputation_parameters_label = tk.Label(self.parameters_panel,
                                                          text="Cell Computation Parameters:")
+        self.cellcomputation_parameters_label.config(width=self.parameters_panel_width)
         self.cellcomputation_parameters_label.pack(side="top", fill="x", pady=self.pady)
 
         self.axial_step_frame = tk.Frame(self.parameters_panel)
@@ -1544,10 +1554,17 @@ class Interface(object):
         aswell as their fluor stats"""
         self.ehooke.parameters.cellprocessingparams.classify_cells = self.classify_cells_checkbox_value.get()
         self.ehooke.parameters.cellprocessingparams.microscope = self.microscope_value.get()
-        self.ehooke.parameters.cellprocessingparams.find_septum = self.find_septum_checkbox_value.get()
-        self.ehooke.parameters.cellprocessingparams.find_openseptum = self.find_openseptum_checkbox_value.get()
-        self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = self.look_for_septum_in_base_checkbox_value.get()
-        self.ehooke.parameters.cellprocessingparams.look_for_septum_in_optional = self.look_for_septum_in_opt_checkbox_value.get()
+        septum_option = self.find_septum_menu_value.get()
+        if septum_option == "Closed":
+            self.ehooke.parameters.cellprocessingparams.find_septum = True
+        elif septum_option == "Closed+Open":
+            self.ehooke.parameters.cellprocessingparams.find_openseptum = True
+        look_for_septum_in = self.look_for_septum_in_menu_value.get()
+        if look_for_septum_in == "Base":
+            self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = True
+        elif look_for_septum_in == "Secondary":
+            self.ehooke.parameters.cellprocessingparams.look_for_septum_in_optional = True
+
         self.ehooke.parameters.cellprocessingparams.septum_algorithm = self.septum_algorithm_value.get()
         self.ehooke.parameters.cellprocessingparams.inner_mask_thickness = self.membrane_thickness_value.get()
         self.ehooke.parameters.cellprocessingparams.signal_ratio = self.optional_signal_ratio_value.get()
@@ -1919,6 +1936,7 @@ class Interface(object):
 
         self.cellprocessing_label = tk.Label(
             self.parameters_panel, text="Cell Processing Parameters: ")
+        self.cellprocessing_label.config(width=self.parameters_panel_width)
         self.cellprocessing_label.pack(side="top", pady=self.pady)
 
         self.microscope_frame = tk.Frame(self.parameters_panel)
@@ -1930,7 +1948,7 @@ class Interface(object):
         self.microscope_menu = tk.OptionMenu(self.microscope_frame, self.microscope_value,
                                                    'Epifluorescence', 'SIM')
         self.microscope_menu.pack(side="left")
-        self.microscope_value.set("Epifluorescence")
+        self.microscope_value.set(self.ehooke.parameters.cellprocessingparams.microscope)
 
         self.classify_cells_frame = tk.Frame(self.parameters_panel)
         self.classify_cells_frame.pack(side="top", fill="x")
@@ -1940,52 +1958,45 @@ class Interface(object):
         self.classify_cells_checkbox_value = tk.BooleanVar()
         self.classify_cells_checkbox = tk.Checkbutton(self.classify_cells_frame, variable=self.classify_cells_checkbox_value,
                                                       onvalue=True, offvalue=False)
-        self.classify_cells_checkbox_value.set(False)
+        self.classify_cells_checkbox_value.set(self.ehooke.parameters.cellprocessingparams.classify_cells)
         self.classify_cells_checkbox.pack(side="left")
 
         self.find_septum_frame = tk.Frame(self.parameters_panel)
         self.find_septum_frame.pack(side="top", fill="x")
         self.find_septum_label = tk.Label(
-            self.find_septum_frame, text="Find Septum: ")
+            self.find_septum_frame, text="Find Septa: ")
         self.find_septum_label.pack(side="left")
-        self.find_septum_checkbox_value = tk.BooleanVar()
-        self.find_septum_checkbox = tk.Checkbutton(self.find_septum_frame, variable=self.find_septum_checkbox_value,
-                                                   onvalue=True, offvalue=False)
-        self.find_septum_checkbox_value.set(False)
-        self.find_septum_checkbox.pack(side="left")
+        self.find_septum_menu_value = tk.StringVar()
+        self.find_septum_menu = tk.OptionMenu(self.find_septum_frame, self.find_septum_menu_value,
+                                                   "No", "Closed", "Closed+Open")
+        if self.ehooke.parameters.cellprocessingparams.find_septum:
+            self.find_septum_menu_value.set("Closed")
+        elif self.ehooke.parameters.cellprocessingparams.find_openseptum:
+            self.find_septum_menu_value.set("Closed+Open")
+        else:
+            self.find_septum_menu_value.set("No")
+        self.find_septum_menu.pack(side="left")
 
-        self.find_openseptum_frame = tk.Frame(self.parameters_panel)
-        self.find_openseptum_frame.pack(side="top", fill="x")
-        self.find_openseptum_label = tk.Label(
-            self.find_openseptum_frame, text="Find Open Septum: ")
-        self.find_openseptum_label.pack(side="left")
-        self.find_openseptum_checkbox_value = tk.BooleanVar()
-        self.find_openseptum_checkbox = tk.Checkbutton(self.find_openseptum_frame, variable=self.find_openseptum_checkbox_value,
-                                                   onvalue=True, offvalue=False)
-        self.find_openseptum_checkbox_value.set(False)
-        self.find_openseptum_checkbox.pack(side="left")
+        self.look_for_septum_in_frame = tk.Frame(self.parameters_panel)
+        self.look_for_septum_in_frame.pack(side="top", fill="x")
+        self.look_for_septum_in_label = tk.Label(
+            self.look_for_septum_in_frame, text="Look for Septum in: ")
+        self.look_for_septum_in_label.pack(side="left")
+        self.look_for_septum_in_menu_value = tk.StringVar()
+        if self.ehooke.image_manager.optional_image is None:
+            self.look_for_septum_in_menu = tk.OptionMenu(self.look_for_septum_in_frame, self.look_for_septum_in_menu_value,
+                                                         "Fluorescence", "Base")
+        else:
+            self.look_for_septum_in_menu = tk.OptionMenu(self.look_for_septum_in_frame, self.look_for_septum_in_menu_value,
+                                                     "Fluorescence", "Base", "Secondary")
 
-        self.look_for_septum_in_base_frame = tk.Frame(self.parameters_panel)
-        self.look_for_septum_in_base_frame.pack(side="top", fill="x")
-        self.look_for_septum_in_base_label = tk.Label(
-            self.look_for_septum_in_base_frame, text="Look for Septum in Base: ")
-        self.look_for_septum_in_base_label.pack(side="left")
-        self.look_for_septum_in_base_checkbox_value = tk.BooleanVar()
-        self.look_for_septum_in_base_checkbox = tk.Checkbutton(self.look_for_septum_in_base_frame, variable=self.look_for_septum_in_base_checkbox_value,
-                                                               onvalue=True, offvalue=False)
-        self.look_for_septum_in_base_checkbox_value.set(False)
-        self.look_for_septum_in_base_checkbox.pack(side="left")
-
-        self.look_for_septum_in_opt_frame = tk.Frame(self.parameters_panel)
-        self.look_for_septum_in_opt_frame.pack(side="top", fill="x")
-        self.look_for_septum_in_opt_label = tk.Label(
-            self.look_for_septum_in_opt_frame, text="Look for Septum in Secondary: ")
-        self.look_for_septum_in_opt_label.pack(side="left")
-        self.look_for_septum_in_opt_checkbox_value = tk.BooleanVar()
-        self.look_for_septum_in_opt_checkbox = tk.Checkbutton(self.look_for_septum_in_opt_frame, variable=self.look_for_septum_in_opt_checkbox_value,
-                                                               onvalue=True, offvalue=False)
-        self.look_for_septum_in_opt_checkbox_value.set(False)
-        self.look_for_septum_in_opt_checkbox.pack(side="left")
+        if self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base:
+            self.look_for_septum_in_menu_value.set("Base")
+        elif self.ehooke.parameters.cellprocessingparams.look_for_septum_in_optional:
+            self.look_for_septum_in_menu_value.set("Secondary")
+        else:
+            self.look_for_septum_in_menu_value.set("Fluorescence")
+        self.look_for_septum_in_menu.pack(side="left")
 
         self.septum_algorithm_frame = tk.Frame(self.parameters_panel)
         self.septum_algorithm_frame.pack(side="top", fill="x")
@@ -1996,7 +2007,7 @@ class Interface(object):
         self.septum_algorithm_menu = tk.OptionMenu(self.septum_algorithm_frame, self.septum_algorithm_value,
                                                    'Box', 'Isodata')
         self.septum_algorithm_menu.pack(side="left")
-        self.septum_algorithm_value.set("Isodata")
+        self.septum_algorithm_value.set(self.ehooke.parameters.cellprocessingparams.septum_algorithm)
 
         self.membrane_thickness_frame = tk.Frame(self.parameters_panel)
         self.membrane_thickness_frame.pack(side="top", fill="x")
@@ -2006,6 +2017,7 @@ class Interface(object):
 
         self.membrane_thickness_value = tk.Scale(self.membrane_thickness_frame, from_=4, to=8,  orient="horizontal")
         self.membrane_thickness_value.pack()
+        self.membrane_thickness_value.set(self.ehooke.parameters.cellprocessingparams.inner_mask_thickness)
 
         self.filters_label = tk.Label(
             self.parameters_panel, text="Cell Filters: ")
