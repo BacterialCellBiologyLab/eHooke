@@ -1201,11 +1201,9 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        try:
-            self.main_window.unbind("l", self.l_shortcut)
-            self.main_window.unbind("k", self.k_shortcut)
-        except AttributeError:
-            pass
+
+        self.main_window.unbind("l")
+        self.main_window.unbind("k")
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(
@@ -2481,6 +2479,14 @@ class Interface(object):
         """Restarts ehooke to conduct a new analysis"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
+
+        self.main_window.unbind("m")
+        self.main_window.unbind("s")
+        self.main_window.unbind("n")
+        self.main_window.unbind("u")
+        self.main_window.unbind("l")
+        self.main_window.unbind("k")
+
         working_dir = self.ehooke.working_dir
         self.ehooke = EHooke()
         self.ehooke.working_dir = working_dir
