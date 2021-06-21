@@ -30,6 +30,7 @@ class Interface(object):
     def __init__(self):
         self.ehooke = EHooke()
         self.default_params = self.ehooke.parameters
+        self.current_step = None
 
         self.images = {}
         self.current_image = None
@@ -123,7 +124,50 @@ class Interface(object):
             self.parameters_panel, textvariable=self.status, wraplength=self.status_length)
         self.status_bar.pack(side="bottom")
 
+        self.main_window.bind("m", self.m_shortcut)
+        self.main_window.bind("s", self.s_shortcut)
+        self.main_window.bind("n", self.n_shortcut)
+        self.main_window.bind("u", self.u_shortcut)
+        self.main_window.bind("l", self.l_shortcut)
+        self.main_window.bind("k", self.k_shortcut)
+
         self.set_imageloader()
+
+    def m_shortcut(self, event=None):
+        if self.current_step == "CellsComputed":
+            self.force_merge()
+        else:
+            print("Shortcut inactive on this step")
+
+    def s_shortcut(self, event=None):
+        if self.current_step == "CellsComputed":
+            self.split_cell()
+        else:
+            print("Shortcut inactive on this step")
+
+    def n_shortcut(self, event=None):
+        if self.current_step == "CellsComputed":
+            self.declare_as_noise()
+        else:
+            print("Shortcut inactive on this step")
+
+    def u_shortcut(self, event=None):
+        if self.current_step == "CellsComputed":
+            self.undo_as_noise()
+        else:
+            print("Shortcut inactive on this step")
+
+    def l_shortcut(self, event=None):
+        if self.current_step == "CellsProcessed":
+            self.add_line_linescan()
+        else:
+            print("Shortcut inactive on this step")
+
+    def k_shortcut(self, event=None):
+        if self.current_step == "CellsProcessed":
+            self.remove_line_linescan()
+        else:
+            print("Shortcut inactive on this step")
 
     def adjust_min(self, event):
         current_min = float(self.min_scale.get())
@@ -506,6 +550,8 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
+        self.current_step = "ImageLoading"
+
         self.load_base_button = tk.Button(self.top_frame,
                                           text="Load Base Image",
                                           command=self.load_base_image)
@@ -572,7 +618,7 @@ class Interface(object):
         self.mask_algorithm_label.pack(side="left")
         self.mask_algorithm_value = tk.StringVar()
         self.mask_algorithm_menu = tk.OptionMenu(self.mask_algorithm_frame, self.mask_algorithm_value,
-                                                 'Local Average', 'Isodata')
+                                                 'Local Average', 'Isodata', 'SIM Unet NR', 'WF Unet BF', 'WF Unet NR')
         self.mask_algorithm_menu.pack(side="left")
         self.mask_algorithm_value.set(self.ehooke.parameters.imageloaderparams.mask_algorithm)
 
@@ -794,10 +840,7 @@ class Interface(object):
         """Method used to change the interface to the Segments Computation
         Step"""
 
-        self.main_window.unbind("m")
-        self.main_window.unbind("s")
-        self.main_window.unbind("n")
-        self.main_window.unbind("u")
+        self.current_step = "SegmentComputation"
 
         self.ehooke.parameters.imageloaderparams.pixel_size = self.pixel_size_value.get()
         self.ehooke.parameters.imageloaderparams.units = self.units_value.get()
@@ -1011,10 +1054,7 @@ class Interface(object):
         self.ehooke.compute_cells()
         self.ax.format_coord = self.show_cell_info_cellcomputation
 
-        self.main_window.bind("m", self.force_merge)
-        self.main_window.bind("s", self.split_cell)
-        self.main_window.bind("n", self.declare_as_noise)
-        self.main_window.bind("u", self.undo_as_noise)
+        self.current_step = "CellsComputed"
 
         self.images[
             "Fluor_cells_outlined"] = self.ehooke.cell_manager.fluor_w_cells
@@ -1073,7 +1113,7 @@ class Interface(object):
                 self.event_connected = False
                 self.status.set("Not a Cell. Repeat Merge")
 
-    def force_merge(self, event=None):
+    def force_merge(self):
         """Method used to force the merge of two cells"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
@@ -1104,7 +1144,7 @@ class Interface(object):
             self.event_connected = False
             self.status.set("Splitting Finished")
 
-    def split_cell(self, event=None):
+    def split_cell(self):
         """Method used to split a previously merged cell"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
@@ -1133,7 +1173,7 @@ class Interface(object):
             self.event_connected = False
             self.status.set("May Proceed to Cell Processing")
 
-    def declare_as_noise(self, event=None):
+    def declare_as_noise(self):
         """Method used to define a cell object as noise"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
@@ -1162,7 +1202,7 @@ class Interface(object):
             self.event_connected = False
             self.status.set("May Proceed to Cell Processing")
 
-    def undo_as_noise(self, event=None):
+    def undo_as_noise(self):
         """Method used to define a a cell from an object that was previously
         defined as noise"""
         if self.event_connected:
@@ -1200,8 +1240,7 @@ class Interface(object):
         for w in self.images_frame.winfo_children():
             w.destroy()
 
-        self.main_window.unbind("l")
-        self.main_window.unbind("k")
+        self.current_step = "CellComputation"
 
         self.status = tk.StringVar()
         self.status_bar = tk.Label(
@@ -1624,8 +1663,7 @@ class Interface(object):
             self.assign_phase2_button.config(state="disabled")
             self.assign_phase3_button.config(state="disabled")
 
-        self.l_shortcut = self.main_window.bind("l", self.add_line_linescan)
-        self.k_shortcut = self.main_window.bind("k", self.remove_line_linescan)
+        self.current_step = "CellsProcessed"
 
     def select_all_cells(self):
         """Method used to mark all cells as selected"""
@@ -1753,7 +1791,7 @@ class Interface(object):
                     "Fluor_with_lines"] = self.ehooke.linescan_manager.fluor_w_lines
                 self.show_image("Fluor_with_lines")
 
-    def add_line_linescan(self, event=None):
+    def add_line_linescan(self):
         # add line code
 
         self.points = []
@@ -1761,7 +1799,7 @@ class Interface(object):
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.draw_line)
 
-    def remove_line_linescan(self, event=None):
+    def remove_line_linescan(self):
         # remove line code
 
         self.ehooke.linescan_manager.remove_line()
@@ -1866,10 +1904,7 @@ class Interface(object):
         self.ax.format_coord = self.show_cell_info_cellprocessing
         self.canvas.draw()
 
-        self.main_window.unbind("m")
-        self.main_window.unbind("s")
-        self.main_window.unbind("n")
-        self.main_window.unbind("u")
+        self.current_step = "CellProcessing"
 
         self.cid = self.canvas.mpl_connect(
             'button_release_event', self.on_press)
@@ -2477,13 +2512,6 @@ class Interface(object):
         """Restarts ehooke to conduct a new analysis"""
         if self.event_connected:
             self.canvas.mpl_disconnect(self.cid)
-
-        self.main_window.unbind("m")
-        self.main_window.unbind("s")
-        self.main_window.unbind("n")
-        self.main_window.unbind("u")
-        self.main_window.unbind("l")
-        self.main_window.unbind("k")
 
         working_dir = self.ehooke.working_dir
         self.ehooke = EHooke()

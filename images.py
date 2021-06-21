@@ -17,6 +17,7 @@ from skimage.util import img_as_float, img_as_uint
 from skimage.filters import threshold_isodata, threshold_local
 from skimage import exposure, color, morphology
 from scipy import ndimage
+from unetmaskclassifier import UnetSegmentationClassifier
 
 
 class ImageManager(object):
@@ -38,6 +39,7 @@ class ImageManager(object):
         self.fluor_w_mask = None
         self.optional_w_mask = None
         self.align_values = (0, 0)
+        self.unetmaskclassifier = UnetSegmentationClassifier()
 
     def clear_all(self):
         """Sets the class back to the __init__ state"""
@@ -125,6 +127,10 @@ class ImageManager(object):
             print(value)
 
             base_mask = img_as_float(base_mask <= value)
+
+        elif params.mask_algorithm in ['SIM Unet NR', 'WF Unet BF', 'WF Unet NR']:
+            base_mask = img_as_float(self.unetmaskclassifier.segment_image(base_mask,
+                                                                           params.mask_algorithm))
 
         else:
             print("Not a valid mask algorithm")
