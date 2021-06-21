@@ -65,7 +65,7 @@ class MaskParameters(object):
         # if true, phase will be inverted.
         # Useful when using fluorescence or light on dark background
 
-        self.mask_algorithms = ['Local Average', 'Isodata', 'SIM Unet NR', 'WF Unet BF', 'WF Unet NR']
+        self.mask_algorithms = ['Local Average', 'Isodata']
         self.mask_algorithm = 'Isodata'
 
         # used for local average algorithm
