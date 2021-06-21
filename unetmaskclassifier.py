@@ -21,7 +21,7 @@ class UnetSegmentationClassifier(object):
 
         fullmask = np.zeros(img.shape)
 
-        print(model)
+
 
         return fullmask
 
