@@ -129,6 +129,8 @@ class ImageManager(object):
             base_mask = img_as_float(base_mask <= value)
 
         elif params.mask_algorithm in ['SIM Unet NR', 'WF Unet BF', 'WF Unet NR']:
+            if params.invert_base:
+                base_mask = 1 - base_mask
             base_mask = img_as_float(self.unetmaskclassifier.segment_image(base_mask, params.mask_algorithm))
 
         else:
