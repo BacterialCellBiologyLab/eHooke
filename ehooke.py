@@ -11,7 +11,7 @@ from cells import CellManager
 from reports import ReportManager
 from linescan import LineScanManager
 from colocmanager import ColocManager
-from classifier import CellCycleClassifier
+from cellcycleclassifier import CellCycleClassifier
 
 
 class EHooke(object):

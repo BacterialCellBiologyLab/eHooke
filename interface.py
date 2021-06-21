@@ -390,7 +390,6 @@ class Interface(object):
             self.max_scale.set(int(self.fluor_max*100))
             self.current_image_label.configure(text="Linescan")
 
-
         elif image == "Optional":
             img = rescale_intensity(self.images[image], in_range=(self.optional_min, self.optional_max))
             self.min_scale.set(int(self.optional_min*100))
@@ -406,8 +405,8 @@ class Interface(object):
         self.ax.imshow(img, interpolation="none", cmap=cm.Greys_r)
 
         plt.subplots_adjust(left=0.005, bottom=0.005, right=0.995, top=0.995)
-        #figZoom = self.zoom_factory(self.ax)
-        #figPan = self.pan_factory(self.ax)
+        # figZoom = self.zoom_factory(self.ax)
+        # figPan = self.pan_factory(self.ax)
         self.canvas.draw()
 
     def load_base_image(self):
@@ -1200,7 +1199,6 @@ class Interface(object):
 
         for w in self.images_frame.winfo_children():
             w.destroy()
-
 
         self.main_window.unbind("l")
         self.main_window.unbind("k")

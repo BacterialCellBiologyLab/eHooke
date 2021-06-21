@@ -12,7 +12,7 @@ class CellCycleClassifier(object):
 
     def __init__(self):
 
-        self.model = load_model("model")
+        self.model = load_model("cellcycle_cnn_model")
 
     def preprocess_image(self, image, microscope):
 
