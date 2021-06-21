@@ -2,7 +2,6 @@ import numpy as np
 from skimage.util import img_as_float
 from skimage.exposure import rescale_intensity
 from keras.models import load_model
-from tkinter import filedialog as fd
 
 class UnetSegmentationClassifier(object):
 
@@ -30,7 +29,7 @@ class UnetSegmentationClassifier(object):
         tmp = np.array(img[max_y-256:, max_x-256:]).reshape([1, 256, 256, 1])
         tmp = self.model.predict(tmp)[0] > 0.5
         tmp = tmp[:, :, 1]
-        fullmask[max_y-256:,max_x-256:] = tmp
+        fullmask[max_y-256:, max_x-256:] = tmp
 
         # followed by bottom crops
         for i in range(int(img.shape[1]/256.0)):
