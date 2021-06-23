@@ -1,7 +1,9 @@
+import os
 import numpy as np
 from skimage.util import img_as_float
 from skimage.exposure import rescale_intensity
 from keras.models import load_model
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 class UnetSegmentationClassifier(object):
 
