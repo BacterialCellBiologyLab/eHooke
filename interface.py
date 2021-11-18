@@ -1610,6 +1610,10 @@ class Interface(object):
             self.ehooke.parameters.cellprocessingparams.find_septum = True
         elif septum_option == "Closed+Open":
             self.ehooke.parameters.cellprocessingparams.find_openseptum = True
+            self.ehooke.parameters.cellprocessingparams.find_septum = False
+        elif septum_option == "No":
+            self.ehooke.parameters.cellprocessingparams.find_openseptum = False
+            self.ehooke.parameters.cellprocessingparams.find_septum = False
         look_for_septum_in = self.look_for_septum_in_menu_value.get()
         if look_for_septum_in == "Base":
             self.ehooke.parameters.cellprocessingparams.look_for_septum_in_base = True
