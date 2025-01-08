@@ -1,0 +1,17 @@
+# run: conda env create --file environment.yml
+name: eHookeEnvironment
+channels:
+  - conda-forge
+  - default
+dependencies:
+  - python=3.6
+  - anaconda
+  - h5py==2.10.0
+  - Keras==2.2.4
+  - scikit-image==0.15.0
+  - matplotlib==3.3.1
+  - tensorflow==1.15.0
+  - scikit-learn
+  - pip
+  - pip:
+      - -r requirements.txt
